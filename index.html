@@ -170,6 +170,72 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
 @media(max-width:720px){.month-day .calendar-badge{font-size:8px;padding:3px;border-left-width:2px}.calendar-legend .calendar-badge{font-size:9px}}
 
 </style>
+
+<style id="summitSeriesStyles">
+/* Summit Series */
+.summit-shell{display:grid;gap:12px}
+.summit-hero{position:relative;overflow:hidden;border:1px solid #355674;border-radius:14px;background:radial-gradient(circle at 86% 14%,#70c7ff2c,transparent 32%),linear-gradient(135deg,#143b59,#0a1c2b 64%);padding:22px}
+.summit-hero:after{content:"";position:absolute;right:-120px;bottom:-180px;width:360px;height:360px;border:2px solid #ffffff12;border-radius:50%;box-shadow:0 0 0 26px #ffffff06,0 0 0 52px #ffffff03}
+.summit-kicker{position:relative;z-index:1;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#7dd1ff;font-weight:1000}
+.summit-hero h2{position:relative;z-index:1;font-size:clamp(30px,4vw,48px);line-height:.95;margin:8px 0 10px;letter-spacing:-.04em}
+.summit-hero p{position:relative;z-index:1;max-width:760px;margin:0;color:#a8c0d2;font-size:11px;line-height:1.6}
+.summit-hero-grid{position:relative;z-index:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:18px}
+.summit-hero-grid>div{padding:11px;border:1px solid #31536d;background:#071826b8;border-radius:8px}
+.summit-hero-grid small{display:block;color:#7898af;font-size:7px;letter-spacing:.08em;text-transform:uppercase;font-weight:900}
+.summit-hero-grid strong{display:block;margin-top:5px;font-size:15px}
+.summit-columns{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(330px,.85fr);gap:12px}
+.summit-meetings{display:grid;gap:8px}
+.summit-meeting{display:grid;grid-template-columns:74px 1fr auto;gap:12px;align-items:center;padding:13px;border:1px solid #29475f;background:#0a1d2d;border-radius:10px}
+.summit-meeting.next{border-color:#4a83a9;background:linear-gradient(135deg,#123550,#0a1d2d)}
+.summit-meeting.complete{opacity:.78}
+.summit-number{width:62px;height:62px;border-radius:10px;display:grid;place-items:center;text-align:center;border:1px solid #31536d;background:#071826}
+.summit-number small{display:block;font-size:7px;color:#7899b0;text-transform:uppercase;letter-spacing:.08em}
+.summit-number strong{font-size:24px;line-height:1}
+.summit-meeting h3{font-size:14px;margin:0 0 4px}
+.summit-meeting p{font-size:9px;line-height:1.5;color:#86a3b7;margin:0}
+.summit-mini-status{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+.summit-side-stack{display:grid;gap:12px;align-content:start}
+.summit-leader{display:grid;grid-template-columns:28px 1fr auto;gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid #20394e;font-size:10px}
+.summit-leader:last-child{border-bottom:0}
+.summit-leader b{font-size:15px;color:#8ed6ff}
+.summit-leader small{display:block;color:#718fa5;font-size:8px;margin-top:2px}
+.summit-record{padding:10px 0;border-bottom:1px solid #20394e}
+.summit-record:last-child{border-bottom:0}
+.summit-record small{display:block;color:#7190a8;font-size:8px;text-transform:uppercase;letter-spacing:.06em}
+.summit-record strong{display:block;font-size:12px;margin-top:4px}
+.summit-record span{display:block;color:#9eb7c8;font-size:9px;margin-top:3px}
+.summit-back{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.summit-registration-head{padding:18px;background:radial-gradient(circle at 88% 15%,#68c7ff24,transparent 30%),linear-gradient(135deg,#143a58,#0b1f30);border-bottom:1px solid #2a4963}
+.summit-registration-head h2{font-size:30px;margin:5px 0 8px}
+.summit-registration-head p{margin:0;color:#97b1c4;font-size:10px;line-height:1.6}
+.summit-reg-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+.summit-reg-summary>div{padding:10px;border:1px solid #31536d;border-radius:8px;background:#071826a8}
+.summit-reg-summary small{display:block;color:#7897ad;font-size:7px;text-transform:uppercase;letter-spacing:.08em}
+.summit-reg-summary strong{display:block;font-size:14px;margin-top:4px}
+.summit-discipline{border-top:1px solid #29465e}
+.summit-discipline:first-child{border-top:0}
+.summit-discipline-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;background:#0b2133}
+.summit-discipline-head h3{font-size:13px;margin:0}
+.summit-discipline-head span{font-size:8px;color:#7897ae}
+.summit-athlete-card{display:grid;grid-template-columns:minmax(0,1fr) minmax(190px,.8fr) auto;gap:12px;align-items:center;padding:13px 14px;border-top:1px solid #20384c}
+.summit-athlete-card.entered{background:#103328}
+.summit-athlete-card h4{font-size:12px;margin:0 0 4px}
+.summit-athlete-card p{margin:0;color:#839fb3;font-size:8px;line-height:1.5}
+.summit-advice{border-left:2px solid #3e6d8d;padding-left:10px;min-width:0}
+.summit-advice.good{border-left-color:#35c58a}
+.summit-advice.warn{border-left-color:#f2bd4b}
+.summit-advice.bad{border-left-color:#ef6d75}
+.summit-advice strong{display:block;font-size:9px}
+.summit-advice span{display:block;color:#89a6b9;font-size:8px;line-height:1.45;margin-top:3px}
+.summit-registration-lock{padding:12px 14px;border:1px solid #5f4d27;background:#332817;border-radius:8px;color:#f0d391;font-size:9px;line-height:1.55;margin-bottom:10px}
+.summit-result-disc{padding:12px 0;border-bottom:1px solid #20394e}
+.summit-result-disc:last-child{border-bottom:0}
+.summit-result-row{display:grid;grid-template-columns:28px 1fr auto;gap:8px;align-items:center;padding:6px 0;font-size:10px}
+.summit-result-row.managed{background:#123249;border-radius:6px;padding:7px}
+@media(max-width:960px){.summit-columns{grid-template-columns:1fr}.summit-hero-grid,.summit-reg-summary{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:720px){.summit-hero{padding:16px}.summit-meeting{grid-template-columns:58px 1fr}.summit-meeting>.btn{grid-column:1/-1;width:100%}.summit-number{width:52px;height:52px}.summit-athlete-card{grid-template-columns:1fr}.summit-athlete-card>.btn{width:100%}.summit-advice{padding:8px 10px;border-left:0;border-top:2px solid #3e6d8d;background:#071826;border-radius:7px}.summit-advice.good{border-top-color:#35c58a}.summit-advice.warn{border-top-color:#f2bd4b}.summit-advice.bad{border-top-color:#ef6d75}}
+</style>
+
 </head>
 <body>
 <div id="startup" class="startup">
@@ -195,7 +261,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
   <button data-view="news">World News <span id="newsBadge" class="badge hidden">0</span></button>
   <button data-view="calendar">Calendar</button>
   <button data-view="training">Training</button>
-  <button data-view="activities">Training Camps</button><button data-view="league">League Events</button>
+  <button data-view="activities">Training Camps</button><button data-view="league">Summit Series</button>
   <button data-view="scouting">Scouting</button>
   <button data-view="staff">Staff & Funding</button>
   <button data-view="competition">Event Centre</button>
@@ -390,7 +456,7 @@ function applyNationTheme(){document.documentElement.dataset.nationTheme=Object.
 function renderMenu(){applyNationTheme();let raw=localStorage.getItem(SAVE_KEY),has=!!raw;let g=has?s.game:null,p=has?nationProfile():null;$('latestUpdatePanel').innerHTML=`<div class="update-panel-title"><strong>Development Updates</strong><span>${UPDATES.length} releases</span></div>${UPDATES.map((u,i)=>`<section class="update-entry ${i===0?'latest':''}"><div class="latest-update-head"><strong>${i===0?'Latest Update':'Previous Update'}</strong><span>${u.date}</span></div><h3>${u.title}</h3><ul>${u.items.map(x=>`<li>${x}</li>`).join('')}</ul></section>`).join('')}`;$('continueBtn').disabled=!has;$('careerTitle').textContent=has?`${p.flag} ${p.name} Performance Director`:'National Performance Director';$('railNation').textContent=has?`${p.name} • Performance Director`:'National Programme • Performance Director';$('saveCard').innerHTML=has?`<div class="save-grid"><div class="save-stat"><small>Nation</small><strong style="font-size:14px">${p.flag} ${p.name}</strong></div><div class="save-stat"><small>Cycle</small><strong>Year ${g.cycleYear}/4</strong></div><div class="save-stat"><small>Week</small><strong>${g.week}</strong></div><div class="save-stat"><small>Funding</small><strong>${money(s.funding)}</strong></div></div>`:`<div class="muted" style="font-size:11px;line-height:1.6">No career save yet. Choose a nation and begin a new four-year Olympic cycle.</div>`}
 function showMenu(){save();$('startup').classList.remove('hidden')}
 function hideMenu(){load();$('startup').classList.add('hidden');if(appointmentPending()){openMail=s.emails.find(m=>m.type==='contract')?.id||null;currentView='inbox';render();view('inbox');if(firstDayCanOpen()&&!s.induction.paused)openFirstDay();return}render();view('home');if(firstDayCanOpen()&&!s.induction.paused)openFirstDay()}
-function view(v){if(v==='squad'||v==='pool')squadTab=v==='pool'?'pool':'squad';if(v==='activities'||v==='league')activityTab=v==='league'?'league':'camps';if(v==='competition'&&currentView!=='competition')competitionMode='overview';if(appointmentPending()&&v!=='inbox'){openMail=s.emails.find(m=>m.type==='contract')?.id||openMail;toast('Sign your appointment contract first');v='inbox'}if(s?.appointment?.contractSigned){if(v==='squad')appointmentTask('squad');if(v==='calendar')appointmentTask('calendar');if(v==='scouting')appointmentTask('pool');if(v==='home'&&!s.appointment.weekOneStarted&&s.game.week===1){s.appointment.weekOneStarted=true;onWeekStart();save()}}currentView=v;document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id===v));document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===v));let names={pool:['ATHLETE MANAGEMENT','National Pool'],league:['PROGRAMME PLANNING','League Events'],home:[nationName(managedNation()).toUpperCase(),'Performance Centre'],squad:['ATHLETE MANAGEMENT','Squad'],inbox:['COMMUNICATIONS','Inbox'],news:['ATHLETICS WORLD','News Centre'],calendar:['SEASON PLANNING','Calendar'],activities:['PROGRAMME PLANNING','Training Camps'],training:['HIGH PERFORMANCE','Training'],scouting:['TALENT ID','Scouting'],staff:['OPERATIONS','Staff & Funding'],competition:['LIVE OPERATIONS','Event Centre'],rankings:['WORLD ATHLETICS','Rankings & Records'],olympics:['FOUR-YEAR TARGET','Olympic Games']};$('pageKicker').textContent=names[v][0];$('pageTitle').textContent=names[v][1];renderView(v)}
+function view(v){if(v==='squad'||v==='pool')squadTab=v==='pool'?'pool':'squad';if(v==='activities'||v==='league')activityTab=v==='league'?'league':'camps';if(v==='competition'&&currentView!=='competition')competitionMode='overview';if(appointmentPending()&&v!=='inbox'){openMail=s.emails.find(m=>m.type==='contract')?.id||openMail;toast('Sign your appointment contract first');v='inbox'}if(s?.appointment?.contractSigned){if(v==='squad')appointmentTask('squad');if(v==='calendar')appointmentTask('calendar');if(v==='scouting')appointmentTask('pool');if(v==='home'&&!s.appointment.weekOneStarted&&s.game.week===1){s.appointment.weekOneStarted=true;onWeekStart();save()}}currentView=v;document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id===v));document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===v));let names={pool:['ATHLETE MANAGEMENT','National Pool'],league:['SUMMIT SERIES','Summit Series'],home:[nationName(managedNation()).toUpperCase(),'Performance Centre'],squad:['ATHLETE MANAGEMENT','Squad'],inbox:['COMMUNICATIONS','Inbox'],news:['ATHLETICS WORLD','News Centre'],calendar:['SEASON PLANNING','Calendar'],activities:['PROGRAMME PLANNING','Training Camps'],training:['HIGH PERFORMANCE','Training'],scouting:['TALENT ID','Scouting'],staff:['OPERATIONS','Staff & Funding'],competition:['LIVE OPERATIONS','Event Centre'],rankings:['WORLD ATHLETICS','Rankings & Records'],olympics:['FOUR-YEAR TARGET','Olympic Games']};$('pageKicker').textContent=names[v][0];$('pageTitle').textContent=names[v][1];renderView(v)}
 function render(){applyNationTheme();let unread=s.emails.filter(m=>m.unread).length,nu=newsUnread();$('mailBadge').textContent=unread;$('mailBadge').classList.toggle('hidden',!unread);if($('newsBadge')){$('newsBadge').textContent=nu;$('newsBadge').classList.toggle('hidden',!nu)}$('yearPill').textContent='YEAR '+s.game.cycleYear+'/4';$('weekPill').textContent='WEEK '+s.game.week;let block=currentBlocking(),pending=appointmentPending();$('advanceTop').disabled=!!block&&!pending;$('advanceTop').textContent=pending?'SIGN CONTRACT':block?'EVENT REQUIRED':'ADVANCE WEEK';renderView(currentView);save()}
 function renderView(v){({pool:drawSquad,league:drawActivities,home:drawHome,squad:drawSquad,inbox:drawInbox,news:drawNews,calendar:drawCalendar,activities:drawActivities,training:drawTraining,scouting:drawScouting,staff:drawStaff,competition:drawCompetition,rankings:drawRankings,olympics:drawOlympics}[v]||(()=>{}))()}
 const HOME_TABS={programme:[['readiness','Readiness'],['impact','Weekly impact'],['board','Board']],world:[['headlines','Headlines'],['standings','Standings'],['leads','World leads']]};
@@ -763,6 +829,327 @@ const originalUpdateCamps=updateCamps;
 updateCamps=function(){originalUpdateCamps();for(const p of planList().filter(p=>p.kind==='camp'&&p.status==='started'))if(!p.ids.some(id=>{const a=s.athletes.find(a=>a.id===id);return a?.camp&&a.camp.season===p.season&&a.camp.week===p.week}))p.status='completed'};
 const originalDrawProfile=drawAthleteProfile;
 drawAthleteProfile=function(){originalDrawProfile();const a=s.athletes.find(a=>a.id===profileId);if(a?.testingHistory?.length){const el=$('athleteProfile').querySelector('.profile-stack');if(el)el.insertAdjacentHTML('beforeend',`<section class="profile-panel"><h2>Practice testing</h2><p>Training benchmarks, separate from official records.</p>${a.testingHistory.slice(-6).reverse().map(r=>`<p>${dateLabel(r.week,r.season)} ${r.season} • ${fmtPerf(r.disc,r.perf)}</p>`).join('')}</section>`)}};
+
+
+/* ===== Summit Series upgrade ===== */
+const SUMMIT_WEEKS=[14,20,26,32,44];
+const SUMMIT_POINTS=[10,8,6,5,4,3,2,1];
+const SUMMIT_PRIZES=[600000,400000,250000,150000,100000,75000,50000,25000];
+let summitScreen='overview',summitMeetingNumber=null;
+
+function summitSeasonState(){
+  s.summitSeries??={};
+  const ss=s.summitSeries[s.game.season]??={season:s.game.season,meetings:{},settled:false,payout:0,awards:[]};
+  SUMMIT_WEEKS.forEach((week,i)=>{
+    const n=i+1;
+    ss.meetings[n]??={number:n,week,entries:[],fields:{},results:{},completed:false};
+    ss.meetings[n].number=n;
+    ss.meetings[n].week=week;
+    ss.meetings[n].entries??=[];
+    ss.meetings[n].fields??={};
+    ss.meetings[n].results??={};
+  });
+  s.summitRecords??={};
+  return ss;
+}
+function summitMeetings(){const ss=summitSeasonState();return SUMMIT_WEEKS.map((_,i)=>ss.meetings[i+1])}
+function summitNextMeeting(){return summitMeetings().find(m=>!m.completed&&m.week>=s.game.week)||summitMeetings().find(m=>!m.completed)||null}
+function summitRegistrationOpen(m){return !m.completed&&s.game.week<m.week&&s.game.week>=Math.max(1,m.week-4)}
+function summitRegistrationClosed(m){return m.completed||s.game.week>=m.week}
+function summitEntriesForDisc(m,d){return m.entries.map(id=>s.athletes.find(a=>a.id===id)).filter(a=>a&&!a.retired&&a.disc===d)}
+function summitHasPlanConflict(a,m){
+  return planList().some(p=>p.status==='scheduled'&&p.season===s.game.season&&p.ids.includes(a.id)&&p.week<=m.week&&p.week+(p.kind==='camp'?CAMP_OPTIONS[p.type].weeks:1)-1>=m.week);
+}
+function summitUnavailable(a,m){
+  const gap=Math.max(0,m.week-s.game.week);
+  if(a.retired||a.inSquad===false)return 'Not in the active squad';
+  if(a.injury>gap)return 'Injury is expected to overlap the meeting';
+  if(a.camp&&a.camp.until>careerNow()+gap)return 'Current training camp overlaps the meeting';
+  if(summitHasPlanConflict(a,m))return 'A scheduled activity overlaps the meeting';
+  const e=s.events.find(e=>!e.completed&&e.week===m.week&&(e.disc.includes(a.disc)||e.disc.includes('ALL'))&&['competition','championship','olympics','testing'].includes(e.kind));
+  if(e)return 'Clashes with '+e.name;
+  return '';
+}
+function summitAdvice(a,m){
+  const unavailable=summitUnavailable(a,m);
+  if(unavailable)return {tone:'bad',title:'Unavailable',text:unavailable+'.'};
+  const gap=m.week-s.game.week,staffKey=a.disc.includes('100')?'sprint':a.disc.includes('HJ')?'jumps':'throws',coach=s.staff?.[staffKey]||1;
+  let title='Development option',tone='',text='Useful competitive exposure without affecting world or Olympic ranking points.';
+  if(a.fatigue>=75){title='Caution';tone='warn';text='Fatigue is high. Recovery before the meeting would improve the chance of a strong performance.'}
+  else if(a.form>=85&&a.fitness>=88&&a.fatigue<55){title='Strong pick';tone='good';text='Form, fitness and fatigue all point towards a high-quality Series performance.'}
+  else if(a.overall>=84&&a.fatigue<65){title='Recommended';tone='good';text='Ability and current readiness make this a sensible points-scoring entry.'}
+  else if(a.form<72){title='Form concern';tone='warn';text='Current form is below ideal. The meeting can still be useful, but expectations should be managed.'}
+  if(gap>=3&&tone!=='bad')text+=' There are '+gap+' weeks to prepare.';
+  text+=' Event coach level '+coach+'.';
+  return {tone,title,text};
+}
+function summitStandings(d){
+  const totals=new Map();
+  for(const m of summitMeetings()){
+    for(const [i,r] of (m.results?.[d]||[]).entries()){
+      if(!totals.has(r.id))totals.set(r.id,{id:r.id,name:r.name,nation:r.nation,points:0,wins:0,starts:0});
+      const t=totals.get(r.id);t.points+=SUMMIT_POINTS[i]||0;t.wins+=i===0?1:0;t.starts++;
+    }
+  }
+  return [...totals.values()].sort((a,b)=>b.points-a.points||b.wins-a.wins||b.starts-a.starts||String(a.id).localeCompare(String(b.id)));
+}
+function summitRecordBetter(d,perf,old){
+  if(!old)return true;
+  return DISCIPLINES[d].type==='time'?perf<old.perf:perf>old.perf;
+}
+function updateSummitRecord(d,r,m){
+  const old=s.summitRecords[d];
+  if(summitRecordBetter(d,r.perf,old))s.summitRecords[d]={id:r.id,name:r.name,nation:r.nation,perf:r.perf,meeting:m.number,week:m.week,season:s.game.season};
+}
+function toggleSummitEntry(number,id){
+  const m=summitSeasonState().meetings[number],a=s.athletes.find(a=>a.id===id);
+  if(!m||!a||!summitRegistrationOpen(m)){toast('Registration is not open for this meeting');return}
+  const entered=m.entries.includes(id);
+  if(entered){m.entries=m.entries.filter(x=>x!==id);save();drawActivities();return}
+  const why=summitUnavailable(a,m);
+  if(why){toast(why);return}
+  if(summitEntriesForDisc(m,a.disc).length>=2){toast('Maximum two entries per discipline');return}
+  m.entries.push(id);
+  newMail(sender('performance'),a.name+' registered for Summit Series '+m.number,
+    `${a.name} is registered for Summit Series ${m.number} in Week ${m.week}. Registration remains editable until the meeting week begins. Summit Series points and records are separate from world and Olympic rankings.`,'info');
+  save();drawActivities();
+}
+function simulateSummitMeeting(m){
+  if(m.completed)return;
+  for(const d of Object.keys(DISCIPLINES)){
+    const own=summitEntriesForDisc(m,d).filter(a=>!summitUnavailable(a,m)&&a.injury===0&&!a.camp);
+    const rivals=s.athletes.filter(a=>!a.retired&&a.nation!==managedNation()&&a.disc===d&&a.injury===0&&!a.camp)
+      .sort((a,b)=>b.overall-a.overall||String(a.id).localeCompare(String(b.id)))
+      .slice(0,Math.max(0,8-own.length));
+    const field=[...own,...rivals].slice(0,8);
+    m.fields[d]=field.map(a=>a.id);
+    const rows=field.map(a=>({id:a.id,name:a.name,nation:a.nation,perf:rawPerformance(a,d)}))
+      .sort((a,b)=>DISCIPLINES[d].type==='time'?a.perf-b.perf:b.perf-a.perf);
+    m.results[d]=rows;
+    for(const r of rows){const a=s.athletes.find(x=>x.id===r.id);if(a)a.fatigue=clamp(a.fatigue+8,0,100);updateSummitRecord(d,r,m)}
+  }
+  m.completed=true;
+  const ownResults=Object.keys(DISCIPLINES).flatMap(d=>(m.results[d]||[]).map((r,i)=>({...r,disc:d,place:i+1}))).filter(r=>r.nation===managedNation());
+  if(m.entries.length){
+    const best=ownResults.sort((a,b)=>a.place-b.place)[0];
+    newMail(sender('performance'),'Summit Series '+m.number+' complete',
+      best?`${best.name} led the national team with ${best.place===1?'a win':'a #'+best.place+' finish'} in ${discLabel(best.disc)}. The Summit Series leaderboard and Series records have updated. These results do not award world or Olympic ranking points.`:
+      `Summit Series ${m.number} is complete. Registered athletes who were injured or unavailable did not start. The Series leaderboard and records have updated.`,'review');
+  }
+  if(m.number===SUMMIT_WEEKS.length)settleSummitSeries();
+}
+function settleSummitSeries(){
+  const ss=summitSeasonState();if(ss.settled)return;
+  ss.settled=true;ss.payout=0;ss.awards=[];
+  for(const d of Object.keys(DISCIPLINES)){
+    summitStandings(d).forEach((row,i)=>{
+      const a=s.athletes.find(x=>x.id===row.id);
+      if(!a||a.nation!==managedNation()||!row.starts||a.retired)return;
+      const prize=SUMMIT_PRIZES[i]||0;ss.payout+=prize;
+      ss.awards.push({id:a.id,name:a.name,disc:d,place:i+1,prize});
+      rememberAthlete(a,'Summit Series finish','Finished #'+(i+1)+' with '+row.points+' Summit Series points; prize '+money(prize)+'.');
+    });
+  }
+  s.funding+=ss.payout;
+  newMail(sender('board'),'Summit Series season settled',
+    `${money(ss.payout)} in Summit Series prize money has been received. Final positions are based on Series points, then meeting wins and starts. The Summit Series records remain in the competition archive.`,'review');
+}
+function updateLeague(){
+  const ss=summitSeasonState();
+  for(const m of summitMeetings())if(!m.completed&&m.week<=s.game.week)simulateSummitMeeting(m);
+}
+function summitLeaderPreview(){
+  const rows=[];
+  for(const d of Object.keys(DISCIPLINES)){const lead=summitStandings(d)[0];if(lead)rows.push({...lead,disc:d})}
+  return rows;
+}
+function summitStatusText(m){
+  if(m.completed)return 'Complete';
+  if(s.game.week>=m.week)return 'Event due';
+  if(summitRegistrationOpen(m))return 'Registration open';
+  return 'Registration opens W'+Math.max(1,m.week-4);
+}
+function summitOverviewHTML(){
+  const ss=summitSeasonState(),meetings=summitMeetings(),next=summitNextMeeting(),completed=meetings.filter(m=>m.completed).length,leaders=summitLeaderPreview();
+  const nextEntries=next?next.entries.length:0;
+  return `<div class="summit-shell">
+    <section class="summit-hero">
+      <div class="summit-kicker">International League Circuit</div>
+      <h2>SUMMIT SERIES</h2>
+      <p>Five scheduled meetings across the season. Register athletes only for the meetings you want to attend, score separate Summit Series points and chase the circuit's own all-time records. No meeting can be started manually: it takes place when its scheduled week arrives.</p>
+      <div class="summit-hero-grid">
+        <div><small>Next meeting</small><strong>${next?'Series '+next.number+' · W'+next.week:'Season complete'}</strong></div>
+        <div><small>Meetings complete</small><strong>${completed} / ${meetings.length}</strong></div>
+        <div><small>Next registration</small><strong>${next?summitStatusText(next):'Closed'}</strong></div>
+        <div><small>Prize pool</small><strong>Up to £600k / event</strong></div>
+      </div>
+    </section>
+    <div class="summit-columns">
+      <section class="panel">
+        <div class="panel-h"><strong>Summit Series Calendar</strong><span>Scheduled meetings only</span></div>
+        <div class="panel-body summit-meetings">
+          ${meetings.map(m=>`<article class="summit-meeting ${next?.number===m.number?'next':''} ${m.completed?'complete':''}">
+            <div class="summit-number"><div><small>Series</small><strong>${m.number}</strong></div></div>
+            <div><h3>Summit Series ${m.number}</h3><p>Week ${m.week} · ${dateLabel(m.week)} · Six disciplines · ${m.entries.length} national ${m.entries.length===1?'entry':'entries'}</p>
+              <div class="summit-mini-status"><span class="status ${m.completed?'good':summitRegistrationOpen(m)?'live':''}">${summitStatusText(m)}</span>${m.completed?'<span class="status">Results available</span>':''}</div>
+            </div>
+            <button class="btn ${next?.number===m.number?'primary':'secondary'}" data-summit-open="${m.number}">${m.completed?'VIEW RESULTS':'VIEW MEETING'}</button>
+          </article>`).join('')}
+        </div>
+      </section>
+      <div class="summit-side-stack">
+        <section class="panel"><div class="panel-h"><strong>Current Leaders</strong><span>Season leaderboard</span></div><div class="panel-body">
+          ${leaders.length?leaders.map(r=>`<div class="summit-leader"><b>#1</b><div><strong>${athleteLink(s.athletes.find(a=>a.id===r.id))}</strong><small>${flag(r.nation)} ${nationName(r.nation)} · ${discLabel(r.disc)} · ${r.starts} starts</small></div><strong>${r.points} pts</strong></div>`).join(''):'<p class="muted">The leaderboard will appear after Summit Series 1.</p>'}
+        </div></section>
+        <section class="panel"><div class="panel-h"><strong>Summit Series Records</strong><span>All-time circuit records</span></div><div class="panel-body">
+          ${Object.keys(DISCIPLINES).map(d=>{const r=s.summitRecords[d];return `<div class="summit-record"><small>${discLabel(d)}</small>${r?`<strong>${fmtPerf(d,r.perf)} · ${r.name}</strong><span>${flag(r.nation)} ${nationName(r.nation)} · Summit Series ${r.meeting}, ${r.season}</span>`:'<strong>Record not established</strong><span>The first completed meeting will set the mark.</span>'}</div>`}).join('')}
+        </div></section>
+      </div>
+    </div>
+  </div>`;
+}
+function summitResultsHTML(m){
+  return `<div class="stack">${Object.keys(DISCIPLINES).map(d=>`<section class="panel"><div class="panel-h"><strong>${discLabel(d)}</strong><span>${s.summitRecords[d]?.meeting===m.number&&s.summitRecords[d]?.season===s.game.season?'Series record set':''}</span></div><div class="panel-body">
+    ${(m.results[d]||[]).map((r,i)=>`<div class="summit-result-row ${r.nation===managedNation()?'managed':''}"><b>${i+1}</b><div><strong>${athleteLink(s.athletes.find(a=>a.id===r.id))}</strong><small>${flag(r.nation)} ${nationName(r.nation)}</small></div><strong>${fmtPerf(d,r.perf)} · ${SUMMIT_POINTS[i]||0} pts</strong></div>`).join('')||'<p class="muted">No result recorded.</p>'}
+  </div></section>`).join('')}</div>`;
+}
+function summitMeetingHTML(m){
+  const open=summitRegistrationOpen(m),closed=summitRegistrationClosed(m),gap=m.week-s.game.week;
+  return `<div class="summit-shell">
+    <div class="summit-back"><button class="btn ghost" id="summitBack">← SUMMIT SERIES</button><span class="status ${m.completed?'good':open?'live':''}">${summitStatusText(m)}</span></div>
+    <section class="panel">
+      <div class="summit-registration-head">
+        <div class="summit-kicker">Scheduled Meeting</div><h2>Summit Series ${m.number}</h2>
+        <p>Week ${m.week} · ${dateLabel(m.week)}. ${m.completed?'Official Series results are below.':open?'Registration is open. Select the athletes you want to attend; there is no manual start button. The meeting runs automatically when Week '+m.week+' begins.':'You can review the meeting now. Registration opens in Week '+Math.max(1,m.week-4)+'.'}</p>
+        <div class="summit-reg-summary">
+          <div><small>Meeting week</small><strong>Week ${m.week}</strong></div>
+          <div><small>Registration</small><strong>${m.completed?'Closed':open?'Open':closed?'Closed':'Opens W'+Math.max(1,m.week-4)}</strong></div>
+          <div><small>Your entries</small><strong>${m.entries.length}</strong></div>
+          <div><small>Series points</small><strong>10 · 8 · 6 · 5…</strong></div>
+        </div>
+      </div>
+      <div class="panel-body">
+        <p>Maximum two national athletes per discipline. Summit Series results build a separate leaderboard and separate Series records. They do not add world ranking or Olympic qualification points.</p>
+        ${!m.completed&&!open?`<div class="summit-registration-lock">${closed?'Registration has closed because this meeting week has arrived.':'Registration opens in Week '+Math.max(1,m.week-4)+'. You can still review coaching advice and plan who you want to send.'}</div>`:''}
+      </div>
+      ${m.completed?summitResultsHTML(m):Object.keys(DISCIPLINES).map(d=>{
+        const athletes=managedTeam().filter(a=>a.disc===d),discEntries=summitEntriesForDisc(m,d);
+        return `<section class="summit-discipline"><div class="summit-discipline-head"><h3>${discLabel(d)}</h3><span>${discEntries.length}/2 selected</span></div>
+          ${athletes.length?athletes.map(a=>{const entered=m.entries.includes(a.id),ad=summitAdvice(a,m),why=summitUnavailable(a,m),full=discEntries.length>=2&&!entered;return `<div class="summit-athlete-card ${entered?'entered':''}">
+            <div><h4>${athleteLink(a)}</h4><p>Overall ${a.overall} · Form ${a.form} · Fitness ${a.fitness} · Fatigue ${a.fatigue}</p></div>
+            <div class="summit-advice ${ad.tone}"><strong>${ad.title}</strong><span>${ad.text}</span></div>
+            <button class="btn ${entered?'good':'secondary'}" data-summit-entry="${m.number}|${a.id}" ${!open||!!why||full?'disabled':''}>${entered?'REGISTERED':full?'DISCIPLINE FULL':why?'UNAVAILABLE':'REGISTER'}</button>
+          </div>`}).join(''):'<div class="panel-body muted">No active squad athlete in this discipline.</div>'}
+        </section>`}).join('')}
+    </section>
+  </div>`;
+}
+function drawSummitSeries(){
+  const root=$('league');if(!root)return;
+  if(summitScreen==='meeting'&&summitMeetingNumber){
+    const m=summitSeasonState().meetings[summitMeetingNumber];
+    root.innerHTML=m?summitMeetingHTML(m):summitOverviewHTML();
+  }else root.innerHTML=summitOverviewHTML();
+  if($('summitBack'))$('summitBack').onclick=()=>{summitScreen='overview';summitMeetingNumber=null;drawSummitSeries()};
+  root.querySelectorAll('[data-summit-open]').forEach(b=>b.onclick=()=>{summitScreen='meeting';summitMeetingNumber=Number(b.dataset.summitOpen);drawSummitSeries()});
+  root.querySelectorAll('[data-summit-entry]').forEach(b=>b.onclick=()=>{const [n,id]=b.dataset.summitEntry.split('|');toggleSummitEntry(Number(n),id)});
+}
+const legacyActivitiesDraw=drawActivities;
+drawActivities=function(){
+  if(currentView==='league'){activityTab='league';drawSummitSeries();return}
+  activityTab='camps';legacyActivitiesDraw();
+};
+const legacyView=view;
+view=function(v){
+  if(v==='league'){summitScreen='overview';summitMeetingNumber=null}
+  legacyView(v);
+  if(v==='league'){if($('pageKicker'))$('pageKicker').textContent='SUMMIT SERIES';if($('pageTitle'))$('pageTitle').textContent='Summit Series'}
+};
+activityBusy=function(a,week=s.game.week){
+  const abs=careerNow()+week-s.game.week;
+  if(a.camp&&abs<a.camp.until)return true;
+  const ss=s.summitSeries?.[s.game.season];
+  if(ss&&Object.values(ss.meetings||{}).some(m=>m.week===week&&!m.completed&&(m.entries||[]).includes(a.id)))return true;
+  return planList().some(p=>p.kind==='camp'&&p.status==='scheduled'&&p.season===s.game.season&&p.ids.includes(a.id)&&week>=p.week&&week<p.week+CAMP_OPTIONS[p.type].weeks);
+};
+activityLabel=function(a){
+  if(a.camp)return CAMP_OPTIONS[a.camp.type].name+' · '+Math.max(0,a.camp.until-careerNow())+' weeks left';
+  const m=summitMeetings().find(m=>!m.completed&&m.week===s.game.week&&m.entries.includes(a.id));
+  if(m)return 'Summit Series '+m.number+' commitment';
+  return '';
+};
+sendToCamp=function(id,type){
+  if((s.plans||[]).some(p=>p.status==='scheduled'&&p.season===s.game.season&&p.ids.includes(id)&&p.week<=s.game.week+CAMP_OPTIONS[type].weeks-1&&p.week+(p.kind==='camp'?CAMP_OPTIONS[p.type].weeks:1)>s.game.week)){toast('This camp overlaps a scheduled activity');return}
+  const a=s.athletes.find(a=>a.id===id),c=CAMP_OPTIONS[type];if(!a||!c||a.retired||a.nation!==managedNation()||a.inSquad===false||a.injury>0||a.camp||s.funding<c.cost)return;
+  const end=s.game.week+c.weeks-1;
+  const summitConflict=summitMeetings().find(m=>!m.completed&&m.week>=s.game.week&&m.week<=end&&m.entries.includes(id));
+  if(summitConflict){toast('Camp overlaps Summit Series '+summitConflict.number);return}
+  if(end>52){toast('Camp would run beyond the season');return}
+  if(s.events.some(e=>e.week===s.game.week&&Object.values(e.results||{}).some(r=>Array.isArray(r)&&r.some(x=>x.id===id)))){toast('Start camp next week: this athlete has already competed');return}
+  s.funding-=c.cost;a.camp={type,until:careerNow()+c.weeks,started:careerNow(),season:s.game.season,week:s.game.week,cost:c.cost};
+  for(const e of s.events.filter(e=>!e.completed&&e.week>=s.game.week&&e.week<=end))e.entries[a.disc]=(e.entries[a.disc]||[]).filter(x=>x!==id);
+  rememberAthlete(a,'Training camp','Departed for '+c.name+'.');
+  newMail(sender('performance'),a.name+' leaves for camp',`${a.name} is away for ${c.weeks} weeks. ${c.desc} No competition or regular training while away. Injury or retirement interrupts the camp with no completion gain or refund.`,'info');
+  save();drawActivities();
+};
+CALENDAR_TYPES.league=['Summit Series','purple'];
+const legacyCalendarDraw=drawCalendar;
+drawCalendar=function(){
+  legacyCalendarDraw();
+  const root=$('calendar');if(!root)return;
+  root.querySelectorAll('.calendar-purple').forEach(el=>{if((el.textContent||'').trim()==='League round')el.remove()});
+  SUMMIT_WEEKS.forEach((w,i)=>{
+    root.querySelectorAll(`[data-plan-week="${w}"]`).forEach(day=>{
+      if(!day.querySelector('.summit-calendar-badge')){
+        const free=day.querySelector('.calendar-free');if(free)free.remove();
+        day.insertAdjacentHTML('beforeend',calendarBadge('league','Summit Series '+(i+1)).replace('calendar-badge','calendar-badge summit-calendar-badge'));
+      }
+    });
+  });
+};
+document.querySelectorAll('[data-view="league"]').forEach(b=>{if((b.textContent||'').trim().startsWith('League Events'))b.textContent='Summit Series'});
+UPDATES.unshift({date:"7 September 2026",title:"Summit Series",items:["League Events has become the Summit Series: five fixed meetings appear across the season and cannot be started manually.","Open an upcoming meeting to register up to two athletes per discipline, with coaching advice based on readiness, fatigue, form, injuries and schedule clashes.","Every meeting updates a separate Summit Series leaderboard and all-time Summit Series records. Final Series positions pay prize money without affecting world or Olympic ranking points."]});
+const legacyCommitmentConflictsForSummit=commitmentConflicts;
+commitmentConflicts=function(a,start,end){
+  const base=legacyCommitmentConflictsForSummit(a,start,end);
+  const summit=summitMeetings().filter(m=>!m.completed&&m.week>=start&&m.week<=end&&m.entries.includes(a.id)).map(m=>'Summit Series '+m.number+' (W'+m.week+')');
+  return [...new Set([...base,...summit])];
+};
+bookPlan=function(kind,type,ids,week){
+  const c=CAMP_OPTIONS[type],end=week+(kind==='camp'?c.weeks:1)-1,cost=kind==='camp'?c.cost*ids.length:0;
+  if(!ids.length||week<s.game.week||end>52||cost>s.funding)return;
+  for(const id of ids){
+    const a=s.athletes.find(a=>a.id===id);
+    if(kind==='camp'&&week===s.game.week&&s.events.some(e=>e.week===week&&Object.values(e.results||{}).some(r=>Array.isArray(r)&&r.some(x=>x.id===id)))){toast('This athlete already competed; book camp from next week');return}
+    const summitConflict=summitMeetings().find(m=>!m.completed&&m.week>=week&&m.week<=end&&m.entries.includes(id));
+    if(!a||a.retired||a.inSquad===false||a.nation!==managedNation()||a.injury>0||planOverlap(id,week,end)||(a.camp&&a.camp.until>careerNow()+week-s.game.week)||summitConflict){
+      toast(summitConflict?'This athlete is registered for Summit Series '+summitConflict.number:'An athlete is unavailable or has an overlapping commitment');return
+    }
+  }
+  s.funding-=cost;
+  const p={id:'plan-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),season:s.game.season,week,kind,type,ids,status:'scheduled',cost};planList().push(p);
+  if(kind==='camp')for(const e of s.events.filter(e=>!e.completed&&e.week>=week&&e.week<=end))for(const d of Object.keys(e.entries))e.entries[d]=e.entries[d].filter(id=>!ids.includes(id));
+  if(week===s.game.week&&kind==='camp')startPlannedCamps();
+  save();drawCalendar();toast(kind==='camp'?'Camp booked':'Testing day booked; runs when this week advances');
+};
+const summitCalendarDraw=drawCalendar;
+drawCalendar=function(){
+  summitCalendarDraw();
+  const root=$('calendar');if(!root)return;
+  const note=root.querySelector('.planner-form .planner-note');
+  if(note){
+    note.innerHTML=note.innerHTML.replace(/<br>League athletes committed this week\./g,'');
+    const ix=SUMMIT_WEEKS.indexOf(planningWeek);
+    if(ix>=0)note.insertAdjacentHTML('beforeend','<br>Summit Series '+(ix+1)+' • scheduled circuit meeting.');
+  }
+};
+const legacyLoadForSummit=load;
+load=function(){
+  legacyLoadForSummit();
+  summitSeasonState();
+  updateLeague();
+};
+/* ===== End Summit Series upgrade ===== */
 
 load();renderMenu();renderView(currentView);
 </script>
