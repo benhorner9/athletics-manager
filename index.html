@@ -454,6 +454,32 @@ body.event-focus #competition.view.on{height:100%;overflow:hidden}
 .btn.recommended-picks{background:linear-gradient(180deg,#24704f,#194d39);border-color:#3a9470;color:#fff;box-shadow:0 7px 18px #0002}
 .btn.recommended-picks:hover{filter:brightness(1.08)}
 
+
+/* event completion, attempt playback & email polish */
+.event-complete-return{min-width:150px!important;background:linear-gradient(180deg,#2f8b64,#226e4e)!important;border-color:#49a77c!important;color:#fff!important;box-shadow:0 8px 22px #0004}
+.attempt-visual-score{position:absolute;z-index:8;left:14px;top:14px;display:grid;gap:3px;padding:9px 11px;border:1px solid #ffffff26;border-radius:8px;background:#06111bea;box-shadow:0 10px 28px #0007}.attempt-visual-score small{color:#91aabd;font-size:7px;letter-spacing:.1em;text-transform:uppercase;font-weight:950}.attempt-visual-score strong{font-size:18px;color:#f0f8fd}.attempt-visual-score span{color:#8ba5b8;font-size:8px}.attempt-visual-result{position:absolute;z-index:8;right:14px;top:14px;padding:8px 11px;border:1px solid #ffffff26;border-radius:8px;background:#06111bea;font-size:12px;font-weight:1000;letter-spacing:.04em}.attempt-visual-result.good{color:#9de0bd;border-color:#3c7f61}.attempt-visual-result.bad{color:#f4a8ad;border-color:#80404a}
+.reader.email-reader{overflow:hidden;background:#f6f8fa;border-color:#cdd6dd;box-shadow:0 18px 50px #0003}
+.email-reader .reader-head{padding:22px 24px 18px;background:#f4f6f8!important;border-bottom:1px solid #d8e0e6;color:#172632}
+.email-reader .mail-type{margin-bottom:14px}
+.email-reader .email-message-top{display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:11px;align-items:center}
+.email-reader .email-avatar{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#dfe8ee;border:1px solid #c5d1d9;color:#29475b;font-size:12px;font-weight:1000;letter-spacing:.04em}
+.email-reader .email-sender strong{display:block;font-size:13px;color:#172632}.email-reader .email-sender span{display:block;margin-top:3px;color:#697b88;font-size:10px}.email-reader .email-date{text-align:right;color:#758690;font-size:9px;line-height:1.45}
+.email-reader .reader-head h2{margin:18px 0 0;font-size:27px;line-height:1.12;letter-spacing:-.025em;color:#12212c;font-weight:800}
+.email-reader .email-header-meta{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;color:#6e7e89;font-size:9px}.email-reader .email-header-meta strong{color:#435560;font-weight:750}
+.email-reader .reader-body{padding:24px;background:#fff;color:#263640;font-size:14px;line-height:1.72}
+.email-reader .reader-body>p,.email-reader .reader-body>div>p{font-size:14px;line-height:1.72}
+.email-reader .reader-body p{color:#3f515d;margin-top:0;margin-bottom:13px}
+.email-reader .reader-body strong{color:#1d2d37}
+.email-reader .mail-section{margin:14px 0;padding:15px 16px;background:#f5f7f9!important;border:1px solid #d9e1e7!important;border-radius:9px;color:#24343f}
+.email-reader .mail-section h3{margin:0 0 8px;color:#1b2b36;font-size:15px;line-height:1.3}
+.email-reader .mail-section p{color:#465965;font-size:13.5px;line-height:1.7}
+.email-reader .reader-actions{padding:14px 24px;background:#f4f6f8;border-top:1px solid #d8e0e6}
+.email-reader .selection-box{color:#dce9f2;background:#091b2a;border-color:#29475f}
+.email-reader .selection-box strong{color:#eef7fc}.email-reader .selection-box p{color:#9fb6c7}.email-reader .selection-athlete{color:#dce9f2}.email-reader .selection-athlete strong{color:#eef7fc}.email-reader .selection-athlete .muted{color:#829eb2}
+.email-reader .contract-doc{color:#dce9f2}.email-reader .contract-doc strong{color:#eef7fc}
+.mailitem .from{font-size:9px}.mailitem .subject{font-size:12px;line-height:1.35;margin-top:5px}
+@media(max-width:720px){.email-reader .reader-head{padding:16px}.email-reader .reader-head h2{font-size:22px}.email-reader .reader-body{padding:16px;font-size:13px}.email-reader .reader-body p,.email-reader .mail-section p{font-size:13px}.email-reader .reader-actions{padding:12px 16px}.email-reader .email-message-top{grid-template-columns:36px minmax(0,1fr)}.email-reader .email-avatar{width:36px;height:36px}.email-reader .email-date{grid-column:2;text-align:left}.attempt-visual-score{left:8px;top:8px}.attempt-visual-result{right:8px;top:8px}}
+
 </style>
 
 <style id="summitSeriesStyles">
@@ -3035,6 +3061,128 @@ UPDATES.unshift({date:'8 September 2026',title:'Select All Recommended',items:['
 {const latestIndex=UPDATES.findIndex(u=>u.title==='Select All Recommended');if(latestIndex>0)UPDATES.unshift(UPDATES.splice(latestIndex,1)[0]);}
 if(typeof renderMenu==='function')renderMenu();
 /* ===== End Select All Recommended ===== */
+
+
+/* ===== Event completion, attempt playback & email polish ===== */
+function returnFromCompletedEvent(){
+ activeEventDisc=null;competitionMode='overview';disciplineRunning=false;liveEventView=null;save();view('home');toast('Event complete');
+}
+const _finishPatchDrawDiscipline=drawDisciplineScreen;
+drawDisciplineScreen=function(e,live,discs){
+ _finishPatchDrawDiscipline(e,live,discs);
+ if(!e?.completed)return;
+ for(const id of ['startDisciplineTop','startDiscipline']){const b=$(id);if(!b)continue;b.disabled=false;b.textContent='COMPLETE EVENT';b.classList.add('event-complete-return');b.onclick=returnFromCompletedEvent}
+ const back=$('backEvent');if(back){back.textContent='COMPLETE EVENT';back.classList.add('event-complete-return');back.onclick=returnFromCompletedEvent}
+};
+const _finishPatchDrawOverview=drawEventOverview;
+drawEventOverview=function(e,live,discs,done){
+ _finishPatchDrawOverview(e,live,discs,done);
+ if(!e?.completed)return;
+ const root=$('competition');if(!root||$('completeEventReturn'))return;
+ const b=document.createElement('button');b.id='completeEventReturn';b.className='btn good event-complete-return';b.textContent='COMPLETE EVENT • RETURN TO GAME';b.onclick=returnFromCompletedEvent;
+ const target=root.querySelector('.event-day-shell,.event-day,.panel')||root;target.prepend(b);
+};
+
+const _attemptBaseBuildGavin=buildGavinCommentary;
+function attemptCallLine(prefix,name,body){return `${prefix} • ${name.toUpperCase()}\nGavin Potts — ${body}`}
+function buildThrowAttemptCommentary(d,rows,e,baseLines){
+ const meta=e?.engine?.[d];if(!meta||meta.family!=='throws'||!rows.some(r=>Array.isArray(r.throwAttempts)))return baseLines;
+ meta.broadcastCues={};
+ const remove=['IN THE CIRCLE','POWER AND CONTROL','OUT INTO THE SECTOR','THE CONTEST DEVELOPS','THE FINAL MEASUREMENTS'];
+ const clean=baseLines.filter(line=>!remove.some(h=>String(line).startsWith(h))&&!String(line).startsWith('RESULT •')&&!String(line).startsWith('PERFORMANCE WATCH')&&!String(line).startsWith('YOUR TEAM'));
+ const resultLines=baseLines.filter(line=>String(line).startsWith('RESULT •')||String(line).startsWith('PERFORMANCE WATCH')||String(line).startsWith('YOUR TEAM'));
+ const order=[...rows].sort((a,b)=>String(a.name).localeCompare(String(b.name))),best={},sequence=[];let leaderId=null,leaderMark=0;
+ const finalists=new Set((meta.stages?.find(x=>x.name==='Final three attempts')?.rows||[]).map(x=>x.id));
+ for(let round=1;round<=6;round++){
+   if(round===4){const names=order.filter(x=>finalists.has(x.id)).map(x=>x.name);sequence.push(`TOP ${meta.cut||8} CUT\nGavin Potts — Three rounds are complete. ${names.length?names.join(', ')+' move on to the final three attempts.':'The final field is confirmed.'}`)}
+   let roundOrder=round<=3?order:order.filter(x=>finalists.has(x.id));
+   if(round>3&&Array.isArray(meta.finalOrder)){const pos=new Map(meta.finalOrder.map((id,i)=>[id,i]));roundOrder=[...roundOrder].sort((a,b)=>(pos.get(a.id)??99)-(pos.get(b.id)??99))}
+   for(const row of roundOrder){
+     const mark=row.throwAttempts?.[round-1];if(mark===undefined)continue;
+     const prefix=`THROW ${round}`;let body;
+     if(mark===null){body=`Red flag. ${row.name} has fouled that attempt, so there is no distance to add to the card.`}
+     else{
+       best[row.id]=Math.max(best[row.id]||0,mark);const wasLead=leaderId===row.id,oldLead=leaderMark;
+       if(mark>leaderMark){leaderMark=mark;leaderId=row.id;body=`${fmtPerf(d,mark)}. ${row.name} ${oldLead?`moves into the lead by ${(mark-oldLead).toFixed(2)} metres`:'sets the early benchmark'}.`}
+       else if(wasLead)body=`${fmtPerf(d,mark)}. ${row.name} stays in front with a best of ${fmtPerf(d,best[row.id])}.`;
+       else body=`${fmtPerf(d,mark)} for ${row.name}. The best on the card is now ${fmtPerf(d,best[row.id])}.`;
+     }
+     const line=attemptCallLine(prefix,row.name,body);sequence.push(line);meta.broadcastCues[line]={family:'throws',athleteId:row.id,attempt:round,mark:Number.isFinite(mark)?mark:null,foul:mark===null,best:best[row.id]||0};
+   }
+ }
+ return [...clean,...sequence,...resultLines];
+}
+function buildHighJumpAttemptCommentary(d,rows,e,baseLines){
+ const meta=e?.engine?.[d];if(!meta||meta.family!=='height'||!rows.some(r=>Array.isArray(r.hjAttempts)))return baseLines;
+ meta.broadcastCues={};
+ const remove=['AT THE APRON','THE APPROACH','AT THE BAR','PRESSURE BUILDING','THE FINAL MARKS'];
+ const clean=baseLines.filter(line=>!remove.some(h=>String(line).startsWith(h))&&!String(line).startsWith('RESULT •')&&!String(line).startsWith('PERFORMANCE WATCH')&&!String(line).startsWith('YOUR TEAM'));
+ const resultLines=baseLines.filter(line=>String(line).startsWith('RESULT •')||String(line).startsWith('PERFORMANCE WATCH')||String(line).startsWith('YOUR TEAM'));
+ const heights=[...new Set(rows.flatMap(r=>(r.hjAttempts||[]).map(a=>a.height)))].sort((a,b)=>a-b),sequence=[];
+ for(const height of heights){
+   sequence.push(`BAR TO ${fmtPerf(d,height)}\nGavin Potts — The bar moves to ${fmtPerf(d,height)}. The athletes still alive at this height reset their approach.`);
+   for(const row of [...rows].sort((a,b)=>String(a.name).localeCompare(String(b.name)))){
+     const h=(row.hjAttempts||[]).find(x=>Number(x.height)===Number(height));if(!h)continue;
+     if(h.marks?.[0]==='-'){
+       const line=attemptCallLine(`PASS • ${fmtPerf(d,height)}`,row.name,`${row.name} passes at ${fmtPerf(d,height)} and keeps the card clean for the next height.`);sequence.push(line);meta.broadcastCues[line]={family:'height',athleteId:row.id,height,outcome:'-',attempt:0};continue;
+     }
+     (h.marks||[]).forEach((outcome,i)=>{
+       const attempt=i+1,clear=outcome==='O';let body=clear?`${row.name} is over it${attempt===1?' at the first time of asking':''}. ${fmtPerf(d,height)} goes onto the card.`:`Not this time for ${row.name} at ${fmtPerf(d,height)}. ${attempt<3?'They will have another chance.':'That is a third failure at the height.'}`;
+       const line=attemptCallLine(`${fmtPerf(d,height)} • ATTEMPT ${attempt}`,row.name,body);sequence.push(line);meta.broadcastCues[line]={family:'height',athleteId:row.id,height,outcome,attempt};
+     });
+   }
+ }
+ if(meta.jumpOff){const w=rows.find(r=>r.id===meta.jumpOff.winner);sequence.push(`JUMP-OFF • ${fmtPerf(d,meta.jumpOff.height)}\nGavin Potts — Countback cannot separate the leaders, so we go to a jump-off. ${w?.name||'The winner'} takes it.`)}
+ return [...clean,...sequence,...resultLines];
+}
+buildGavinCommentary=function(d,r,e){
+ const base=_attemptBaseBuildGavin(d,r,e),family=e?.engine?.[d]?.family||athleticsFamily(d);
+ if(family==='throws')return buildThrowAttemptCommentary(d,r,e,base);
+ if(family==='height')return buildHighJumpAttemptCommentary(d,r,e,base);
+ return base;
+};
+ensureBroadcastEventCommentary=function(e,d){if(!e||!Array.isArray(e.results?.[d]))return;e.commentary??={};e.commentaryBroadcastVersion??={};if(e.commentaryBroadcastVersion[d]===3)return;e.commentary[d]=buildGavinCommentary(d,e.results[d],e);e.commentaryBroadcastVersion[d]=3};
+const _attemptDelayBase=commentaryDelay;
+commentaryDelay=function(line){const t=String(line||'');if(/^THROW \d|^\d+\.\d+m • ATTEMPT|^PASS •|^BAR TO|^TOP \d+ CUT/.test(t))return clamp(1450+t.split(/\s+/).length*45,1650,2600);return _attemptDelayBase(line)};
+
+function attemptShotPutVisual(e,d,rows,cue){
+ const row=rows.find(r=>r.id===cue.athleteId)||rows[0],name=profileEscape(row?.name||'Athlete'),nation=row?.nation||'WORLD',c=nationDotColour(nation),mark=cue.mark,valid=Number.isFinite(mark),maxM=25,ratio=valid?clamp(mark/maxM,0.05,1):.72;
+ const x0=220,y0=326,x1=960,y1=155,lx=x0+(x1-x0)*ratio,ly=y0+(y1-y0)*ratio,dx=lx-x0,dy=ly-y0;
+ const ticks=[5,10,15,20,25].map(m=>{const t=m/maxM,x=x0+(x1-x0)*t,y=y0+(y1-y0)*t;return `<circle cx="${x}" cy="${y}" r="3" fill="#e8f0dd" opacity=".72"/><text x="${x+8}" y="${y-7}" font-size="10" fill="#e8f0dd" opacity=".75">${m}m</text>`}).join('');
+ const ball=valid?`<g transform="translate(${x0} ${y0-40})"><circle r="8" fill="#d9d8d3" stroke="#444" stroke-width="2"><animateMotion path="M0 0 Q${dx*.48} -170 ${dx} ${dy+40}" dur="1.55s" fill="freeze"/></circle></g><g transform="translate(${lx} ${ly})"><circle r="9" fill="#d9d8d3" stroke="#444" stroke-width="2"/><circle r="13" fill="none" stroke="#e8f0dd" opacity=".6"><animate attributeName="r" from="10" to="34" dur=".55s"/><animate attributeName="opacity" from=".7" to="0" dur=".55s"/></circle></g>`:`<g transform="translate(${x0} ${y0-40})"><circle r="8" fill="#d9d8d3" stroke="#444" stroke-width="2"><animateMotion path="M0 0 Q300 -180 610 105" dur="1.35s" fill="freeze"/></circle></g>`;
+ return `<div class="live-arena"><div class="live-arena-head"><span>Attempt ${cue.attempt} • ${name}</span></div><div class="live-arena-stage" style="position:relative"><div class="attempt-visual-score"><small>Shot Put • Attempt ${cue.attempt}</small><strong>${name}</strong><span>${flag(nation)} ${profileEscape(nationName(nation))}</span></div><div class="attempt-visual-result ${valid?'good':'bad'}">${valid?fmtPerf(d,mark):'FOUL'}</div><svg viewBox="0 0 1080 430" role="img" aria-label="Shot put attempt ${cue.attempt} by ${name}"><defs><linearGradient id="spa" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#07121b"/><stop offset="1" stop-color="#174354"/></linearGradient><linearGradient id="spf" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#377d5b"/><stop offset="1" stop-color="#1e503b"/></linearGradient></defs><rect width="1080" height="430" fill="url(#spa)"/><path d="M0 118 Q300 72 550 98 T1080 85 V170 H0Z" fill="#142f42"/><rect y="164" width="1080" height="266" fill="url(#spf)"/><path d="M${x0} ${y0} L1000 108 L1000 392 Z" fill="#3b855f" stroke="#dcebd5" stroke-opacity=".65" stroke-width="2"/><path d="M${x0} ${y0} L${x1} ${y1}" stroke="#eef7e8" stroke-width="2" stroke-opacity=".45" stroke-dasharray="7 8"/>${ticks}<circle cx="${x0-38}" cy="${y0+10}" r="62" fill="#a8aca8" stroke="#eff4ef" stroke-width="4"/><path d="M${x0-100} ${y0+10}H${x0+24}" stroke="#fff" stroke-width="4"/><g transform="translate(${x0-45} ${y0+5})">${liveStickAthlete(c,'throw',row?.id||name)}<animateTransform attributeName="transform" additive="sum" type="rotate" values="-28;18;102" dur="1.25s" fill="freeze"/></g>${ball}${valid?`<path d="M${x0} ${y0}L${lx} ${ly}" stroke="#fff" stroke-width="2" stroke-opacity=".35"/><g transform="translate(${lx+12} ${ly+14})"><rect x="-5" y="-18" width="76" height="26" rx="6" fill="#06111be8" stroke="#ffffff2b"/><text x="33" y="0" text-anchor="middle" font-size="13" font-weight="1000" fill="#fff">${mark.toFixed(2)}m</text></g>`:''}</svg></div><div class="live-arena-legend"><span><i style="background:${c}"></i>${name} · ${valid?`measured ${mark.toFixed(2)}m`:'foul — no mark'}</span></div></div>`;
+}
+function attemptHighJumpVisual(e,d,rows,cue){
+ const row=rows.find(r=>r.id===cue.athleteId)||rows[0],watch=row,phase={stage:cue.outcome==='-'?'apron':'flight'},svg=highJumpBroadcastVisual(rows,phase,true,1.65,watch),label=cue.outcome==='O'?'CLEAR':cue.outcome==='X'?'MISS':'PASS',tone=cue.outcome==='O'?'good':cue.outcome==='X'?'bad':'';
+ return `<div class="live-arena"><div class="live-arena-head"><span>${fmtPerf(d,cue.height)} • ${profileEscape(row.name)} • ${cue.attempt?`Attempt ${cue.attempt}`:'Pass'}</span></div><div class="live-arena-stage" style="position:relative"><div class="attempt-visual-score"><small>High Jump</small><strong>${profileEscape(row.name)}</strong><span>${fmtPerf(d,cue.height)}${cue.attempt?' • attempt '+cue.attempt:''}</span></div><div class="attempt-visual-result ${tone}">${label}</div>${svg}</div><div class="live-arena-legend"><span><i style="background:${nationDotColour(row.nation)}"></i>${profileEscape(row.name)} · ${label.toLowerCase()} at ${fmtPerf(d,cue.height)}</span></div></div>`;
+}
+const _attemptBaseVisual=eventVisualHTML;
+eventVisualHTML=function(e,d){
+ const active=liveEventView?.event===e&&liveEventView?.disc===d?liveEventView:null,line=active?.lines?.[active.index],cue=line&&e?.engine?.[d]?.broadcastCues?.[line];
+ if(cue?.family==='throws')return attemptShotPutVisual(e,d,active.results,cue);
+ if(cue?.family==='height')return attemptHighJumpVisual(e,d,active.results,cue);
+ return _attemptBaseVisual(e,d);
+};
+
+const _attemptBaseSummitProxy=summitProxy;
+summitProxy=function(m){const p=_attemptBaseSummitProxy(m);p.engine=m.engine||p.engine||{};return p};
+const _attemptBaseSummitRows=summitRows;
+summitRows=function(m,d){
+ const base=_attemptBaseSummitRows(m,d),proxy=summitProxy(m),out=athleticsRunEngine(proxy,d,base.map(r=>({...r})));m.engine??={};m.engine[d]=out.meta;proxy.engine??={};proxy.engine[d]=out.meta;return out.rows;
+};
+
+function emailInitials(senderName){const words=String(senderName||'AM').replace(/[^A-Za-z0-9 ]/g,' ').trim().split(/\s+/).filter(Boolean);return (words.slice(0,2).map(x=>x[0]).join('')||'AM').toUpperCase()}
+const _emailPolishDrawReader=drawReader;
+drawReader=function(){
+ _emailPolishDrawReader();const el=$('reader'),m=s.emails.find(x=>x.id===openMail)||s.emails[s.emails.length-1];if(!el||!m)return;el.classList.add('email-reader');const head=el.querySelector('.reader-head');if(!head)return;
+ const recipient=`${nationName(managedNation())} Performance Director`;
+ head.innerHTML=`${mailTypeHTML(m)}<div class="email-message-top"><div class="email-avatar">${profileEscape(emailInitials(m.sender))}</div><div class="email-sender"><strong>${profileEscape(m.sender)}</strong><span>to ${profileEscape(recipient)}</span></div><div class="email-date">Year ${m.year}<br>Week ${m.week}</div></div><h2>${profileEscape(m.subject)}</h2><div class="email-header-meta"><span><strong>From:</strong> ${profileEscape(m.sender)}</span><span><strong>To:</strong> ${profileEscape(recipient)}</span></div>`;
+};
+
+UPDATES.unshift({date:'8 September 2026',title:'Event Finish, Attempt Playback & Email Polish',items:['Completed meetings now present an active Complete Event button that exits Event Day and returns directly to the main game instead of leaving the player trapped inside the full-screen match view.','Shot Put now plays the actual Athletics Engine attempt series rather than one generic throw. Every valid throw or foul Gavin calls is shown as its own attempt, and the visual landing measurement uses the exact distance from the commentary.','High Jump now follows the same attempt-by-attempt principle, showing each pass, miss and clearance at the correct height so the animation and commentary describe the same competition sequence. Summit Series field events use the same multi-attempt engine.','Inbox messages have been redesigned to resemble real emails, with a proper sender/recipient header, stronger subject hierarchy, clearer metadata and significantly larger body copy. Embedded selection tools remain distinct inside the message.']});
+{const latestIndex=UPDATES.findIndex(u=>u.title==='Event Finish, Attempt Playback & Email Polish');if(latestIndex>0)UPDATES.unshift(UPDATES.splice(latestIndex,1)[0]);}
+if(typeof renderMenu==='function')renderMenu();
+/* ===== End event completion, attempt playback & email polish ===== */
 
 </script>
 </body>
