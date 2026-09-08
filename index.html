@@ -541,6 +541,31 @@ dialog[open]{animation:amDialogIn .28s var(--ease-premium) both}dialog::backdrop
 <style id="eventDayFlowPolish">
 .event-choice-shell{max-width:980px;margin:0 auto;display:grid;gap:12px}.event-choice-hero{position:relative;overflow:hidden;padding:28px;border:1px solid var(--nation-line);border-radius:16px;background:radial-gradient(circle at 85% 10%,var(--nation-glow),transparent 38%),linear-gradient(135deg,var(--nation-raised),var(--nation-base));box-shadow:0 18px 48px #0005}.event-choice-hero:before{content:"";position:absolute;inset:auto -8% -50% 20%;height:160px;border-radius:50%;border:18px solid #ffffff08;transform:rotate(-7deg)}.event-choice-kicker{font-size:8px;font-weight:950;letter-spacing:.16em;color:var(--nation-secondary)}.event-choice-hero h2{font-size:clamp(30px,5vw,54px);letter-spacing:-.045em;line-height:1;margin:10px 0 9px}.event-choice-hero p{max-width:650px;margin:0;color:#a7c0d2;font-size:12px;line-height:1.65}.event-choice-meta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:20px}.event-choice-meta>div{padding:11px;border:1px solid #ffffff12;border-radius:8px;background:#06131e66}.event-choice-meta small{display:block;color:#7897ad;font-size:7px;font-weight:900;letter-spacing:.08em}.event-choice-meta strong{display:block;margin-top:5px;font-size:14px}.event-choice-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.event-choice-card{display:flex;flex-direction:column;align-items:flex-start;text-align:left;min-height:150px;padding:18px;border:1px solid var(--nation-line);border-radius:13px;background:var(--nation-surface);color:var(--text);cursor:pointer;box-shadow:0 10px 28px #0003;transition:.18s ease}.event-choice-card:hover{transform:translateY(-2px);border-color:var(--nation-accent)}.event-choice-card small{font-size:7px;font-weight:950;letter-spacing:.14em;color:var(--nation-secondary)}.event-choice-card strong{font-size:21px;margin:8px 0}.event-choice-card span{font-size:10px;line-height:1.55;color:#8faabd}.event-choice-card b{margin-top:auto;padding-top:14px;font-size:9px;letter-spacing:.08em}.event-choice-card.primary{background:linear-gradient(135deg,var(--nation-raised),var(--nation-surface));border-color:var(--nation-accent)}.event-watch-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;margin-bottom:10px;border:1px solid var(--nation-line);border-radius:10px;background:var(--nation-surface)}.event-watch-toolbar div strong{display:block;font-size:11px}.event-watch-toolbar div span{display:block;margin-top:3px;color:#829fb3;font-size:8px}.event-watch-toolbar .btn{min-height:38px}.event-arrival-note{margin-top:10px;color:#7896aa;font-size:8px;line-height:1.5}@media(max-width:720px){.event-choice-hero{padding:18px 14px}.event-choice-meta{grid-template-columns:repeat(2,minmax(0,1fr))}.event-choice-actions{grid-template-columns:1fr}.event-choice-card{min-height:126px;padding:14px}.event-watch-toolbar{align-items:stretch;flex-direction:column}.event-watch-toolbar .btn{width:100%}}
 </style>
+
+<style id="summitSeriesSeasonLiveStyles">
+/* Summit Series season commitment + event-day package */
+.summit-series-roster{margin-top:12px;border:1px solid #745bd1;background:linear-gradient(145deg,#17132b,#0b1728);border-radius:12px;overflow:hidden;box-shadow:0 14px 34px #0003}
+.summit-series-roster-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;padding:16px 18px;background:radial-gradient(circle at 88% 0,#b695ff2c,transparent 36%),linear-gradient(135deg,#2b2052,#111d32)}
+.summit-series-roster-head h3{margin:4px 0 6px;font-size:18px}.summit-series-roster-head p{margin:0;color:#aeb6ca;font-size:9px;line-height:1.6;max-width:720px}.summit-series-roster-head .status{flex-shrink:0}
+.summit-series-lock-note{margin:0 16px 12px;padding:10px 12px;border:1px solid #6d5d2c;background:#2f2817;border-radius:8px;color:#f0d999;font-size:9px;line-height:1.6}
+.summit-season-lineup{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:14px 16px}.summit-season-entry{border:1px solid #343557;background:#0e1628;border-radius:9px;padding:11px}.summit-season-entry small{display:block;color:#9788cf;font-size:7px;letter-spacing:.08em;text-transform:uppercase}.summit-season-entry strong{display:block;margin-top:5px;font-size:11px}.summit-season-entry span{display:block;color:#8393aa;font-size:8px;margin-top:4px;line-height:1.45}
+.summit-live-shell{position:relative;overflow:hidden;min-height:560px;border:1px solid #7057cd;border-radius:14px;background:radial-gradient(circle at 85% 8%,#b68cff33,transparent 27%),radial-gradient(circle at 9% 88%,#30d6c722,transparent 30%),linear-gradient(145deg,#161029,#071522 62%);box-shadow:0 24px 70px #0005}
+.summit-live-shell:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 0 42%,#ffffff05 42% 43%,transparent 43% 100%)}
+.summit-live-mast{position:relative;padding:22px 24px 20px;border-bottom:1px solid #7158c35c;background:linear-gradient(120deg,#2a1d51cc,#0d2135d9)}
+.summit-live-brand{display:flex;align-items:center;gap:12px}.summit-live-mark{width:48px;height:48px;display:grid;place-items:center;border:1px solid #a386ff;border-radius:11px;background:#110e20;box-shadow:inset 0 0 22px #a386ff1c}.summit-live-mark:before{content:"▲";font-size:25px;color:#d8cbff;filter:drop-shadow(0 0 8px #ab8dff)}
+.summit-live-brand small{display:block;color:#a99be0;font-size:8px;letter-spacing:.16em;font-weight:1000}.summit-live-brand h2{margin:3px 0 0;font-size:clamp(30px,5vw,52px);letter-spacing:-.045em;line-height:.9}.summit-live-round{margin-left:auto;text-align:right}.summit-live-round small{display:block;color:#8ca0b6;font-size:7px;letter-spacing:.1em}.summit-live-round strong{display:block;font-size:22px;color:#e9e3ff;margin-top:3px}
+.summit-live-meta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:18px}.summit-live-meta>div{padding:10px;border:1px solid #4a456c;background:#081523a8;border-radius:8px}.summit-live-meta small{display:block;color:#7d8ca4;font-size:7px;text-transform:uppercase;letter-spacing:.08em}.summit-live-meta strong{display:block;margin-top:4px;font-size:13px}
+.summit-live-body{position:relative;padding:18px}.summit-live-choice{display:grid;grid-template-columns:1fr 1fr;gap:12px}.summit-live-choice button{min-height:190px;text-align:left;border:1px solid #4a456a;border-radius:12px;padding:18px;background:linear-gradient(145deg,#101b2d,#0a1322);color:#e8edf4;cursor:pointer}.summit-live-choice button.primary{border-color:#866fe0;background:radial-gradient(circle at 85% 20%,#b99cff2b,transparent 35%),linear-gradient(145deg,#2a2050,#101d31)}.summit-live-choice small{display:block;color:#9a8bd1;font-size:8px;letter-spacing:.13em;font-weight:1000}.summit-live-choice strong{display:block;font-size:23px;margin:9px 0}.summit-live-choice span{display:block;color:#9aaabd;font-size:10px;line-height:1.65}.summit-live-choice b{display:block;margin-top:18px;color:#d7cbff;font-size:10px;letter-spacing:.08em}
+.summit-live-toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px 14px;margin-bottom:12px;border:1px solid #494260;background:#0c1524;border-radius:9px}.summit-live-toolbar strong{display:block}.summit-live-toolbar span{display:block;color:#8193a9;font-size:8px;margin-top:3px}
+.summit-live-shell .event-discipline-grid{margin:0}.summit-live-shell .event-disc-card{border-color:#393650;background:#0a1422}.summit-live-shell .event-disc-card.complete{border-color:#4e806d}.summit-live-shell .event-disc-card .page-kicker{color:#a38ddd}.summit-live-shell .event-progress i{background:linear-gradient(90deg,#765ee0,#bda7ff,#49d7c2)}
+.summit-live-discipline{border:1px solid #6651bc;background:linear-gradient(145deg,#131027,#071522);border-radius:13px;overflow:hidden}.summit-live-discipline-head{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:15px 17px;border-bottom:1px solid #504395;background:linear-gradient(120deg,#281d4b,#0d2034)}.summit-live-discipline-head small{display:block;color:#a090d4;font-size:8px;letter-spacing:.11em}.summit-live-discipline-head h2{margin:4px 0 0;font-size:28px}.summit-live-discipline-head span{font-size:9px;color:#a9b5c7}.summit-live-visual{padding:12px;background:#050d17}.summit-live-visual .live-arena{border-color:#554693}.summit-live-commentary{margin:0 12px 12px}
+.summit-series-complete-banner{padding:16px;border:1px solid #4c7d6c;background:#102b24;border-radius:10px;margin-bottom:12px}.summit-series-complete-banner strong{display:block;font-size:15px}.summit-series-complete-banner span{display:block;color:#93b9aa;font-size:9px;margin-top:4px}
+@media(max-width:760px){.summit-season-lineup{grid-template-columns:1fr 1fr}.summit-series-roster-head{flex-direction:column}.summit-live-mast{padding:16px}.summit-live-brand{align-items:flex-start}.summit-live-round{margin-left:0}.summit-live-meta{grid-template-columns:1fr 1fr}.summit-live-choice{grid-template-columns:1fr}.summit-live-choice button{min-height:150px}.summit-live-body{padding:10px}.summit-live-toolbar{align-items:flex-start;flex-direction:column}.summit-live-toolbar .btn{width:100%}}
+</style>
+
+<style id="summitSeriesSeasonLiveStyles">
+.summit-series-roster{margin-top:12px;border:1px solid #745bd1;background:linear-gradient(145deg,#17132b,#0b1728);border-radius:12px;overflow:hidden;box-shadow:0 14px 34px #0003}.summit-series-roster-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;padding:16px 18px;background:radial-gradient(circle at 88% 0,#b695ff2c,transparent 36%),linear-gradient(135deg,#2b2052,#111d32)}.summit-series-roster-head h3{margin:4px 0 6px;font-size:18px}.summit-series-roster-head p{margin:0;color:#aeb6ca;font-size:9px;line-height:1.6;max-width:720px}.summit-series-lock-note{margin:0 16px 12px;padding:10px 12px;border:1px solid #6d5d2c;background:#2f2817;border-radius:8px;color:#f0d999;font-size:9px;line-height:1.6}.summit-season-lineup{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:14px 16px}.summit-season-entry{border:1px solid #343557;background:#0e1628;border-radius:9px;padding:11px}.summit-season-entry small{display:block;color:#9788cf;font-size:7px;letter-spacing:.08em;text-transform:uppercase}.summit-season-entry strong{display:block;margin-top:5px;font-size:11px}.summit-season-entry span{display:block;color:#8393aa;font-size:8px;margin-top:4px;line-height:1.45}.summit-live-shell{position:relative;overflow:hidden;min-height:560px;border:1px solid #7057cd;border-radius:14px;background:radial-gradient(circle at 85% 8%,#b68cff33,transparent 27%),radial-gradient(circle at 9% 88%,#30d6c722,transparent 30%),linear-gradient(145deg,#161029,#071522 62%);box-shadow:0 24px 70px #0005}.summit-live-mast{position:relative;padding:22px 24px 20px;border-bottom:1px solid #7158c35c;background:linear-gradient(120deg,#2a1d51cc,#0d2135d9)}.summit-live-brand{display:flex;align-items:center;gap:12px}.summit-live-mark{width:48px;height:48px;display:grid;place-items:center;border:1px solid #a386ff;border-radius:11px;background:#110e20;box-shadow:inset 0 0 22px #a386ff1c}.summit-live-mark:before{content:"▲";font-size:25px;color:#d8cbff;filter:drop-shadow(0 0 8px #ab8dff)}.summit-live-brand small{display:block;color:#a99be0;font-size:8px;letter-spacing:.16em;font-weight:1000}.summit-live-brand h2{margin:3px 0 0;font-size:clamp(30px,5vw,52px);letter-spacing:-.045em;line-height:.9}.summit-live-round{margin-left:auto;text-align:right}.summit-live-round small{display:block;color:#8ca0b6;font-size:7px;letter-spacing:.1em}.summit-live-round strong{display:block;font-size:22px;color:#e9e3ff;margin-top:3px}.summit-live-meta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:18px}.summit-live-meta>div{padding:10px;border:1px solid #4a456c;background:#081523a8;border-radius:8px}.summit-live-meta small{display:block;color:#7d8ca4;font-size:7px;text-transform:uppercase;letter-spacing:.08em}.summit-live-meta strong{display:block;margin-top:4px;font-size:13px}.summit-live-body{position:relative;padding:18px}.summit-live-choice{display:grid;grid-template-columns:1fr 1fr;gap:12px}.summit-live-choice button{min-height:190px;text-align:left;border:1px solid #4a456a;border-radius:12px;padding:18px;background:linear-gradient(145deg,#101b2d,#0a1322);color:#e8edf4;cursor:pointer}.summit-live-choice button.primary{border-color:#866fe0;background:radial-gradient(circle at 85% 20%,#b99cff2b,transparent 35%),linear-gradient(145deg,#2a2050,#101d31)}.summit-live-choice small{display:block;color:#9a8bd1;font-size:8px;letter-spacing:.13em;font-weight:1000}.summit-live-choice strong{display:block;font-size:23px;margin:9px 0}.summit-live-choice span{display:block;color:#9aaabd;font-size:10px;line-height:1.65}.summit-live-choice b{display:block;margin-top:18px;color:#d7cbff;font-size:10px;letter-spacing:.08em}.summit-live-toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px 14px;margin-bottom:12px;border:1px solid #494260;background:#0c1524;border-radius:9px}.summit-live-toolbar strong{display:block}.summit-live-toolbar span{display:block;color:#8193a9;font-size:8px;margin-top:3px}.summit-live-shell .event-disc-card{border-color:#393650;background:#0a1422}.summit-live-shell .event-disc-card.complete{border-color:#4e806d}.summit-live-shell .event-disc-card .page-kicker{color:#a38ddd}.summit-live-discipline{border:1px solid #6651bc;background:linear-gradient(145deg,#131027,#071522);border-radius:13px;overflow:hidden}.summit-live-discipline-head{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:15px 17px;border-bottom:1px solid #504395;background:linear-gradient(120deg,#281d4b,#0d2034)}.summit-live-discipline-head small{display:block;color:#a090d4;font-size:8px;letter-spacing:.11em}.summit-live-discipline-head h2{margin:4px 0 0;font-size:28px}.summit-live-visual{padding:12px;background:#050d17}.summit-live-commentary{margin:0 12px 12px}.summit-series-complete-banner{padding:16px;border:1px solid #4c7d6c;background:#102b24;border-radius:10px;margin-bottom:12px}.summit-series-complete-banner strong{display:block;font-size:15px}.summit-series-complete-banner span{display:block;color:#93b9aa;font-size:9px;margin-top:4px}@media(max-width:760px){.summit-season-lineup{grid-template-columns:1fr 1fr}.summit-series-roster-head{flex-direction:column}.summit-live-mast{padding:16px}.summit-live-brand{align-items:flex-start}.summit-live-round{margin-left:0}.summit-live-meta{grid-template-columns:1fr 1fr}.summit-live-choice{grid-template-columns:1fr}.summit-live-choice button{min-height:150px}.summit-live-body{padding:10px}.summit-live-toolbar{align-items:flex-start;flex-direction:column}.summit-live-toolbar .btn{width:100%}}
+</style>
 </head>
 <body>
 <div id="startup" class="startup">
@@ -1448,132 +1473,47 @@ drawAthleteProfile=function(){originalDrawProfile();const a=s.athletes.find(a=>a
 
 
 /* ===== Summit Series upgrade ===== */
-const SUMMIT_WEEKS=[14,20,26,32,44];
+const SUMMIT_WEEKS=[14,20,26,32,38,44];
 const SUMMIT_POINTS=[10,8,6,5,4,3,2,1];
 const SUMMIT_PRIZES=[600000,400000,250000,150000,100000,75000,50000,25000];
 let summitScreen='overview',summitMeetingNumber=null;
 
 function summitSeasonState(){
   s.summitSeries??={};
-  const ss=s.summitSeries[s.game.season]??={season:s.game.season,meetings:{},settled:false,payout:0,awards:[]};
-  SUMMIT_WEEKS.forEach((week,i)=>{
-    const n=i+1;
-    ss.meetings[n]??={number:n,week,entries:[],fields:{},results:{},completed:false};
-    ss.meetings[n].number=n;
-    ss.meetings[n].week=week;
-    ss.meetings[n].entries??=[];
-    ss.meetings[n].fields??={};
-    ss.meetings[n].results??={};
-  });
-  s.summitRecords??={};
-  return ss;
+  const ss=s.summitSeries[s.game.season]??={season:s.game.season,meetings:{},settled:false,payout:0,awards:[],seriesEntries:[]};
+  if(ss.meetings?.[5]?.week===44&&!ss.meetings?.[6]){ss.meetings[6]={...ss.meetings[5],number:6,week:44};ss.meetings[5]={number:5,week:38,entries:[...(ss.seriesEntries||ss.meetings[6].entries||[])],fields:{},results:{},completed:s.game.week>38}}
+  if(!Array.isArray(ss.seriesEntries)){const legacy=[...new Set(Object.values(ss.meetings||{}).flatMap(m=>m?.entries||[]))],picked=[];for(const d of Object.keys(DISCIPLINES))picked.push(...legacy.filter(id=>s.athletes.find(a=>a.id===id)?.disc===d).slice(0,2));ss.seriesEntries=[...new Set(picked)]}
+  ss.seriesEntries=ss.seriesEntries.filter(id=>s.athletes.some(a=>a.id===id&&!a.retired));
+  SUMMIT_WEEKS.forEach((week,i)=>{const n=i+1,m=ss.meetings[n]??={number:n,week,entries:[],fields:{},results:{},completed:false};m.number=n;m.week=week;m.location=['Oslo','Rome','Paris','Stockholm','Brussels','Zurich'][i];m.entries=[...ss.seriesEntries];m.fields??={};m.results??={}});
+  s.summitRecords??={};return ss
 }
 function summitMeetings(){const ss=summitSeasonState();return SUMMIT_WEEKS.map((_,i)=>ss.meetings[i+1])}
 function summitNextMeeting(){return summitMeetings().find(m=>!m.completed&&m.week>=s.game.week)||summitMeetings().find(m=>!m.completed)||null}
-function summitRegistrationOpen(m){return !m.completed&&s.game.week<m.week&&s.game.week>=Math.max(1,m.week-4)}
-function summitRegistrationClosed(m){return m.completed||s.game.week>=m.week}
-function summitEntriesForDisc(m,d){return m.entries.map(id=>s.athletes.find(a=>a.id===id)).filter(a=>a&&!a.retired&&a.disc===d)}
-function summitHasPlanConflict(a,m){
-  return planList().some(p=>p.status==='scheduled'&&p.season===s.game.season&&p.ids.includes(a.id)&&p.week<=m.week&&p.week+(p.kind==='camp'?CAMP_OPTIONS[p.type].weeks:1)-1>=m.week);
-}
-function summitUnavailable(a,m){
-  const gap=Math.max(0,m.week-s.game.week);
-  if(a.retired||a.inSquad===false)return 'Not in the active squad';
-  if(a.injury>gap)return 'Injury is expected to overlap the meeting';
-  if(a.camp&&a.camp.until>careerNow()+gap)return 'Current training camp overlaps the meeting';
-  if(summitHasPlanConflict(a,m))return 'A scheduled activity overlaps the meeting';
-  const e=s.events.find(e=>!e.completed&&e.week===m.week&&(e.disc.includes(a.disc)||e.disc.includes('ALL'))&&['competition','championship','olympics','testing'].includes(e.kind));
-  if(e)return 'Clashes with '+e.name;
-  return '';
-}
-function summitAdvice(a,m){
-  const unavailable=summitUnavailable(a,m);
-  if(unavailable)return {tone:'bad',title:'Unavailable',text:unavailable+'.'};
-  const gap=m.week-s.game.week,staffKey=a.disc.includes('100')?'sprint':a.disc.includes('HJ')?'jumps':'throws',coach=s.staff?.[staffKey]||1;
-  let title='Development option',tone='',text='Useful race exposure with no world-ranking or Olympic qualification points attached.';
-  if(a.fatigue>=75){title='Caution';tone='warn';text='Fatigue is high. Recovery before the meeting would improve the chance of a strong performance.'}
-  else if(a.form>=85&&a.fitness>=88&&a.fatigue<55){title='Strong pick';tone='good';text='Current form, fitness and fatigue make this a strong entry.'}
-  else if(assessmentMid(a,'overall')>=84&&a.fatigue<65){title='Recommended';tone='good';text='Ability and current condition make this a sensible Series entry.'}
-  else if(a.form<72){title='Form concern';tone='warn';text='Form is down. Consider whether race exposure is worth the load this week.'}
-  if(gap>=3&&tone!=='bad')text+=' There are '+gap+' weeks to prepare.';
-  text+=' Event coach level '+coach+'.';
-  return {tone,title,text};
-}
-function summitStandings(d){
-  const totals=new Map();
-  for(const m of summitMeetings()){
-    for(const [i,r] of (m.results?.[d]||[]).entries()){
-      if(!totals.has(r.id))totals.set(r.id,{id:r.id,name:r.name,nation:r.nation,points:0,wins:0,starts:0});
-      const t=totals.get(r.id);t.points+=SUMMIT_POINTS[i]||0;t.wins+=i===0?1:0;t.starts++;
-    }
-  }
-  return [...totals.values()].sort((a,b)=>b.points-a.points||b.wins-a.wins||b.starts-a.starts||String(a.id).localeCompare(String(b.id)));
-}
-function summitRecordBetter(d,perf,old){
-  if(!old)return true;
-  return DISCIPLINES[d].type==='time'?perf<old.perf:perf>old.perf;
-}
-function updateSummitRecord(d,r,m){
-  const old=s.summitRecords[d];
-  if(summitRecordBetter(d,r.perf,old))s.summitRecords[d]={id:r.id,name:r.name,nation:r.nation,perf:r.perf,meeting:m.number,week:m.week,season:s.game.season};
-}
+function summitRegistrationOpen(){return s.game.week>=8&&s.game.week<SUMMIT_WEEKS[0]&&!summitMeetings().some(m=>m.completed)}
+function summitRegistrationClosed(){return s.game.week>=SUMMIT_WEEKS[0]||summitMeetings().some(m=>m.completed)}
+function summitEntriesForDisc(m,d){return summitSeasonState().seriesEntries.map(id=>s.athletes.find(a=>a.id===id)).filter(a=>a&&!a.retired&&a.disc===d)}
+function summitHasPlanConflict(a,m){return planList().some(p=>p.status==='scheduled'&&p.season===s.game.season&&p.ids.includes(a.id)&&p.week<=SUMMIT_WEEKS.at(-1)&&p.week+(p.kind==='camp'?CAMP_OPTIONS[p.type].weeks:1)-1>=SUMMIT_WEEKS[0])}
+function summitUnavailable(a,m){if(a.retired||a.inSquad===false)return'Not in the active squad';if(a.injury>Math.max(0,SUMMIT_WEEKS[0]-s.game.week))return'Injury is expected to overlap the opening meeting';if(summitHasPlanConflict(a,m))return'A scheduled training camp overlaps the Series';return''}
+function summitAdvice(a,m){const unavailable=summitUnavailable(a,m);if(unavailable)return{tone:'bad',title:'Unavailable',text:unavailable+'.'};const conflicts=s.events.filter(e=>!e.completed&&e.week>=SUMMIT_WEEKS[0]&&e.week<=SUMMIT_WEEKS.at(-1)&&['competition','championship','olympics'].includes(e.kind)&&(e.disc.includes(a.disc)||e.disc.includes('ALL'))).map(e=>e.name);if(conflicts.length)return{tone:'warn',title:'Major commitment',text:'Entering the Series removes '+conflicts.join(', ')+' from this athlete’s schedule.'};if(a.form>=85&&a.fitness>=88&&a.fatigue<55)return{tone:'good',title:'Strong Series option',text:'Current readiness supports a six-meeting circuit commitment.'};return{tone:'',title:'Season decision',text:'Six Summit meetings, separate Series points and prize money, with no other competition during the Series window.'}}
+function summitStandings(d){const totals=new Map();for(const m of summitMeetings())for(const [i,r] of (m.results?.[d]||[]).entries()){if(!totals.has(r.id))totals.set(r.id,{id:r.id,name:r.name,nation:r.nation,points:0,wins:0,starts:0});const t=totals.get(r.id);t.points+=SUMMIT_POINTS[i]||0;t.wins+=i===0?1:0;t.starts++}return[...totals.values()].sort((a,b)=>b.points-a.points||b.wins-a.wins||b.starts-a.starts||String(a.id).localeCompare(String(b.id)))}
+function summitRecordBetter(d,perf,old){if(!old)return true;return DISCIPLINES[d].type==='time'?perf<old.perf:perf>old.perf}
+function updateSummitRecord(d,r,m){const old=s.summitRecords[d];if(summitRecordBetter(d,r.perf,old))s.summitRecords[d]={id:r.id,name:r.name,nation:r.nation,perf:r.perf,meeting:m.number,week:m.week,season:s.game.season}}
 function toggleSummitEntry(number,id){
-  const m=summitSeasonState().meetings[number],a=s.athletes.find(a=>a.id===id);
-  if(!m||!a||!summitRegistrationOpen(m)){toast('Registration is not open for this meeting');return}
-  const entered=m.entries.includes(id);
-  if(entered){m.entries=m.entries.filter(x=>x!==id);save();drawActivities();return}
-  const why=summitUnavailable(a,m);
-  if(why){toast(why);return}
-  if(summitEntriesForDisc(m,a.disc).length>=2){toast('Maximum two entries per discipline');return}
-  m.entries.push(id);
-  newMail(sender('performance'),a.name+' registered for Summit Series '+m.number,
-    `${a.name} is registered for Summit Series ${m.number} in Week ${m.week}. Registration remains editable until the meeting week begins. Summit Series points and records are separate from world and Olympic rankings.`,'info');
-  save();drawActivities();
+  const ss=summitSeasonState(),a=s.athletes.find(a=>a.id===id);if(!a||!summitRegistrationOpen()){toast('Summit Series registration is closed');return}
+  if(ss.seriesEntries.includes(id)){ss.seriesEntries=ss.seriesEntries.filter(x=>x!==id);summitMeetings().forEach(m=>m.entries=[...ss.seriesEntries]);save();drawSummitSeries();return}
+  const why=summitUnavailable(a,ss.meetings[1]);if(why){toast(why);return}if(summitEntriesForDisc(ss.meetings[1],a.disc).length>=2){toast('Maximum two athletes per discipline');return}
+  ss.seriesEntries.push(id);summitMeetings().forEach(m=>m.entries=[...ss.seriesEntries]);
+  if(a.squadAgreement){const target=careerNow()+Math.max(0,SUMMIT_WEEKS.at(-1)-s.game.week)+1;if(a.squadAgreement.endCareerWeek<target){a.squadAgreement.endCareerWeek=target;a.squadAgreement.reminderForEnd=null;a.squadAgreement.history??=[];a.squadAgreement.history.push({careerWeek:careerNow(),type:'summit-series-extension',newEnd:target})}}
+  for(const e of s.events.filter(e=>!e.completed&&e.week>=SUMMIT_WEEKS[0]&&e.week<=SUMMIT_WEEKS.at(-1)))for(const d of Object.keys(e.entries||{}))e.entries[d]=(e.entries[d]||[]).filter(x=>x!==id);
+  rememberAthlete(a,'Summit Series',`Committed to all six Summit Series meetings from Week ${SUMMIT_WEEKS[0]} to Week ${SUMMIT_WEEKS.at(-1)}.`);newMail(sender('performance'),a.name+' enters the Summit Series',`${a.name} is committed to all six Summit Series meetings. The athlete cannot enter any other competition from Week ${SUMMIT_WEEKS[0]} through Week ${SUMMIT_WEEKS.at(-1)}. The National Squad Agreement has been extended if needed to cover the full circuit.`,'info');save();drawSummitSeries()
 }
-function simulateSummitMeeting(m){
-  if(m.completed)return;
-  for(const d of Object.keys(DISCIPLINES)){
-    const own=summitEntriesForDisc(m,d).filter(a=>!summitUnavailable(a,m)&&a.injury===0&&!a.camp);
-    const rivals=s.athletes.filter(a=>!a.retired&&a.nation!==managedNation()&&a.disc===d&&a.injury===0&&!a.camp)
-      .sort((a,b)=>b.overall-a.overall||String(a.id).localeCompare(String(b.id)))
-      .slice(0,Math.max(0,8-own.length));
-    const field=[...own,...rivals].slice(0,8);
-    m.fields[d]=field.map(a=>a.id);
-    const rows=field.map(a=>({id:a.id,name:a.name,nation:a.nation,perf:rawPerformance(a,d)}))
-      .sort((a,b)=>DISCIPLINES[d].type==='time'?a.perf-b.perf:b.perf-a.perf);
-    m.results[d]=rows;
-    for(const r of rows){const a=s.athletes.find(x=>x.id===r.id);if(a)a.fatigue=clamp(a.fatigue+8,0,100);updateSummitRecord(d,r,m)}
-  }
-  m.completed=true;
-  const ownResults=Object.keys(DISCIPLINES).flatMap(d=>(m.results[d]||[]).map((r,i)=>({...r,disc:d,place:i+1}))).filter(r=>r.nation===managedNation());
-  if(m.entries.length){
-    const best=ownResults.sort((a,b)=>a.place-b.place)[0];
-    newMail(sender('performance'),'Summit Series '+m.number+' complete',
-      best?`${best.name} led the national team with ${best.place===1?'a win':'a #'+best.place+' finish'} in ${discLabel(best.disc)}. The Summit Series leaderboard and Series records have updated. These results do not award world or Olympic ranking points.`:
-      `Summit Series ${m.number} is complete. Registered athletes who were injured or unavailable did not start. The Series leaderboard and records have updated.`,'review');
-  }
-  if(m.number===SUMMIT_WEEKS.length)settleSummitSeries();
-}
-function settleSummitSeries(){
-  const ss=summitSeasonState();if(ss.settled)return;
-  ss.settled=true;ss.payout=0;ss.awards=[];
-  for(const d of Object.keys(DISCIPLINES)){
-    summitStandings(d).forEach((row,i)=>{
-      const a=s.athletes.find(x=>x.id===row.id);
-      if(!a||a.nation!==managedNation()||!row.starts||a.retired)return;
-      const prize=SUMMIT_PRIZES[i]||0;ss.payout+=prize;
-      ss.awards.push({id:a.id,name:a.name,disc:d,place:i+1,prize});
-      rememberAthlete(a,'Summit Series finish','Finished #'+(i+1)+' with '+row.points+' Summit Series points; prize '+money(prize)+'.');
-    });
-  }
-  s.funding+=ss.payout;if(ss.payout)recordFinance(ss.payout,'Summit Series prize money','Prize money');
-  newMail(sender('board'),'Summit Series season settled',
-    `${money(ss.payout)} in Summit Series prize money has been received. Final positions are based on Series points, then meeting wins and starts. The Summit Series records remain in the competition archive.`,'review');
-}
-function updateLeague(){
-  const ss=summitSeasonState();
-  for(const m of summitMeetings())if(!m.completed&&m.week<=s.game.week)simulateSummitMeeting(m);
-}
+function summitField(m,d){const own=summitEntriesForDisc(m,d).filter(a=>a.injury===0&&!a.camp),rivals=s.athletes.filter(a=>!a.retired&&a.nation!==managedNation()&&a.disc===d&&a.injury===0&&!a.camp).sort((a,b)=>performanceScore(b)-performanceScore(a)).slice(0,Math.max(0,8-own.length));const field=[...own,...rivals].slice(0,8);m.fields[d]=field.map(a=>a.id);return field}
+function summitRows(m,d){const rows=summitField(m,d).map(a=>({id:a.id,name:a.name,nation:a.nation,flag:flag(a.nation),perf:rawPerformance(a,d)})).sort((a,b)=>DISCIPLINES[d].type==='time'?a.perf-b.perf:b.perf-a.perf);rows.forEach((r,i)=>r.points=SUMMIT_POINTS[i]||0);return rows}
+function commitSummitRows(m,d,rows){if(Array.isArray(m.results?.[d]))return;m.results[d]=rows;for(const r of rows){const a=s.athletes.find(x=>x.id===r.id);if(a)a.fatigue=clamp(a.fatigue+8,0,100);updateSummitRecord(d,r,m)}}
+function finishSummitMeeting(m){if(m.completed)return;m.completed=true;const own=Object.keys(DISCIPLINES).flatMap(d=>(m.results[d]||[]).map((r,i)=>({...r,disc:d,place:i+1}))).filter(r=>r.nation===managedNation()),best=[...own].sort((a,b)=>a.place-b.place)[0];if(summitSeasonState().seriesEntries.length)newMail(sender('performance'),'Summit Series '+m.number+' complete',best?`${best.name} led ${nationName(managedNation())} with ${best.place===1?'a win':'a #'+best.place+' finish'} in ${discLabel(best.disc)}. Series standings and records have updated.`:`Summit Series ${m.number} is complete. Injured committed athletes did not start but remain registered for the remaining rounds.`,'review');if(m.number===SUMMIT_WEEKS.length)settleSummitSeries();save()}
+function simulateSummitMeeting(m){if(m.completed)return;for(const d of Object.keys(DISCIPLINES))if(!Array.isArray(m.results[d]))commitSummitRows(m,d,summitRows(m,d));finishSummitMeeting(m)}
+function settleSummitSeries(){const ss=summitSeasonState();if(ss.settled)return;ss.settled=true;ss.payout=0;ss.awards=[];for(const d of Object.keys(DISCIPLINES))summitStandings(d).forEach((row,i)=>{const a=s.athletes.find(x=>x.id===row.id);if(!a||a.nation!==managedNation()||!row.starts||a.retired)return;const prize=SUMMIT_PRIZES[i]||0;ss.payout+=prize;ss.awards.push({id:a.id,name:a.name,disc:d,place:i+1,prize});rememberAthlete(a,'Summit Series finish','Finished #'+(i+1)+' with '+row.points+' Summit Series points; prize '+money(prize)+'.')});s.funding+=ss.payout;if(ss.payout)recordFinance(ss.payout,'Summit Series prize money','Prize money');newMail(sender('board'),'Summit Series season settled',`${money(ss.payout)} in Summit Series prize money has been received. The six-round commitment is now complete.`,'review')}
+function updateLeague(){summitSeasonState()}
 function summitLeaderPreview(){
   const rows=[];
   for(const d of Object.keys(DISCIPLINES)){const lead=summitStandings(d)[0];if(lead)rows.push({...lead,disc:d})}
@@ -1586,43 +1526,9 @@ function summitStatusText(m){
   return 'Registration opens W'+Math.max(1,m.week-4);
 }
 function summitOverviewHTML(){
-  const ss=summitSeasonState(),meetings=summitMeetings(),next=summitNextMeeting(),completed=meetings.filter(m=>m.completed).length,leaders=summitLeaderPreview();
-  const nextEntries=next?next.entries.length:0;
-  return `<div class="summit-shell">
-    <section class="summit-hero">
-      <div class="summit-kicker">International League Circuit</div>
-      <h2>SUMMIT SERIES</h2>
-      <p>Five meetings across the season. Register up to two athletes per discipline, score Summit Series points and chase the circuit records. Each meeting runs automatically when its scheduled week arrives.</p>
-      <div class="summit-hero-grid">
-        <div><small>Next meeting</small><strong>${next?'Series '+next.number+' · W'+next.week:'Season complete'}</strong></div>
-        <div><small>Meetings complete</small><strong>${completed} / ${meetings.length}</strong></div>
-        <div><small>Next registration</small><strong>${next?summitStatusText(next):'Closed'}</strong></div>
-        <div><small>Prize pool</small><strong>Up to £600k / event</strong></div>
-      </div>
-    </section>
-    <div class="summit-columns">
-      <section class="panel">
-        <div class="panel-h"><strong>Summit Series Calendar</strong><span>Scheduled meetings only</span></div>
-        <div class="panel-body summit-meetings">
-          ${meetings.map(m=>`<article class="summit-meeting ${next?.number===m.number?'next':''} ${m.completed?'complete':''}">
-            <div class="summit-number"><div><small>Series</small><strong>${m.number}</strong></div></div>
-            <div><h3>Summit Series ${m.number}</h3><p>Week ${m.week} · ${dateLabel(m.week)} · Six disciplines · ${m.entries.length} national ${m.entries.length===1?'entry':'entries'}</p>
-              <div class="summit-mini-status"><span class="status ${m.completed?'good':summitRegistrationOpen(m)?'live':''}">${summitStatusText(m)}</span>${m.completed?'<span class="status">Results available</span>':''}</div>
-            </div>
-            <button class="btn ${next?.number===m.number?'primary':'secondary'}" data-summit-open="${m.number}">${m.completed?'VIEW RESULTS':'VIEW MEETING'}</button>
-          </article>`).join('')}
-        </div>
-      </section>
-      <div class="summit-side-stack">
-        <section class="panel"><div class="panel-h"><strong>Current Leaders</strong><span>Season leaderboard</span></div><div class="panel-body">
-          ${leaders.length?leaders.map(r=>`<div class="summit-leader"><b>#1</b><div><strong>${athleteLink(s.athletes.find(a=>a.id===r.id))}</strong><small>${flag(r.nation)} ${nationName(r.nation)} · ${discLabel(r.disc)} · ${r.starts} starts</small></div><strong>${r.points} pts</strong></div>`).join(''):'<p class="muted">The leaderboard will appear after Summit Series 1.</p>'}
-        </div></section>
-        <section class="panel"><div class="panel-h"><strong>Summit Series Records</strong><span>All-time circuit records</span></div><div class="panel-body">
-          ${Object.keys(DISCIPLINES).map(d=>{const r=s.summitRecords[d];return `<div class="summit-record"><small>${discLabel(d)}</small>${r?`<strong>${fmtPerf(d,r.perf)} · ${r.name}</strong><span>${flag(r.nation)} ${nationName(r.nation)} · Summit Series ${r.meeting}, ${r.season}</span>`:'<strong>Record not established</strong><span>The first completed meeting will set the mark.</span>'}</div>`}).join('')}
-        </div></section>
-      </div>
-    </div>
-  </div>`;
+  const ss=summitSeasonState(),meetings=summitMeetings(),next=summitNextMeeting(),completed=meetings.filter(m=>m.completed).length,leaders=summitLeaderPreview(),open=summitRegistrationOpen(),entries=ss.seriesEntries.map(id=>s.athletes.find(a=>a.id===id)).filter(Boolean);
+  const roster=`<section class="summit-series-roster"><div class="summit-series-roster-head"><div><div class="summit-kicker">SEASON ROSTER</div><h3>${open?'Choose your Summit Series athletes':'Summit Series roster'}</h3><p>Entry is for all six meetings. Once Series 1 begins, every registered athlete is locked into the circuit through Series 6 and cannot enter any other competition during Weeks ${SUMMIT_WEEKS[0]}–${SUMMIT_WEEKS.at(-1)}.</p></div><span class="status ${open?'live':s.game.week>=SUMMIT_WEEKS[0]?'good':''}">${open?'REGISTRATION OPEN':s.game.week<8?'OPENS W8':'ROSTER LOCKED'}</span></div>${open?`<div class="summit-series-lock-note"><strong>Major trade-off:</strong> Summit Series athletes give up every other competition in the Series window, including championships and the Olympic Games if they fall inside it.</div>${Object.keys(DISCIPLINES).map(d=>{const selected=summitEntriesForDisc(meetings[0],d);return `<section class="summit-discipline"><div class="summit-discipline-head"><h3>${discLabel(d)}</h3><span>${selected.length}/2 committed</span></div>${managedTeam().filter(a=>a.disc===d).map(a=>{const entered=ss.seriesEntries.includes(a.id),ad=summitAdvice(a,meetings[0]),full=selected.length>=2&&!entered,why=summitUnavailable(a,meetings[0]);return `<div class="summit-athlete-card ${entered?'entered':''}"><div><h4>${athleteLink(a)}</h4><p>Ability ${assessmentText(a,'overall')} · Form ${a.form} · Fitness ${a.fitness} · Fatigue ${a.fatigue}</p></div><div class="summit-advice ${ad.tone}"><strong>${ad.title}</strong><span>${ad.text}</span></div><button class="btn ${entered?'good':'secondary'}" data-summit-entry="1|${a.id}" ${!open||!!why||full?'disabled':''}>${entered?'COMMITTED':full?'DISCIPLINE FULL':why?'UNAVAILABLE':'ENTER SERIES'}</button></div>`}).join('')||'<div class="panel-body muted">No senior squad athlete in this discipline.</div>'}</section>`}).join('')}`:`<div class="summit-season-lineup">${entries.length?entries.map(a=>`<div class="summit-season-entry"><small>${discLabel(a.disc)}</small><strong>${athleteLink(a)}</strong><span>Full Series commitment · W${SUMMIT_WEEKS[0]}–W${SUMMIT_WEEKS.at(-1)}</span></div>`).join(''):'<div class="summit-season-entry"><small>National entries</small><strong>No athletes committed</strong><span>The circuit will still run with international fields.</span></div>'}</div>`}</section>`;
+  return `<div class="summit-shell"><section class="summit-hero"><div class="summit-kicker">International Season Circuit</div><h2>SUMMIT SERIES</h2><p>Six meetings. One roster. Separate Series points and prize money. A Summit commitment blocks every other competition for the full circuit.</p><div class="summit-hero-grid"><div><small>Next round</small><strong>${next?'Series '+next.number+' · W'+next.week:'Season complete'}</strong></div><div><small>Meetings complete</small><strong>${completed} / 6</strong></div><div><small>Series roster</small><strong>${entries.length} athlete${entries.length===1?'':'s'}</strong></div><div><small>Commitment window</small><strong>W${SUMMIT_WEEKS[0]}–W${SUMMIT_WEEKS.at(-1)}</strong></div></div></section>${roster}<div class="summit-columns"><section class="panel"><div class="panel-h"><strong>Summit Series Calendar</strong><span>Six-round circuit</span></div><div class="panel-body summit-meetings">${meetings.map(m=>`<article class="summit-meeting ${next?.number===m.number?'next':''} ${m.completed?'complete':''}"><div class="summit-number"><div><small>Series</small><strong>${m.number}</strong></div></div><div><h3>Summit Series ${m.number}</h3><p>${profileEscape(m.location)} · Week ${m.week} · ${dateLabel(m.week)} · Six disciplines</p><div class="summit-mini-status"><span class="status ${m.completed?'good':m.week===s.game.week?'live':''}">${summitStatusText(m)}</span>${m.completed?'<span class="status">Results available</span>':''}</div></div><button class="btn ${m.week===s.game.week&&!m.completed?'primary':'secondary'}" ${m.week===s.game.week&&!m.completed?`data-summit-eventday="${m.number}"`:`data-summit-open="${m.number}"`}>${m.completed?'VIEW RESULTS':m.week===s.game.week?'ENTER EVENT DAY':'VIEW ROUND'}</button></article>`).join('')}</div></section><div class="summit-side-stack"><section class="panel"><div class="panel-h"><strong>Current Leaders</strong><span>Season leaderboard</span></div><div class="panel-body">${leaders.length?leaders.map(r=>`<div class="summit-leader"><b>#1</b><div><strong>${athleteLink(s.athletes.find(a=>a.id===r.id))}</strong><small>${flag(r.nation)} ${nationName(r.nation)} · ${discLabel(r.disc)} · ${r.starts} starts</small></div><strong>${r.points} pts</strong></div>`).join(''):'<p class="muted">The leaderboard appears after Summit Series 1.</p>'}</div></section><section class="panel"><div class="panel-h"><strong>Summit Series Records</strong><span>All-time circuit records</span></div><div class="panel-body">${Object.keys(DISCIPLINES).map(d=>{const r=s.summitRecords[d];return `<div class="summit-record"><small>${discLabel(d)}</small>${r?`<strong>${fmtPerf(d,r.perf)} · ${profileEscape(r.name)}</strong><span>${flag(r.nation)} ${nationName(r.nation)} · Series ${r.meeting}, ${r.season}</span>`:'<strong>Record not established</strong>'}</div>`}).join('')}</div></section></div></div></div>`
 }
 function summitResultsHTML(m){
   return `<div class="stack">${Object.keys(DISCIPLINES).map(d=>`<section class="panel"><div class="panel-h"><strong>${discLabel(d)}</strong><span>${s.summitRecords[d]?.meeting===m.number&&s.summitRecords[d]?.season===s.game.season?'Series record set':''}</span></div><div class="panel-body">
@@ -1630,35 +1536,8 @@ function summitResultsHTML(m){
   </div></section>`).join('')}</div>`;
 }
 function summitMeetingHTML(m){
-  const open=summitRegistrationOpen(m),closed=summitRegistrationClosed(m),gap=m.week-s.game.week;
-  return `<div class="summit-shell">
-    <div class="summit-back"><button class="btn ghost" id="summitBack">← SUMMIT SERIES</button><span class="status ${m.completed?'good':open?'live':''}">${summitStatusText(m)}</span></div>
-    <section class="panel">
-      <div class="summit-registration-head">
-        <div class="summit-kicker">Scheduled Meeting</div><h2>Summit Series ${m.number}</h2>
-        <p>Week ${m.week} · ${dateLabel(m.week)}. ${m.completed?'Official Series results are below.':open?'Registration is open. Select the athletes you want to attend; there is no manual start button. The meeting runs automatically when Week '+m.week+' begins.':'You can review the meeting now. Registration opens in Week '+Math.max(1,m.week-4)+'.'}</p>
-        <div class="summit-reg-summary">
-          <div><small>Meeting week</small><strong>Week ${m.week}</strong></div>
-          <div><small>Registration</small><strong>${m.completed?'Closed':open?'Open':closed?'Closed':'Opens W'+Math.max(1,m.week-4)}</strong></div>
-          <div><small>Your entries</small><strong>${m.entries.length}</strong></div>
-          <div><small>Series points</small><strong>10 · 8 · 6 · 5…</strong></div>
-        </div>
-      </div>
-      <div class="panel-body">
-        <p>Maximum two athletes per nation in each discipline. Summit Series points and records are separate from the world rankings and Olympic qualification.</p>
-        ${!m.completed&&!open?`<div class="summit-registration-lock">${closed?'Registration has closed because this meeting week has arrived.':'Registration opens in Week '+Math.max(1,m.week-4)+'. You can still review the field and coaching notes before registration opens.'}</div>`:''}
-      </div>
-      ${m.completed?summitResultsHTML(m):Object.keys(DISCIPLINES).map(d=>{
-        const athletes=managedTeam().filter(a=>a.disc===d),discEntries=summitEntriesForDisc(m,d);
-        return `<section class="summit-discipline"><div class="summit-discipline-head"><h3>${discLabel(d)}</h3><span>${discEntries.length}/2 selected</span></div>
-          ${athletes.length?athletes.map(a=>{const entered=m.entries.includes(a.id),ad=summitAdvice(a,m),why=summitUnavailable(a,m),full=discEntries.length>=2&&!entered;return `<div class="summit-athlete-card ${entered?'entered':''}">
-            <div><h4>${athleteLink(a)}</h4><p>Ability ${assessmentText(a,'overall')} · Form ${a.form} · Fitness ${a.fitness} · Fatigue ${a.fatigue}</p></div>
-            <div class="summit-advice ${ad.tone}"><strong>${ad.title}</strong><span>${ad.text}</span></div>
-            <button class="btn ${entered?'good':'secondary'}" data-summit-entry="${m.number}|${a.id}" ${!open||!!why||full?'disabled':''}>${entered?'REGISTERED':full?'DISCIPLINE FULL':why?'UNAVAILABLE':'REGISTER'}</button>
-          </div>`}).join(''):'<div class="panel-body muted">No active squad athlete in this discipline.</div>'}
-        </section>`}).join('')}
-    </section>
-  </div>`;
+  const roster=summitSeasonState().seriesEntries.map(id=>s.athletes.find(a=>a.id===id)).filter(Boolean),due=m.week===s.game.week&&!m.completed;
+  return `<div class="summit-shell"><div class="summit-back"><button class="btn ghost" id="summitBack">← SUMMIT SERIES</button><span class="status ${m.completed?'good':due?'live':''}">${summitStatusText(m)}</span></div><section class="panel"><div class="summit-registration-head"><div class="summit-kicker">SUMMIT SERIES • ROUND ${m.number}</div><h2>Summit Series ${m.number}</h2><p>${profileEscape(m.location)} · Week ${m.week} · ${dateLabel(m.week)}. ${m.completed?'Official Series results are below.':due?'The circuit has arrived. Enter Event Day to watch the meeting or simulate it.':'The same locked Series roster competes at every round.'}</p><div class="summit-reg-summary"><div><small>Round</small><strong>${m.number} / 6</strong></div><div><small>Venue</small><strong>${profileEscape(m.location)}</strong></div><div><small>Your roster</small><strong>${roster.length}</strong></div><div><small>Series points</small><strong>10 · 8 · 6 · 5…</strong></div></div></div><div class="panel-body"><p>Registered athletes remain committed to all six rounds and cannot enter another competition until Series 6 is complete.</p>${due?`<button class="btn primary" data-summit-eventday="${m.number}">ENTER SUMMIT EVENT DAY →</button>`:''}</div>${m.completed?summitResultsHTML(m):`<div class="summit-season-lineup">${roster.length?roster.map(a=>`<div class="summit-season-entry"><small>${discLabel(a.disc)}</small><strong>${athleteLink(a)}</strong><span>${a.injury>0?'Injured — may miss this round':a.camp?'Away at camp':'Committed starter'}</span></div>`).join(''):'<div class="summit-season-entry"><strong>No national entries</strong><span>International fields will still compete.</span></div>'}</div>`}</section></div>`
 }
 function drawSummitSeries(){
   const root=$('league');if(!root)return;
@@ -1669,6 +1548,7 @@ function drawSummitSeries(){
   if($('summitBack'))$('summitBack').onclick=()=>{summitScreen='overview';summitMeetingNumber=null;drawSummitSeries()};
   root.querySelectorAll('[data-summit-open]').forEach(b=>b.onclick=()=>{summitScreen='meeting';summitMeetingNumber=Number(b.dataset.summitOpen);drawSummitSeries()});
   root.querySelectorAll('[data-summit-entry]').forEach(b=>b.onclick=()=>{const [n,id]=b.dataset.summitEntry.split('|');toggleSummitEntry(Number(n),id)});
+  root.querySelectorAll('[data-summit-eventday]').forEach(b=>b.onclick=()=>{const m=summitSeasonState().meetings[Number(b.dataset.summitEventday)];if(!m||m.completed||m.week!==s.game.week)return;summitLiveMeetingNumber=m.number;competitionMode='overview';activeEventDisc=null;view('competition')});
 }
 const legacyActivitiesDraw=drawActivities;
 drawActivities=function(){
@@ -1682,18 +1562,11 @@ view=function(v){
   if(v==='league'){if($('pageKicker'))$('pageKicker').textContent='SUMMIT SERIES';if($('pageTitle'))$('pageTitle').textContent='Summit Series'}
 };
 activityBusy=function(a,week=s.game.week){
-  const abs=careerNow()+week-s.game.week;
-  if(a.camp&&abs<a.camp.until)return true;
-  const ss=s.summitSeries?.[s.game.season];
-  if(ss&&Object.values(ss.meetings||{}).some(m=>m.week===week&&!m.completed&&(m.entries||[]).includes(a.id)))return true;
+  const abs=careerNow()+week-s.game.week;if(a.camp&&abs<a.camp.until)return true;
+  const ss=s.summitSeries?.[s.game.season];if(ss?.seriesEntries?.includes(a.id)&&week>=SUMMIT_WEEKS[0]&&week<=SUMMIT_WEEKS.at(-1))return true;
   return planList().some(p=>p.kind==='camp'&&p.status==='scheduled'&&p.season===s.game.season&&p.ids.includes(a.id)&&week>=p.week&&week<p.week+CAMP_OPTIONS[p.type].weeks);
 };
-activityLabel=function(a){
-  if(a.camp)return CAMP_OPTIONS[a.camp.type].name+' · '+Math.max(0,a.camp.until-careerNow())+' weeks left';
-  const m=summitMeetings().find(m=>!m.completed&&m.week===s.game.week&&m.entries.includes(a.id));
-  if(m)return 'Summit Series '+m.number+' commitment';
-  return '';
-};
+activityLabel=function(a){if(a.camp)return CAMP_OPTIONS[a.camp.type].name+' · '+Math.max(0,a.camp.until-careerNow())+' weeks left';const ss=s.summitSeries?.[s.game.season];if(ss?.seriesEntries?.includes(a.id)&&s.game.week>=SUMMIT_WEEKS[0]&&s.game.week<=SUMMIT_WEEKS.at(-1))return `Summit Series commitment · W${SUMMIT_WEEKS[0]}–W${SUMMIT_WEEKS.at(-1)}`;return ''};
 sendToCamp=function(id,type){
   if((s.plans||[]).some(p=>p.status==='scheduled'&&p.season===s.game.season&&p.ids.includes(id)&&p.week<=s.game.week+CAMP_OPTIONS[type].weeks-1&&p.week+(p.kind==='camp'?CAMP_OPTIONS[p.type].weeks:1)>s.game.week)){toast('This camp overlaps a scheduled activity');return}
   const a=s.athletes.find(a=>a.id===id),c=CAMP_OPTIONS[type];if(!a||!c||a.retired||a.nation!==managedNation()||a.inSquad===false||a.injury>0||a.camp||s.funding<c.cost)return;
@@ -1724,7 +1597,7 @@ drawCalendar=function(){
   });
 };
 document.querySelectorAll('[data-view="league"]').forEach(b=>{if((b.textContent||'').trim().startsWith('League Events'))b.textContent='Summit Series'});
-UPDATES.unshift({date:"7 September 2026",title:"Summit Series",items:["League Events has become the Summit Series: five fixed meetings appear across the season and cannot be started manually.","Open an upcoming meeting to register up to two athletes per discipline, with coaching advice based on readiness, fatigue, form, injuries and schedule clashes.","Every meeting updates a separate Summit Series leaderboard and all-time Summit Series records. Final Series positions pay prize money without affecting world or Olympic ranking points."]});
+UPDATES.unshift({date:"7 September 2026",title:"Summit Series",items:["League Events has become the Summit Series: six fixed meetings appear across the season and cannot be started manually.","Register athletes once for the full six-round Series. A committed athlete competes across the entire circuit and is unavailable for other competitions until Series 6 ends.","Every meeting updates a separate Summit Series leaderboard and all-time Summit Series records. Final Series positions pay prize money without affecting world or Olympic ranking points."]});
 const legacyCommitmentConflictsForSummit=commitmentConflicts;
 commitmentConflicts=function(a,start,end){
   const base=legacyCommitmentConflictsForSummit(a,start,end);
@@ -2457,6 +2330,26 @@ UPDATES.unshift({date:'8 September 2026',title:'Staff & Finance Split',items:['S
 UPDATES.unshift({date:'8 September 2026',title:'Staff & Navigation Fix',items:['Restored the shared management state used by Staff and Finance, fixing both dedicated screens rendering blank after the previous split.','Reordered the desktop navigation around the normal management loop: urgent communications and athlete decisions first, weekly preparation and competition next, then longer-term programme and world-reference screens.','Mobile navigation now follows the same priority: Home, Inbox, Squad and Calendar stay immediately available, while the More menu puts National Pool, Training and Scouting ahead of administrative and news screens.']});
 {const latestIndex=UPDATES.findIndex(u=>u.title==='Staff & Navigation Fix');if(latestIndex>0)UPDATES.unshift(UPDATES.splice(latestIndex,1)[0]);}
 
+
+
+/* ===== Summit Series live event flow ===== */
+let summitLiveMeetingNumber=null,summitLiveProxy=null;
+function summitCurrentLiveMeeting(){return summitMeetings().find(m=>!m.completed&&m.week===s.game.week)||null}
+function summitProxy(m){const entries={};Object.keys(DISCIPLINES).forEach(d=>entries[d]=summitEntriesForDisc(m,d).map(a=>a.id));if(!summitLiveProxy||summitLiveProxy.number!==m.number||summitLiveProxy.season!==s.game.season)summitLiveProxy={number:m.number,season:s.game.season,id:'summit-live-'+s.game.season+'-'+m.number,name:'Summit Series '+m.number,location:m.location,kind:'competition',level:'Summit Series',week:m.week,ranked:false,disc:Object.keys(DISCIPLINES),entries,results:m.results,commentary:m.commentary??={}};summitLiveProxy.entries=entries;summitLiveProxy.results=m.results;summitLiveProxy.commentary=m.commentary??={};return summitLiveProxy}
+function summitMast(m,done){return `<div class="summit-live-mast"><div class="summit-live-brand"><div class="summit-live-mark"></div><div><small>SUMMIT SERIES • ${s.game.season}</small><h2>SUMMIT SERIES ${m.number}</h2></div><div class="summit-live-round"><small>ROUND</small><strong>${m.number} / 6</strong></div></div><div class="summit-live-meta"><div><small>Venue</small><strong>${profileEscape(m.location)}</strong></div><div><small>Week</small><strong>${m.week}</strong></div><div><small>Programme</small><strong>${done}/6 complete</strong></div><div><small>Series roster</small><strong>${summitSeasonState().seriesEntries.length}</strong></div></div></div>`}
+function summitReadyVisual(m,d){const field=summitField(m,d);return `<div class="live-arena"><div class="live-arena-head"><span>Summit field ready • ${profileEscape(discLabel(d))}</span></div><div class="live-arena-stage" style="display:grid;place-items:center;min-height:250px;background:radial-gradient(circle at 50% 35%,#8a70e633,transparent 34%),linear-gradient(145deg,#0c1630,#07101d)"><div style="text-align:center"><div style="font-size:42px;color:#c7b8ff">▲</div><strong style="display:block;font-size:22px;margin-top:8px">SUMMIT SERIES ${m.number}</strong><span style="display:block;color:#8798ad;font-size:10px;margin-top:7px">${field.length} athletes ready</span></div></div><div class="live-arena-legend">${field.map((a,i)=>`<span><i style="background:${nationDotColour(a.nation)}"></i>${DISCIPLINES[d].type==='time'?'Lane '+(i+1)+' • ':''}${profileEscape(a.name)} · ${profileEscape(nationName(a.nation))}</span>`).join('')}</div></div>`}
+function drawSummitArrival(m){$('pageKicker').textContent='SUMMIT SERIES';$('pageTitle').textContent='Series '+m.number+' • '+m.location;$('competition').innerHTML=`<div class="summit-live-shell">${summitMast(m,0)}<div class="summit-live-body"><div class="summit-series-lock-note"><strong>Full-Series commitment:</strong> the roster below is locked into every Summit round and unavailable for all other competition until Series 6 ends.</div><div class="summit-live-choice"><button id="watchSummit" class="primary"><small>SUMMIT EVENT DAY</small><strong>Watch Meeting</strong><span>Run all six disciplines with the Summit Series presentation, live visuals and commentary.</span><b>WATCH SUMMIT SERIES →</b></button><button id="simSummit"><small>FAST FORWARD</small><strong>Simulate Meeting</strong><span>Resolve the full round instantly with the same fields and performance engine, then review the official Series results.</span><b>SIMULATE ROUND →</b></button></div></div></div>`;$('watchSummit').onclick=()=>{m.eventDayMode='watch';competitionMode='overview';save();drawCompetition()};$('simSummit').onclick=()=>{m.eventDayMode='simulate';simulateSummitMeeting(m);competitionMode='overview';save();render()}}
+function drawSummitOverviewLive(m){const discs=Object.keys(DISCIPLINES),done=discs.filter(d=>Array.isArray(m.results?.[d])),remaining=6-done.length;$('pageKicker').textContent='SUMMIT SERIES';$('pageTitle').textContent='Series '+m.number+' • '+m.location;$('competition').innerHTML=`<div class="summit-live-shell">${summitMast(m,done.length)}<div class="summit-live-body">${m.completed?`<div class="summit-series-complete-banner"><strong>Summit Series ${m.number} complete</strong><span>Series points are confirmed. ${m.number===6?'The six-meeting commitment is now finished.':'The same roster remains committed for the next round.'}</span></div>`:`<div class="summit-live-toolbar"><div><strong>SUMMIT PROGRAMME</strong><span>${done.length}/6 disciplines complete • ${remaining} remaining</span></div><button id="simSummitRemaining" class="btn ghost">SIMULATE REMAINING</button></div>`}<div class="event-discipline-grid">${discs.map(d=>{const r=m.results[d],complete=Array.isArray(r),winner=complete?r[0]:null,own=summitEntriesForDisc(m,d);return `<section class="event-disc-card ${complete?'complete':''}"><div class="disc-top"><div><div class="page-kicker">${DISCIPLINES[d].type==='time'?'SUMMIT TRACK':'SUMMIT FIELD'}</div><h3>${discLabel(d)}</h3></div><span class="status ${complete?'good':'live'}">${complete?'COMPLETE':'READY'}</span></div><div class="disc-entry">${own.length?`${nationName(managedNation())}: ${own.map(a=>athleteLink(a)).join(', ')}`:`No ${nationName(managedNation())} entry`}</div><div class="disc-result">${winner?`<small>Round winner</small><strong>${flag(winner.nation)} ${profileEscape(winner.name)} • ${fmtPerf(d,winner.perf)}</strong>`:`<small>Series status</small><strong>${summitStandings(d)[0]?profileEscape(summitStandings(d)[0].name)+' • '+summitStandings(d)[0].points+' pts':'Opening round'}</strong>`}</div><button class="btn ${complete?'good':'primary'}" data-summit-disc="${d}">${complete?'VIEW RESULT':'START '+discLabel(d).toUpperCase()}</button></section>`}).join('')}</div>${m.completed?'<div style="margin-top:14px"><button id="backToSummitSeries" class="btn secondary">RETURN TO SUMMIT SERIES</button></div>':''}</div></div>`;document.querySelectorAll('[data-summit-disc]').forEach(b=>b.onclick=()=>{activeEventDisc=b.dataset.summitDisc;competitionMode='discipline';drawCompetition()});if($('simSummitRemaining'))$('simSummitRemaining').onclick=()=>{simulateSummitMeeting(m);competitionMode='overview';render()};if($('backToSummitSeries'))$('backToSummitSeries').onclick=()=>{summitLiveMeetingNumber=null;competitionMode='overview';view('league')}}
+function drawSummitDisciplineLive(m){const d=activeEventDisc||Object.keys(DISCIPLINES)[0],rows=m.results[d]||null,running=disciplineRunning&&!rows,proxy=summitProxy(m),visual=rows||running?eventVisualHTML(proxy,d):summitReadyVisual(m,d),own=summitEntriesForDisc(m,d);$('pageKicker').textContent='SUMMIT SERIES';$('pageTitle').textContent='Series '+m.number+' • '+discLabel(d);$('competition').innerHTML=`<div class="comp-layout"><div class="stack"><section class="summit-live-discipline"><div class="summit-live-discipline-head"><div><small>SUMMIT SERIES ${m.number} • ${profileEscape(m.location)}</small><h2>${discLabel(d)}</h2></div><span>${rows?'Official Series result':running?'LIVE':'Ready'}</span></div><div id="liveEventVisual" class="summit-live-visual">${visual}</div><div id="commentary" class="commentary summit-live-commentary">${rows?profileEscape((m.commentary?.[d]||[commentaryResult(d,rows)]).join('\n\n')):running?profileEscape(liveEventView?.lines.slice(0,liveEventView.index+1).join('\n\n')||'Preparing the Summit field...'):`The ${discLabel(d)} field is ready.\n\nPress START DISCIPLINE when you are ready.`}</div></section></div><aside class="stack"><section class="panel"><div class="panel-h"><strong>Committed Entries</strong><span>Full Series roster</span></div>${own.length?own.map(a=>`<div class="entry-row"><div>${athleteLink(a)}<small>${a.injury>0?'Injured':`PB ${fmtPerf(a.disc,a.pb)} • Form ${a.form}`}</small></div><span class="status ${health(a)[1]}">${health(a)[0]}</span></div>`).join(''):'<div class="panel-body muted">No national athlete committed.</div>'}</section><section class="panel"><div class="panel-h"><strong>Summit Control</strong><span>Round ${m.number}/6</span></div><div class="panel-body stack"><button id="startSummitDisc" class="btn ${rows?'good':'primary'}" ${rows||disciplineRunning?'disabled':''}>${rows?'DISCIPLINE COMPLETE':disciplineRunning?'IN PROGRESS':'START DISCIPLINE'}</button><button id="backSummitProgramme" class="btn ghost">BACK TO SUMMIT PROGRAMME</button></div></section></aside></div>`;$('backSummitProgramme').onclick=()=>{competitionMode='overview';drawCompetition()};if($('startSummitDisc'))$('startSummitDisc').onclick=()=>startSummitDiscipline(m,d)}
+function startSummitDiscipline(m,d){if(!m||m.completed||disciplineRunning||m.week!==s.game.week)return;if(Array.isArray(m.results[d]))return;const career=s,rows=summitRows(m,d),proxy=summitProxy(m),lines=commentaryLines(d,rows,proxy);disciplineRunning=true;m.eventDayMode='watch';m.commentary??={};m.commentary[d]=lines;liveEventView={event:proxy,disc:d,results:rows,lines,index:-1};drawCompetition();let i=0;function step(){if(s!==career)return;if(i<lines.length){liveEventView.index=i;const comm=$('commentary'),arena=$('liveEventVisual');if(comm){comm.textContent=lines.slice(0,i+1).join('\n\n');comm.scrollTop=comm.scrollHeight}if(arena)arena.innerHTML=eventVisualHTML(proxy,d);i++;timers.push(setTimeout(step,commentaryDelay(lines[i-1])));return}commitSummitRows(m,d,rows);disciplineRunning=false;liveEventView=null;if(Object.keys(DISCIPLINES).every(x=>Array.isArray(m.results[x])))finishSummitMeeting(m);save();if(m.completed){competitionMode='overview';render()}else drawCompetition()}step()}
+const _summitNormalBlock=currentBlocking;
+currentBlocking=function(){const normal=_summitNormalBlock();if(normal)return normal;const m=summitCurrentLiveMeeting();if(m){m.kind='summit';m.disc=Object.keys(DISCIPLINES);m.name='Summit Series '+m.number;m.level='Summit Series';return m}return null};
+const _summitDrawCompetition=drawCompetition;
+drawCompetition=function(){const normal=_summitNormalBlock();if(normal){summitLiveMeetingNumber=null;return _summitDrawCompetition()}let m=summitCurrentLiveMeeting();if(!m&&summitLiveMeetingNumber)m=summitSeasonState().meetings[summitLiveMeetingNumber];if(!m)return _summitDrawCompetition();summitLiveMeetingNumber=m.number;if(!m.completed&&!m.eventDayMode&&!Object.values(m.results||{}).some(Array.isArray)){drawSummitArrival(m);return}if(competitionMode==='discipline'){drawSummitDisciplineLive(m);return}drawSummitOverviewLive(m)};
+const _summitRender=render;
+render=function(){_summitRender();const block=currentBlocking(),career=careerState();if(block&&!appointmentPending()&&!career.finished&&!career.pendingReview){$('advanceTop').disabled=false;$('advanceTop').textContent=block.kind==='summit'?'ENTER SUMMIT EVENT':'ENTER EVENT'}};
+/* ===== End Summit Series live event flow ===== */
+
 load();renderMenu();renderView(currentView);
 
 
@@ -2502,6 +2395,8 @@ const _arrivalDrawCalendar=drawCalendar;
 drawCalendar=function(){_arrivalDrawCalendar();const btn=$('calAction');if(btn&&btn.textContent.includes('EVENT CENTRE'))btn.textContent='OPEN EVENT DAY'};
 UPDATES.unshift({date:'8 September 2026',title:'Automatic Event Day Flow',items:['Event Centre has been removed from desktop and mobile navigation. Competition is now part of the Continue/Advance flow rather than a destination the player has to remember to open.','When the calendar reaches a competition week, the game stops automatically on Event Day and asks whether you want to Watch Event or Simulate Whole Event.','Watch Event keeps the live discipline-by-discipline visuals and commentary. Simulate Whole Event uses the same performance engine but resolves the full meeting immediately and takes you to the official results.','If you begin watching and later want to move faster, Event Day now offers Simulate Remaining for every unfinished discipline. Completed events can still be reopened from the Calendar.']});
 {const latestIndex=UPDATES.findIndex(u=>u.title==='Automatic Event Day Flow');if(latestIndex>0)UPDATES.unshift(UPDATES.splice(latestIndex,1)[0]);}
+UPDATES.unshift({date:'8 September 2026',title:'Summit Series Season Commitment & Live Package',items:['Summit Series registration is now a full six-meeting commitment rather than round-by-round entry. The same roster is carried through every Series event.','Committed Summit athletes cannot enter any other competition from Series 1 through Series 6, creating a genuine trade-off against ranking meetings, championships and the Olympic Games.','Summit Series now runs across six scheduled rounds. National Squad Agreements are automatically extended if necessary so a registered athlete cannot drop back to the National Pool halfway through the circuit.','Every Summit round now becomes a proper Event Day when its week arrives, with Watch Meeting or Simulate Meeting choices and a dedicated Summit Series visual presentation.','Players who watch can run all six disciplines individually or use Simulate Remaining, while injuries can still cause a committed athlete to miss a round without cancelling the full-Series registration.']});
+{const latestIndex=UPDATES.findIndex(u=>u.title==='Summit Series Season Commitment & Live Package');if(latestIndex>0)UPDATES.unshift(UPDATES.splice(latestIndex,1)[0]);}
 // Ensure the menu update list is rebuilt after late-loaded feature patches.
 if(typeof renderMenu==='function')renderMenu();
 /* ===== End Competition Arrival Flow ===== */
