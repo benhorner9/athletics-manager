@@ -3,7 +3,7 @@ name: Apply Athletics Manager update
 on:
   push:
     paths:
-      - '.am-update/**'
+      - '.am-update/READY'
 
 permissions:
   contents: write
@@ -23,8 +23,8 @@ jobs:
           from pathlib import Path
           import base64, gzip
           parts = sorted(Path('.am-update').glob('part*.b64'))
-          if len(parts) < 2:
-              raise SystemExit('Waiting for all update payload parts.')
+          if not parts:
+              raise SystemExit('No staged update payload found.')
           payload = ''.join(p.read_text().strip() for p in parts)
           script = gzip.decompress(base64.b64decode(payload)).decode('utf-8')
           Path('/tmp/apply_update.py').write_text(script, encoding='utf-8')
@@ -33,24 +33,32 @@ jobs:
 
       - name: Check JavaScript syntax
         run: |
-          python3 - <<'PY'
+          if compgen -G 'scripts/*.js' > /dev/null; then
+            for file in scripts/*.js; do
+              echo "Checking $file"
+              node --check "$file"
+            done
+          else
+            python3 - <<'PY'
           import re
           from pathlib import Path
           html = Path('index.html').read_text(encoding='utf-8')
           scripts = re.findall(r'<script>([\s\S]*?)</script>', html)
           Path('/tmp/check.js').write_text('\n\n'.join(scripts), encoding='utf-8')
           PY
-          node --check /tmp/check.js
+            node --check /tmp/check.js
+          fi
 
       - name: Commit updated game
         run: |
+          MESSAGE="$(cat .am-update/COMMIT_MESSAGE 2>/dev/null || echo 'Apply Athletics Manager update')"
           rm -rf .am-update
           git config user.name 'ChatGPT Athletics Manager'
           git config user.email 'actions@users.noreply.github.com'
-          git add index.html .am-update
+          git add -A
           if git diff --cached --quiet; then
             echo 'No changes to commit.'
             exit 0
           fi
-          git commit -m 'Add first-pass 3D event broadcast'
+          git commit -m "$MESSAGE"
           git push
