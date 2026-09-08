@@ -1,0 +1,68 @@
+/* Football Manager-style 2D event viewer */
+.fm2d-matchday .matchday-card{grid-template-rows:auto minmax(0,1fr) auto}
+.fm-live-split{min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);background:#050d14}
+.fm-live-left{min-width:0;min-height:0;display:grid;grid-template-rows:minmax(0,1fr) auto;border-right:1px solid #2a4152}
+.fm2d-matchday .matchday-arena{min-height:0;padding:9px;background:#050d14;display:grid}
+.fm2d-matchday .matchday-arena #liveEventVisual{height:100%;min-height:0;display:grid}
+.fm2d-arena{height:100%;min-height:0;display:grid;grid-template-rows:34px minmax(0,1fr) 28px;border:1px solid #294151;border-radius:9px;overflow:hidden;background:#0a1720}
+.fm2d-arena-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 11px;border-bottom:1px solid #253d4d;background:#0c1d28;color:#a8becb;font-size:9px;font-weight:900;letter-spacing:.05em;text-transform:uppercase}
+.fm2d-arena-head b{color:#f3f7f9;font-size:10px}
+.fm2d-arena svg{display:block;width:100%;height:100%;min-height:0}
+.fm2d-caption{display:flex;align-items:center;padding:0 10px;border-top:1px solid #233a49;background:#08151e;color:#6f899a;font-size:8px}
+.fm-runner-dot{transition:transform .6s ease-out}
+.fm2d-empty{display:grid;place-items:center;height:100%;min-height:280px;border:1px solid #294151;border-radius:9px;background:#0a1720;color:#819aaa;font-size:12px}
+
+.fm2d-commentary{min-height:102px;grid-template-columns:120px minmax(0,1fr);border-top:1px solid #263d4c}
+.fm2d-commentary .matchday-commentator{padding:10px 11px}
+.fm2d-commentary .matchday-call{padding:10px 14px}
+.fm2d-commentary .matchday-call-text{font-size:clamp(15px,1.45vw,19px);line-height:1.3}
+
+.fm-scoreboard{min-width:0;min-height:0;background:#08131c;display:grid;overflow:hidden}
+.fm-scoreboard-inner{height:100%;min-height:0;display:grid;grid-template-rows:auto auto minmax(0,1fr) auto}
+.fm-scoreboard-head{min-height:66px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 13px;border-bottom:1px solid #2b4251;background:linear-gradient(180deg,#10232f,#0a1821)}
+.fm-scoreboard-head small{display:block;color:#6fb8e8;font-size:8px;letter-spacing:.12em;text-transform:uppercase;font-weight:1000}
+.fm-scoreboard-head strong{display:block;margin-top:4px;font-size:15px;color:#eff6f9}
+.fm-scoreboard-head>span{color:#718b9d;font-size:8px;text-transform:uppercase;font-weight:900}
+.fm-board-columns{height:28px;display:grid;grid-template-columns:42px minmax(0,1fr) 84px;align-items:center;padding:0 10px;border-bottom:1px solid #203743;background:#07121a;color:#627e91;font-size:7px;letter-spacing:.1em;font-weight:1000}
+.fm-board-columns span:last-child{text-align:right}
+.fm-board-list{min-height:0;overflow:auto;overscroll-behavior:contain}
+.fm-board-row{min-height:54px;display:grid;grid-template-columns:32px 12px minmax(0,1fr) 84px;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid #1b303c;background:#08151e;transition:background .18s ease}
+.fm-board-row.managed{background:#102432;box-shadow:inset 3px 0 0 #dbeaf3}
+.fm-board-row.current{background:#12324a;box-shadow:inset 3px 0 0 #57b7f2}
+.fm-board-row.out{opacity:.56}
+.fm-pos{font-size:13px;color:#d8e5eb;text-align:center;font-variant-numeric:tabular-nums}
+.fm-board-dot{width:10px;height:10px;border-radius:50%;box-shadow:0 0 0 2px #ffffff12}
+.fm-board-name{min-width:0}.fm-board-name strong{display:block;color:#eef4f7;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fm-board-name small{display:block;margin-top:3px;color:#718b9d;font-size:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fm-board-value{text-align:right;color:#f2f7f9;font-size:12px;font-weight:1000;font-variant-numeric:tabular-nums}
+.fm-board-empty{padding:18px;color:#718b9d;font-size:10px}
+.fm-scoreboard-foot{min-height:32px;display:flex;align-items:center;padding:0 11px;border-top:1px solid #203743;background:#07121a;color:#607b8d;font-size:7px;letter-spacing:.03em}
+
+.fm2d-dashboard{min-height:76px;grid-template-columns:1.1fr .85fr .7fr}
+.fm2d-dashboard .matchday-dash-cell{padding:8px 10px}
+.fm2d-dashboard .matchday-controls{margin-top:5px}
+.fm2d-summit .matchday-scorebar{box-shadow:inset 0 2px 0 #806ce2,0 10px 34px #0007}
+
+body.event-focus .fm2d-matchday .matchday-body{min-height:0}
+body.event-focus .fm2d-matchday .matchday-card{min-height:0}
+body.event-focus .fm-live-split{min-height:0}
+
+@media(max-width:980px){
+  .fm-live-split{grid-template-columns:minmax(0,1fr) minmax(310px,.92fr)}
+  .fm-board-row{grid-template-columns:28px 10px minmax(0,1fr) 72px;padding-left:8px;padding-right:8px}
+  .fm-board-value{font-size:11px}
+  .fm2d-commentary{grid-template-columns:104px minmax(0,1fr)}
+  .fm2d-dashboard{grid-template-columns:1fr 1fr .7fr}
+}
+@media(max-width:760px){
+  body.event-focus{overflow:auto}
+  .fm-live-split{grid-template-columns:1fr}
+  .fm-live-left{border-right:0;border-bottom:1px solid #2a4152}
+  .fm2d-matchday .matchday-arena{height:310px}
+  .fm-scoreboard{min-height:330px;max-height:440px}
+  .fm2d-commentary{grid-template-columns:1fr;min-height:0}
+  .fm2d-commentary .matchday-commentator{border-right:0;border-bottom:1px solid #203846;padding:7px 10px}
+  .fm2d-commentary .matchday-call{padding:10px}
+  .fm2d-commentary .matchday-call-text{font-size:15px}
+  .fm2d-dashboard{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){.fm-runner-dot{transition:none}}
