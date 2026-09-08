@@ -1,0 +1,8 @@
+/* 3D event viewer pass */
+.live-arena.stage-3d,.live-arena.stage-3d .live-arena-stage{background:linear-gradient(180deg,#06121a,#081724)}
+.live-arena.stage-3d .live-arena-stage{min-height:420px;border-radius:14px;overflow:hidden}
+.live-arena.stage-3d svg{display:block;width:100%;height:auto}
+.live-arena.stage-3d .live-arena-legend{border-top:1px solid #173041;background:#08131b}
+.live-arena.stage-3d .live-arena-head{background:linear-gradient(180deg,#11293a,#0a1926)}
+.matchday-call-text{font-size:clamp(18px,2vw,24px)!important;line-height:1.42}
+.matchday-call-kicker{font-size:clamp(11px,1.1vw,13px)!important;letter-spacing:.16em}
