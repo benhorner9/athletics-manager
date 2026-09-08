@@ -480,6 +480,15 @@ body.event-focus #competition.view.on{height:100%;overflow:hidden}
 .mailitem .from{font-size:9px}.mailitem .subject{font-size:12px;line-height:1.35;margin-top:5px}
 @media(max-width:720px){.email-reader .reader-head{padding:16px}.email-reader .reader-head h2{font-size:22px}.email-reader .reader-body{padding:16px;font-size:13px}.email-reader .reader-body p,.email-reader .mail-section p{font-size:13px}.email-reader .reader-actions{padding:12px 16px}.email-reader .email-message-top{grid-template-columns:36px minmax(0,1fr)}.email-reader .email-avatar{width:36px;height:36px}.email-reader .email-date{grid-column:2;text-align:left}.attempt-visual-score{left:8px;top:8px}.attempt-visual-result{right:8px;top:8px}}
 
+
+/* selection submission lock */
+.selection-submitted-banner{margin:0 0 14px;padding:13px 14px;border:1px solid #34765e;border-radius:9px;background:linear-gradient(180deg,#103126,#0b241c);color:#ccebdd}
+.selection-submitted-banner small{display:block;color:#81bfa1;font-size:8px;letter-spacing:.1em;text-transform:uppercase;font-weight:950}
+.selection-submitted-banner strong{display:block;margin-top:4px;font-size:14px;color:#effbf5}
+.selection-submitted-banner p{margin:6px 0 0;font-size:10px;line-height:1.55;color:#a9cdbb}
+.selection-box.submitted .select-toggle,.selection-box.submitted select{display:none!important}
+.selection-box.submitted .selection-limit-note{opacity:.72}
+
 </style>
 
 <style id="summitSeriesStyles">
@@ -3183,6 +3192,59 @@ UPDATES.unshift({date:'8 September 2026',title:'Event Finish, Attempt Playback &
 {const latestIndex=UPDATES.findIndex(u=>u.title==='Event Finish, Attempt Playback & Email Polish');if(latestIndex>0)UPDATES.unshift(UPDATES.splice(latestIndex,1)[0]);}
 if(typeof renderMenu==='function')renderMenu();
 /* ===== End event completion, attempt playback & email polish ===== */
+
+
+/* ===== Selection submission lock ===== */
+function selectionSubmissionSnapshot(e){
+ if(!e)return [];
+ return e.disc.filter(d=>d!=='ALL').map(d=>({disc:d,names:(e.entries?.[d]||[]).map(id=>s.athletes.find(a=>a.id===id)?.name).filter(Boolean)})).filter(x=>x.names.length)
+}
+function summitSubmissionSnapshot(){
+ const ss=summitSeasonState();return Object.keys(DISCIPLINES).map(d=>({disc:d,names:(ss.seriesEntries||[]).map(id=>s.athletes.find(a=>a.id===id)).filter(a=>a&&a.disc===d).map(a=>a.name)})).filter(x=>x.names.length)
+}
+function lockSelectionMail(mail,snapshot,label='Selection submitted'){
+ if(!mail)return;
+ mail.selectionSubmitted=true;mail.selectionSubmittedSeason=s.game.season;mail.selectionSubmittedWeek=s.game.week;mail.selectionSubmittedLabel=label;mail.selectionSubmittedSnapshot=snapshot||[];save()
+}
+function selectionSubmittedHTML(m){
+ const rows=m.selectionSubmittedSnapshot||[];const detail=rows.length?rows.map(x=>`${discLabel(x.disc)}: ${x.names.join(', ')}`).join(' • '):'No athletes selected.';
+ return `<div class="selection-submitted-banner"><small>Decision locked</small><strong>${profileEscape(m.selectionSubmittedLabel||'Selection submitted')}</strong><p>${profileEscape(detail)} This email is now read-only.</p></div>`
+}
+const _submissionLockConfirmEventSelection=confirmEventSelection;
+confirmEventSelection=function(e){
+ const mail=s.emails.find(x=>x.id===openMail);
+ const ok=_submissionLockConfirmEventSelection(e);
+ if(ok&&mail?.type==='selection'&&mail.eventId===e.id)lockSelectionMail(mail,selectionSubmissionSnapshot(e),'Event selection submitted');
+ return ok
+};
+const _submissionLockApplyRecommendedSummit=applyRecommendedSummitSelection;
+applyRecommendedSummitSelection=function(){
+ const mail=s.emails.find(x=>x.id===openMail),ok=_submissionLockApplyRecommendedSummit();
+ if(ok&&mail?.summitRegistration){lockSelectionMail(mail,summitSubmissionSnapshot(),'Summit Series team submitted');toast('Recommended Summit team selected and submitted');drawReader()}
+ return ok
+};
+const _submissionLockDrawReader=drawReader;
+drawReader=function(){
+ _submissionLockDrawReader();
+ const reader=$('reader'),m=s.emails.find(x=>x.id===openMail)||s.emails[s.emails.length-1];if(!reader||!m)return;
+ const e=m.eventId?s.events.find(x=>x.id===m.eventId):null;
+ if(!m.summitRegistration&&m.type==='selection'&&e?.decision&&!m.selectionSubmitted)lockSelectionMail(m,selectionSubmissionSnapshot(e),'Event selection submitted');
+ const submitted=!!m.selectionSubmitted;
+ if(!submitted){
+   if(e&&$('confirmSelection'))$('confirmSelection').onclick=()=>confirmEventSelection(e);
+   if($('selectAllRecommended'))$('selectAllRecommended').onclick=()=>applyRecommendedEventSelection(e);
+   if($('selectAllSummitRecommended'))$('selectAllSummitRecommended').onclick=()=>applyRecommendedSummitSelection();
+   return
+ }
+ const body=reader.querySelector('.reader-body');if(body&&!body.querySelector('.selection-submitted-banner'))body.insertAdjacentHTML('afterbegin',selectionSubmittedHTML(m));
+ const box=reader.querySelector('.selection-box');if(box)box.classList.add('submitted');
+ reader.querySelectorAll('.select-toggle,[data-sel],[data-selection-reason],#confirmSelection,#selectAllRecommended,#selectAllSummitRecommended,[data-open-summit-registration],#openEvent').forEach(el=>el.remove());
+ const actions=reader.querySelector('.reader-actions');if(actions)actions.innerHTML='';
+};
+UPDATES.unshift({date:'8 September 2026',title:'Selection Submission Lock',items:['Select All Recommended is now a true one-touch decision: it applies the staff recommendation and immediately submits the team rather than leaving a second confirmation step.','Any submitted athlete selection now locks the originating email. Selection toggles, recommendation buttons and submit actions disappear when the message is reopened, preventing repeated submissions or changing the same decision through an old email.','Submitted selection emails now show a clear Selection Submitted confirmation and a read-only summary of the athletes chosen, turning the inbox message into a permanent record of the decision.','The same submitted-state behaviour applies to Summit Series recommendation emails when the recommended Series team is committed.']});
+{const latestIndex=UPDATES.findIndex(u=>u.title==='Selection Submission Lock');if(latestIndex>0)UPDATES.unshift(UPDATES.splice(latestIndex,1)[0]);}
+if(typeof renderMenu==='function')renderMenu();
+/* ===== End Selection submission lock ===== */
 
 </script>
 </body>
