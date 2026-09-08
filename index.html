@@ -2682,6 +2682,93 @@ lockOlympicQualification=function(e){if(!e||e.id!=='olympics'||e.completed||s.ga
 olympicQualifiers=function(d){return qualificationFieldRows('olympics',d).map(x=>x.a)};
 olympicField=function(e,d){ensureQualificationLocks();return qualificationFieldRows('olympics',d).map(x=>x.a).filter(a=>a&&!a.retired&&a.injury===0&&!activityBusy(a,e.week))};
 olympicRules=function(){const t=QUALIFICATION_TARGETS.olympics;return `Olympic qualification closes in Week ${t.closeWeek} of Year 4. Direct standards receive first priority; remaining places are filled through ranking points. ${t.fieldSize} athletes qualify per discipline, maximum ${t.maxPerNation} per nation.`};
+
+
+/* ===== Summit Series registration briefing ===== */
+function summitRecommendationReadiness(a){
+ let score=0,reasons=[];
+ if(a.form>=88){score+=8;reasons.push('excellent current form')}else if(a.form>=80){score+=4;reasons.push('solid current form')}else if(a.form<70){score-=7;reasons.push('form is below the level we would want for a six-meeting commitment')}
+ if(a.fitness>=92)score+=5;else if(a.fitness<82){score-=10;reasons.push('fitness is not strong enough for the full circuit')}
+ if(a.fatigue<=35)score+=5;else if(a.fatigue>=65){score-=14;reasons.push('current fatigue makes a long circuit poor value')}
+ return {score,reasons}
+}
+function summitRecommendationQualification(a){
+ let score=0,reasons=[],protect=false;
+ const wc=qualificationStatus(a,'worldcup');
+ if(['STANDARD','RANKING'].includes(wc.code)){score-=38;protect=true;reasons.push('the athlete is currently in the World Cup field and the Summit commitment would rule them out of that championship')}
+ else if(wc.code==='BUBBLE'){score-=22;protect=true;reasons.push('the athlete is on the World Cup bubble and still needs freedom to chase ranking points')}
+ else if(wc.code==='NATION_LIMIT'){score+=5;reasons.push('the national entry limit reduces the value of chasing the World Cup route')}
+ else if(['OUT','NO_MARK'].includes(wc.code)){score+=8;reasons.push('there is relatively little World Cup qualification position to sacrifice')}
+ if(s.game.cycleYear===4){
+  const ol=qualificationStatus(a,'olympics');
+  if(['STANDARD','RANKING'].includes(ol.code)){score-=70;protect=true;reasons.push('Olympic qualification is currently in hand and must take priority over the Series')}
+  else if(ol.code==='BUBBLE'){score-=48;protect=true;reasons.push('the athlete is close to the Olympic field and needs access to ranking opportunities')}
+  else if(ol.code==='NATION_LIMIT'){score-=12;reasons.push('the Olympic national limit is a complication, but the athlete remains part of the championship conversation')}
+  else if(ol.code==='OUT'){score-=8;reasons.push('an Olympic route still exists, so the full-Series lock carries extra risk')}
+  else if(ol.code==='NO_MARK'){score+=4;reasons.push('there is no established Olympic qualification position to protect at present')}
+ }
+ return {score,reasons,protect,wc}
+}
+function summitRecommendationDevelopment(a){
+ let score=0,reasons=[];
+ const g=developmentGrade(a),depth=managedTeam().filter(x=>x.disc===a.disc&&!x.retired).sort((x,y)=>performanceScore(y)-performanceScore(x)),rank=depth.findIndex(x=>x.id===a.id)+1,st=independenceState(a);
+ if(a.age<=23){score+=8;reasons.push('the athlete is young enough for the six-meeting international exposure to have clear development value')}else if(a.age<=26)score+=4;
+ if(g.value>=86){score+=8;reasons.push(`staff still see ${developmentGradeText(a)} development upside`)}else if(g.value>=80)score+=4;
+ if(rank===2){score+=8;reasons.push('this is a strong way to give the second option in the event sustained international exposure without automatically using the leading athlete')}else if(rank>=3){score+=5;reasons.push('the Series could provide competition value that may be harder to find elsewhere')}
+ if(st.competition==='Active'){score+=4;reasons.push('the athlete generally responds well to a regular competition schedule')}else if(st.competition==='Selective'){score-=6;reasons.push('the athlete and personal coach normally prefer a selective competition programme')}
+ return {score,reasons,rank}
+}
+function summitStrategicAssessment(a){
+ const unavailable=summitUnavailable(a,summitSeasonState().meetings[1]);
+ if(unavailable)return {score:-999,decision:'DO NOT ENTER',tone:'bad',headline:unavailable,reasons:[unavailable],protect:true};
+ const ready=summitRecommendationReadiness(a),qual=summitRecommendationQualification(a),dev=summitRecommendationDevelopment(a);
+ let score=ready.score+qual.score+dev.score,reasons=[...qual.reasons,...dev.reasons,...ready.reasons];
+ if(a.injury>0){score-=50;reasons.unshift('the athlete is carrying an injury');}
+ let decision,tone,headline;
+ if(qual.protect||score<0){decision='PROTECT';tone='bad';headline='Keep available for championship and ranking priorities';}
+ else if(score>=24){decision='RECOMMEND';tone='good';headline='Strong strategic Summit option';}
+ else if(score>=10){decision='CONSIDER';tone='warn';headline='Viable if you want Series exposure';}
+ else{decision='HOLD';tone='';headline='No clear strategic advantage';}
+ return {score,decision,tone,headline,reasons:[...new Set(reasons)].slice(0,3),protect:qual.protect,rank:dev.rank};
+}
+function summitCoachRecommendations(){
+ const byDisc={};
+ for(const d of Object.keys(DISCIPLINES)){
+  const rows=managedTeam().filter(a=>a.disc===d&&!a.retired).map(a=>({a,ad:summitStrategicAssessment(a)})).sort((x,y)=>y.ad.score-x.ad.score||performanceScore(y.a)-performanceScore(x.a));
+  const recommended=rows.filter(x=>['RECOMMEND','CONSIDER'].includes(x.ad.decision)).slice(0,2),protectedRows=rows.filter(x=>x.ad.protect||x.ad.decision==='PROTECT').slice(0,2);
+  byDisc[d]={rows,recommended,protectedRows};
+ }
+ return byDisc
+}
+const _smartSummitAdvice=summitAdvice;
+summitAdvice=function(a,m){const base=_smartSummitAdvice(a,m);if(base?.tone==='bad')return base;const ad=summitStrategicAssessment(a);if(ad.decision==='PROTECT')return {tone:'warn',title:'Coach: protect athlete',text:ad.reasons.join(' ')};if(ad.decision==='RECOMMEND')return {tone:'good',title:'Coach recommends Series',text:ad.reasons.join(' ')};if(ad.decision==='CONSIDER')return {tone:'warn',title:'Coach: viable option',text:ad.reasons.join(' ')};return {tone:base?.tone||'',title:'Coach: hold for now',text:ad.reasons.join(' ')||base?.text||'No clear strategic advantage from a full-Series commitment.'}};
+function summitRecommendationSummaryText(){
+ const rec=summitCoachRecommendations(),picks=[];
+ for(const d of Object.keys(DISCIPLINES))for(const x of rec[d].recommended)if(x.ad.decision==='RECOMMEND')picks.push(`${x.a.name} (${discLabel(d)})`);
+ return picks.length?`The performance team’s strongest current recommendations are ${picks.join(', ')}.`:'The performance team does not currently see an obvious full-Series commitment worth making. Holding places open is a valid decision.'
+}
+function summitRegistrationMailHTML(){
+ const rec=summitCoachRecommendations(),sections=Object.keys(DISCIPLINES).map(d=>{
+  const info=rec[d],best=info.rows[0];
+  if(!best)return `<div class="mail-section"><h3>${profileEscape(discLabel(d))}</h3><p>No senior squad athlete is currently available in this discipline.</p></div>`;
+  const choices=info.rows.slice(0,3).map(({a,ad})=>`<div style="padding:9px 0;border-top:1px solid #21394d"><p style="margin:0"><strong>${profileEscape(ad.decision)} · ${profileEscape(a.name)}</strong></p><p style="margin:4px 0 0">${profileEscape(ad.headline)}. ${profileEscape(ad.reasons.join(' '))}</p></div>`).join('');
+  return `<div class="mail-section"><h3>${profileEscape(discLabel(d))}</h3>${choices}</div>`
+ }).join('');
+ return `<div class="mail-section"><h3>Summit Series registration is open</h3><p>Registration is now open until Series 1 begins in Week ${SUMMIT_WEEKS[0]}. Any athlete entered is committed to all six meetings through Week ${SUMMIT_WEEKS.at(-1)} and cannot compete elsewhere during that window.</p><p><strong>Coach view:</strong> ${profileEscape(summitRecommendationSummaryText())}</p></div><div class="mail-section"><h3>Performance team recommendation</h3><p>We are not simply choosing the highest-rated athlete. The recommendation weighs championship qualification, ranking opportunity cost, current readiness, fatigue, development value, event depth and the athlete’s preferred competition programme.</p></div>${sections}<div class="mail-section"><button class="btn primary" data-open-summit-registration="1">OPEN SUMMIT SERIES →</button></div>`
+}
+function sendSummitRegistrationOpeningEmail(){
+ const ss=summitSeasonState();
+ if(!summitRegistrationOpen()||ss.registrationOpeningMailSent)return false;
+ ss.registrationOpeningMailSent=true;
+ const id=newMail(sender('performance'),'Summit Series registration is now open',`Summit Series registration is open until Week ${SUMMIT_WEEKS[0]}. ${summitRecommendationSummaryText()}`,'selection'),mail=s.emails.find(m=>m.id===id);
+ if(mail){mail.html=summitRegistrationMailHTML();mail.summitRegistration=true}
+ save();return true
+}
+const _summitRegistrationOnWeekStart=onWeekStart;
+onWeekStart=function(){_summitRegistrationOnWeekStart();sendSummitRegistrationOpeningEmail()};
+const _summitRegistrationDrawReader=drawReader;
+drawReader=function(){_summitRegistrationDrawReader();document.querySelectorAll('[data-open-summit-registration]').forEach(b=>b.onclick=()=>view('league'))};
+
 drawOlympics=drawQualificationRoad;
 const _roadOpenAthleteProfile=openAthleteProfile;openAthleteProfile=function(id){_roadOpenAthleteProfile(id);if(profileTab==='overview'){const a=s.athletes.find(x=>x.id===id),body=$('athleteProfile')?.querySelector('.profile-body');if(a&&body&&!body.querySelector('.qualification-profile'))body.insertAdjacentHTML('afterbegin',qualificationProfileHTML(a))}};
 const _roadDrawCalendar=drawCalendar;drawCalendar=function(){_roadDrawCalendar();const root=$('calendar'),head=root?.querySelector('.section-head');if(head&&!root.querySelector('.qual-deadline'))head.insertAdjacentHTML('afterend',qualificationCalendarHTML())};
@@ -2833,6 +2920,9 @@ UPDATES.unshift({date:'8 September 2026',title:'2D Premium Event Screen',items:[
 UPDATES.unshift({date:'8 September 2026',title:'Full-Width Event Screen',items:['The live event screen no longer uses a right-hand sidebar, giving the 2D match view far more breathing room and making the arena the clear focal point.','Core controls were moved into the top event header and a lower information strip, so the screen keeps the useful management detail without squeezing the live presentation.','Entries, control and rules now sit underneath the main broadcast card in a cleaner full-width layout that feels closer to a premium management-game event screen.']});
 UPDATES.unshift({date:'8 September 2026',title:'Single-Screen Event Layout',items:['The live event screen has been tightened into a true single-screen layout, with the commentary fully visible beneath the animation instead of relying on page scrolling.','The old lower panel stack has been replaced by a compact information strip inside the main event card, so controls, entries and rules remain visible without stealing space from the 2D match view.','This creates a cleaner Football Manager-style event screen where the action, commentary and key management details all sit together on one premium screen.']});
 UPDATES.unshift({date:'8 September 2026',title:'Dedicated Event Match Mode',items:['Event Day now hides the main left navigation rail entirely, turning competition into a dedicated match-mode screen and giving the 2D presentation the full width of the display.','The live viewing window has been shortened and tightened so the arena, Gavin Potts commentary, controls, entries and format information can sit together within one viewport on iPad-sized screens.','Live commentary now shows the current broadcast call instead of building a long scrollable transcript, keeping every update visible as the action unfolds.','The mobile bottom navigation is also hidden during Event Day so the competition presentation gets the maximum usable screen area.']});
+UPDATES.unshift({date:'8 September 2026',title:'Summit Series Registration Briefing',items:['When Summit Series registration opens in Week 8, the performance team now sends an inbox briefing rather than relying on the player to notice the registration window manually.','The email includes coach recommendations by discipline and can explicitly advise protecting an athlete or sending nobody when the full six-meeting commitment would be a poor strategic trade.','Recommendations are based on championship qualification position, ranking opportunity cost, form, fitness, fatigue, development value, squad depth and athlete competition preferences rather than simply selecting the highest-rated athlete.','In Olympic years, athletes inside or close to the Olympic qualification field are strongly protected from a Summit commitment, while developing or second-choice athletes with less championship position to sacrifice can become more attractive Series options.','The briefing links directly to the Summit Series registration screen so the recommendation can be acted on immediately.']});
+{const latestIndex=UPDATES.findIndex(u=>u.title==='Summit Series Registration Briefing');if(latestIndex>0)UPDATES.unshift(UPDATES.splice(latestIndex,1)[0]);}
+if(s&&summitRegistrationOpen())sendSummitRegistrationOpeningEmail();
 </script>
 </body>
 </html>
