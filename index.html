@@ -3361,13 +3361,14 @@ eventVisualHTML=function(e,d){
  const phase=fieldVisualPhase(line,DISCIPLINES[d].type);
  return genericField3D(e,d,rows,phase)
 };
-const _oldCurrentCall=matchdayCurrentCall;
+const _oldCurrentCall=typeof matchdayCurrentCall==='function'?matchdayCurrentCall:null;
 if(typeof matchdayCurrentCall==='function'){
  matchdayCurrentCall=function(line){const raw=String(line||'').trim();if(!raw)return 'Gavin Potts is ready for the action.';const parts=raw.split(/\n+/);parts.shift();return parts.join(' ').replace(/^Gavin Potts\s*[—-]\s*/i,'').trim()||raw}
 }
 if(typeof UPDATES!=='undefined'&&!UPDATES.some(u=>u.title==='3D Event Broadcast')){
  UPDATES.unshift({date:'8 September 2026',title:'3D Event Broadcast',items:['Event viewing now uses a first-pass 3D broadcast presentation across the current disciplines, replacing the old flat event visuals with a more immersive stadium-style match view.','High Jump coverage has been cut down into highlight moments instead of showing every single jump, so the event moves with more drama and less repetition.','Shot Put and High Jump use 3D attempt scenes tied directly to the Athletics Engine, while sprint events now run inside a rough first-pass 3D stadium broadcast.','This is an early 3D foundation rather than the finished renderer, but it gives every current event a more watchable visual identity and a clearer route toward a full future 3D event engine.']});
 }
+if(typeof renderMenu==='function')renderMenu();
 })();
 /* ===== End 3D event viewer pass ===== */
 </script>
