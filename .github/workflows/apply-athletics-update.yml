@@ -17,6 +17,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install update tooling
+        run: python3 -m pip install --user --disable-pip-version-check Pillow
+
       - name: Apply staged Athletics Manager update
         run: |
           python3 - <<'PY'
