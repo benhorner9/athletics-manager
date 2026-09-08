@@ -199,6 +199,8 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
 .profile-squad-action:disabled{opacity:.45}
 @media(max-width:760px){.profile-rating-actions{width:100%;display:grid;grid-template-columns:minmax(0,.8fr) minmax(130px,1.2fr);gap:7px}.profile-rating-actions .profile-rating{width:auto;min-width:0;margin-left:0}.profile-squad-action{width:100%;min-width:0;max-width:none;min-height:48px;font-size:9px}}
 @media(max-width:390px){.profile-rating-actions{grid-template-columns:1fr}.profile-squad-action{min-height:44px}}
+
+.performance-intel{margin-top:12px;border:1px solid #2c4a60;border-radius:10px;background:linear-gradient(180deg,#0c2232,#091a27);overflow:hidden}.performance-intel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #223c4f}.performance-intel-head strong{font-size:12px}.performance-intel-head span{font-size:8px;color:#7fa0b7;text-transform:uppercase;letter-spacing:.1em;font-weight:900}.performance-intel-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:10px}.performance-intel-card{padding:12px;border:1px solid #28455a;border-radius:8px;background:#0a1c2a}.performance-intel-card h4{margin:2px 0 4px;font-size:13px}.performance-intel-card>small{display:block;color:#7f9caf;font-size:8px;text-transform:uppercase;letter-spacing:.09em;font-weight:900}.performance-intel-verdict{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:9px 0}.performance-intel-verdict b{font-size:10px}.performance-intel-verdict span{font-size:9px;color:#a8bfd0}.intel-factors{display:grid;gap:5px;margin:9px 0}.intel-factor{display:grid;grid-template-columns:78px 1fr;gap:8px;align-items:start;padding-top:5px;border-top:1px solid #1c3547}.intel-factor:first-child{border-top:0;padding-top:0}.intel-factor b{font-size:8px;text-transform:uppercase;letter-spacing:.06em;color:#8fa9bb}.intel-factor span{font-size:9px;line-height:1.45;color:#c3d3de}.intel-factor.positive span{color:#9fddc0}.intel-factor.negative span{color:#f1b5b8}.intel-factor.neutral span{color:#b8c8d4}.performance-intel-note{font-size:10px;line-height:1.55;color:#d5e2ea;margin:9px 0 0}.performance-intel-foot{padding:0 14px 12px;color:#718ea2;font-size:8px;line-height:1.5}.profile-performance-review{display:grid;gap:8px}.profile-performance-review article{padding:11px;border:1px solid #28445a;border-radius:8px;background:#091c2a}.profile-performance-review h3{margin:3px 0 6px;font-size:12px}.profile-performance-review p{margin:4px 0;color:#9fb5c5;font-size:10px;line-height:1.55}.profile-performance-review small{font-size:8px;color:#7592a6}@media(max-width:720px){.performance-intel-grid{grid-template-columns:1fr}.performance-intel-card{padding:10px}.intel-factor{grid-template-columns:70px 1fr}}
 </style>
 
 <style id="summitSeriesStyles">
@@ -1855,6 +1857,112 @@ const _editorialLoad=load;
 load=function(){_editorialLoad();editorialMigrateSavedCopy()};
 
 /* ===== End Editorial & Sports Voice Pass ===== */
+
+
+/* ===== Performance Intelligence Update ===== */
+function performanceConditions(e,d){
+ const q=DISCIPLINES[d],seed=hashString(`${s.game.season}|${e.id}|${e.week}|${d}|conditions`);
+ if(e.kind==='testing')return {label:'Controlled conditions',detail:'Testing was run in a controlled environment.',effect:0,tone:'neutral'};
+ if(q.type==='time'){
+  const wind=Math.round((((seed%321)-140)/100)*10)/10, effect=-(wind*.012);
+  return {label:wind>0?`+${wind.toFixed(1)} m/s tailwind`:wind<0?`${wind.toFixed(1)} m/s headwind`:'Still air',detail:wind>.5?'A legal tailwind helped sprint speed.':wind<-.5?'The headwind worked against the field.':'Wind had little influence on the race.',effect,tone:wind>.5?'positive':wind<-.5?'negative':'neutral',wind};
+ }
+ const roll=seed%5;
+ if(q.type==='height'){
+  const options=[['Calm conditions','Stable conditions supported repeatable approaches.',.008,'positive'],['Cool and still','Conditions were broadly neutral for the jumpers.',0,'neutral'],['Light cross-breeze','The breeze made approach rhythm slightly less comfortable.',-.012,'negative'],['Mild conditions','No meaningful environmental advantage or penalty.',0,'neutral'],['Variable breeze','Changing air across the apron made timing a little harder.',-.018,'negative']];
+  const x=options[roll];return {label:x[0],detail:x[1],effect:x[2],tone:x[3]};
+ }
+ const options=[['Dry circle','Good footing allowed confident movement through the circle.',.08,'positive'],['Mild conditions','Conditions were broadly neutral for throwing.',0,'neutral'],['Cool conditions','The cooler environment offered little assistance.',-.06,'negative'],['Stable conditions','No meaningful environmental advantage or penalty.',0,'neutral'],['Light breeze','The breeze had only a minor effect on the sector.',-.03,'neutral']];
+ const x=options[roll];return {label:x[0],detail:x[1],effect:x[2],tone:x[3]};
+}
+function performancePressure(a,e,d){
+ const intensity=e.kind==='olympics'?3:e.kind==='championship'||e.level==='World'?2:0;
+ if(!intensity)return {label:'Routine competitive pressure',detail:'No unusual championship pressure was modelled.',effect:0,tone:'neutral',intensity:0};
+ const experience=(a.profileResults||[]).filter(p=>/championship|world|olympic/i.test(String(p.event||''))).length;
+ const seed=hashString(`${a.id}|${s.game.season}|${e.id}|${d}|pressure`),raw=(seed%2001)/1000-1;
+ const response=clamp(raw+Math.min(8,experience)*.055+(a.form-80)*.006,-1.2,1.2);
+ const scale=DISCIPLINES[d].type==='time'?.008:DISCIPLINES[d].type==='height'?.006:.045;
+ const effect=(DISCIPLINES[d].type==='time'?-1:1)*response*intensity*scale;
+ const tone=response>.35?'positive':response<-.35?'negative':'neutral';
+ return {label:e.kind==='olympics'?'Olympic pressure':'Championship pressure',detail:tone==='positive'?`${a.name} handled the occasion well.`:tone==='negative'?`${a.name} appeared to lose a little performance under the occasion.`:'The occasion had no clear positive or negative effect.',effect,tone,intensity,response};
+}
+function applyMarkEffect(d,mark,delta){
+ const q=DISCIPLINES[d];let value=mark+delta;
+ if(q.type==='time')return +Math.max(0,value).toFixed(2);
+ return +Math.max(0,value).toFixed(2);
+}
+function performanceExecutionTone(d,base,prePB){
+ const q=DISCIPLINES[d],gap=q.type==='time'?base-prePB:prePB-base;
+ const strong=q.type==='time'?.035:q.type==='height'?.035:.28,poor=q.type==='time'?.12:q.type==='height'?.09:.8;
+ return gap<=strong?'positive':gap>=poor?'negative':'neutral';
+}
+function buildPerformanceIntel(a,d,row,e){
+ const c=row.intelContext;if(!c)return null;const q=DISCIPLINES[d],prePB=c.prePB,mark=row.perf;
+ const relative=q.type==='time'?mark-prePB:prePB-mark;
+ const pb=(row.achievements||[]).includes('PB')||relative<-.0001;
+ let verdict='On level',verdictTone='neutral';
+ const strong=q.type==='time'?.05:q.type==='height'?.04:.35,poor=q.type==='time'?.14:q.type==='height'?.10:.9;
+ if(pb||relative<=strong){verdict=pb?'Personal-best level':'Strong performance';verdictTone='positive'}
+ else if(relative>=poor){verdict='Below best';verdictTone='negative'}
+ const factors=[];
+ if(c.form>=88)factors.push({name:'Form',text:`Strong pre-event form (${c.form}) gave the athlete a good platform.`,tone:'positive',weight:3});
+ else if(c.form<=72)factors.push({name:'Form',text:`Form was subdued at ${c.form}, reducing the margin for error.`,tone:'negative',weight:3});
+ else factors.push({name:'Form',text:`Form was steady at ${c.form}.`,tone:'neutral',weight:1});
+ if(c.fatigue>=70)factors.push({name:'Freshness',text:`Fatigue was high at ${c.fatigue}; recent load was a clear drag on readiness.`,tone:'negative',weight:4});
+ else if(c.fatigue<=25)factors.push({name:'Freshness',text:`Fatigue was low at ${c.fatigue}; the athlete arrived fresh.`,tone:'positive',weight:3});
+ else factors.push({name:'Freshness',text:`Fatigue was manageable at ${c.fatigue}.`,tone:'neutral',weight:1});
+ if(c.fitness>=92)factors.push({name:'Fitness',text:`Fitness was strong at ${c.fitness}.`,tone:'positive',weight:2});
+ else if(c.fitness<82)factors.push({name:'Fitness',text:`Fitness was below its best at ${c.fitness}.`,tone:'negative',weight:3});
+ if(c.conditions)factors.push({name:'Conditions',text:c.conditions.detail,tone:c.conditions.tone,weight:c.conditions.tone==='neutral'?1:2});
+ if(c.pressure?.intensity)factors.push({name:'Pressure',text:c.pressure.detail,tone:c.pressure.tone,weight:c.pressure.tone==='neutral'?1:3});
+ const execution=performanceExecutionTone(d,c.basePerf,prePB);
+ factors.push({name:'Execution',text:execution==='positive'?'The performance itself was close to the athlete’s best level before environmental effects.':execution==='negative'?'Execution on the day was clearly below the athlete’s established best.':'Execution sat within a normal competitive range.',tone:execution,weight:execution==='neutral'?2:4});
+ factors.sort((x,y)=>y.weight-x.weight);
+ const negatives=factors.filter(x=>x.tone==='negative'),positives=factors.filter(x=>x.tone==='positive');let note;
+ if(pb)note=`That was an excellent outcome. ${positives[0]?.name||'Execution'} was the clearest positive and the athlete accessed personal-best level.`;
+ else if(negatives.some(x=>x.name==='Freshness'))note=`The workload is the first thing I would address. This result looks more like a readiness problem than evidence that the athlete has gone backwards.`;
+ else if(negatives.some(x=>x.name==='Pressure'))note=`Preparation was good enough to compete, but the occasion appears to have taken a little from the performance. More major-event exposure should help.`;
+ else if(negatives.some(x=>x.name==='Conditions'))note=`The mark needs context. Conditions were working against the field, so I would avoid overreacting to the raw number.`;
+ else if(execution==='negative')note=`Nothing in preparation fully explains the gap. This looks mainly like an off-day in execution rather than a clear training problem.`;
+ else note=`There is no major warning sign here. The performance sits within the range we would expect from the athlete’s current preparation.`;
+ return {verdict,verdictTone,note,factors:factors.slice(0,4),prePB,mark,conditions:c.conditions?.label||'',event:e.name,season:s.game.season,week:e.week};
+}
+function performanceIntelCard(row,d){
+ const a=s.athletes.find(x=>x.id===row.id),intel=row.intel;if(!a||!intel)return '';
+ return `<article class="performance-intel-card"><small>${profileEscape(discLabel(d))} • ${profileEscape(intel.conditions||'Competition conditions')}</small><h4>${athleteLink(a)}</h4><div class="performance-intel-verdict"><b>${profileEscape(intel.verdict)}</b><span>${fmtPerf(d,row.perf)} • PB before event ${fmtPerf(d,intel.prePB)}</span></div><div class="intel-factors">${intel.factors.map(f=>`<div class="intel-factor ${f.tone}"><b>${profileEscape(f.name)}</b><span>${profileEscape(f.text)}</span></div>`).join('')}</div><p class="performance-intel-note"><strong>Coach:</strong> ${profileEscape(intel.note)}</p></article>`;
+}
+function performanceIntelPanel(d,r){
+ const own=r.filter(x=>x.nation===managedNation()&&x.intel);if(!own.length)return '';
+ return `<section class="performance-intel"><div class="performance-intel-head"><strong>Performance Review</strong><span>Why the result happened</span></div><div class="performance-intel-grid">${own.map(x=>performanceIntelCard(x,d)).join('')}</div><div class="performance-intel-foot">This is a staff interpretation of the factors used by the simulation, not a display of the hidden performance formula. One result should be judged alongside the athlete’s wider body of evidence.</div></section>`;
+}
+const _performanceIntelSimulateDiscipline=simulateDiscipline;
+simulateDiscipline=function(e,d){
+ const entrants=buildEventField(e,d),q=DISCIPLINES[d],mn=managedNation(),conditions=performanceConditions(e,d);
+ let r=entrants.map(a=>{
+  let staff=0;if(a.nation===mn&&a.inSquad!==false)staff=(d.includes('100')?s.staff.sprint:d.includes('HJ')?s.staff.jumps:s.staff.throws)-1+(athleteFacility(a)-1)*.5;
+  const pressure=performancePressure(a,e,d),basePerf=rawPerformance(a,d,staff*.12),prePB=a.pb;
+  let perf=applyMarkEffect(d,basePerf,conditions.effect);perf=applyMarkEffect(d,perf,pressure.effect);
+  return {id:a.id,name:a.name,nation:a.nation,flag:flag(a.nation),perf,intelContext:{prePB,form:a.form,fitness:a.fitness,fatigue:a.fatigue,morale:athleteMorale(a),training:a.training,staffSupport:staff,conditions,pressure,basePerf}};
+ });
+ r.sort((a,b)=>q.type==='time'?a.perf-b.perf:b.perf-a.perf);return r;
+};
+const _performanceIntelCommitDisciplineResults=commitDisciplineResults;
+commitDisciplineResults=function(e,d,r){
+ const already=Array.isArray(e.results?.[d]);_performanceIntelCommitDisciplineResults(e,d,r);if(already)return;
+ const rows=e.results?.[d]||r;for(const row of rows){const a=s.athletes.find(x=>x.id===row.id);if(!a||!row.intelContext)continue;row.intel=buildPerformanceIntel(a,d,row,e);if(!row.intel)continue;
+  const pr=[...(a.profileResults||[])].reverse().find(p=>p.season===s.game.season&&p.week===e.week&&p.event===e.name&&Math.abs(p.perf-row.perf)<.001);if(pr)pr.intel=row.intel;
+  const global=[...(s.performances||[])].reverse().find(p=>p.athleteId===a.id&&p.season===s.game.season&&p.week===e.week&&p.event===e.name&&Math.abs(p.perf-row.perf)<.001);if(global)global.intel=row.intel;
+ }
+};
+const _performanceIntelResultsHTML=resultsHTML;
+resultsHTML=function(d,r){return _performanceIntelResultsHTML(d,r)+performanceIntelPanel(d,r)};
+const _performanceIntelCommentaryLines=commentaryLines;
+commentaryLines=function(d,r,e){const lines=_performanceIntelCommentaryLines(d,r,e),c=r?.[0]?.intelContext?.conditions;if(c&&c.label){const text=`EVENT CONDITIONS\n${c.label}. ${c.detail}`;if(!lines.some(x=>String(x).startsWith('EVENT CONDITIONS')))lines.splice(1,0,text)}return lines};
+function profilePerformanceIntelHTML(a){const rows=(a.profileResults||[]).filter(p=>p.intel).slice(-4).reverse();if(!rows.length)return '';return `<section class="profile-panel"><h2>Recent performance reviews</h2><p class="profile-caption">Staff interpretation of preparation and execution at the time of each result.</p><div class="profile-performance-review">${rows.map(p=>`<article><small>${p.season} • Week ${p.week} • ${profileEscape(p.event)}</small><h3>${fmtPerf(a.disc,p.perf)} • ${profileEscape(p.intel.verdict)}</h3><p>${profileEscape(p.intel.note)}</p><p>${p.intel.factors.slice(0,3).map(f=>`<strong>${profileEscape(f.name)}:</strong> ${profileEscape(f.text)}`).join('<br>')}</p></article>`).join('')}</div></section>`}
+const _performanceIntelDrawAthleteProfile=drawAthleteProfile;
+drawAthleteProfile=function(){_performanceIntelDrawAthleteProfile();if(profileTab!=='results'||!$('athleteProfile')?.open)return;const a=s.athletes.find(x=>x.id===profileId),body=$('athleteProfile').querySelector('.profile-body');if(a&&body){const html=profilePerformanceIntelHTML(a);if(html)body.insertAdjacentHTML('beforeend',html)}};
+UPDATES.unshift({date:'8 September 2026',title:'Performance Intelligence',items:['Every managed athlete now receives a post-event performance review explaining the main factors behind the mark, including form, fitness, fatigue, conditions, championship pressure and execution on the day.','Event conditions and major-event pressure now have small, genuine effects inside the competition simulation, so staff explanations are tied to what actually influenced the result rather than being decorative text.','Official result screens show concise coach reviews without exposing the hidden formula, while athlete profiles retain recent performance reviews for later comparison.','The system distinguishes readiness problems from off-day execution, difficult conditions and pressure effects, helping players understand results without making outcomes perfectly predictable.']});
+/* ===== End Performance Intelligence Update ===== */
 
 load();renderMenu();renderView(currentView);
 </script>
