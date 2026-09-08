@@ -21,7 +21,15 @@ function fmRows(e,d){
 }
 function fmLine(e,d){const active=liveEventView?.event===e&&liveEventView?.disc===d?liveEventView:null;return active?.lines?.[active.index]||''}
 function fmCue(e,d){const line=fmLine(e,d);return line&&e?.engine?.[d]?.broadcastCues?.[line]||null}
-function fmPhase(e,d){return DISCIPLINES[d].type==='time'?visualPhase(fmLine(e,d)):fieldVisualPhase(fmLine(e,d),DISCIPLINES[d].type)}
+function fmPhase(e,d){
+  if(DISCIPLINES[d].type!=='time')return fieldVisualPhase(fmLine(e,d),DISCIPLINES[d].type);
+  const line=fmLine(e,d),h=String(line||'').split('\n')[0],distance=DISCIPLINES[d]?.distance||100;
+  if(/^(RESULT|PERFORMANCE WATCH|YOUR TEAM|YOUR SQUAD)/.test(h))return {progress:1,finished:true,label:'Official result',stage:'result',metres:distance};
+  const m=h.match(/(\d+) METRES/);if(m){const metres=Math.min(distance,Number(m[1]));return {progress:clamp(metres/distance,0,1),finished:metres>=distance,label:h,stage:metres>=distance?'finish':'race',metres}}
+  if(h.startsWith('SET'))return {progress:.025,finished:false,label:'The gun',stage:'gun',metres:0};
+  if(h.startsWith('ON YOUR MARKS'))return {progress:.004,finished:false,label:'On your marks',stage:'blocks',metres:0};
+  return {progress:0,finished:false,label:h||'Waiting for the start',stage:'build',metres:0}
+}
 function fmManaged(row){return row?.nation===managedNation()}
 function fmEsc(v){return profileEscape(String(v??''))}
 function fmDot(row,r=10){const c=nationDotColour(row?.nation);return `<circle r="${r}" fill="${c}" stroke="${fmManaged(row)?'#fff':'#07131d'}" stroke-width="${fmManaged(row)?4:2}"><title>${fmEsc(row?.name)} • ${fmEsc(nationName(row?.nation))}</title></circle>`}
@@ -32,11 +40,22 @@ function fmRaceProgress(row,rows,phase){
   if(phase.finished)return Math.max(.88,1-Math.max(0,perf-best)*.055);
   return clamp((phase.progress||0)*(1-penalty),0,1);
 }
+function fmOvalPoint(distance,lane,p){
+  const cx=380,cy=235,rx=286-lane*9,ry=166-lane*7,start=distance===200?Math.PI:0,span=distance===200?Math.PI:Math.PI*2,angle=start+span*clamp(p,0,1);
+  return {x:cx+Math.cos(angle)*rx,y:cy+Math.sin(angle)*ry}
+}
 function fmTrackScene(e,d,rows){
-  const phase=fmPhase(e,d),ordered=[...rows].sort((a,b)=>(a.lane||99)-(b.lane||99)||String(a.name).localeCompare(String(b.name)));
-  const W=760,H=470,left=62,right=704,top=48,laneH=Math.min(46,(H-96)/Math.max(1,ordered.length));
-  const lanes=ordered.map((r,i)=>{const y=top+i*laneH+laneH/2,p=fmRaceProgress(r,rows,phase),x=left+p*(right-left);return `<g><line x1="${left}" y1="${y+laneH/2}" x2="${right+20}" y2="${y+laneH/2}" stroke="#f4eadf" stroke-opacity=".3" stroke-width="1.5"/><text x="${left-28}" y="${y+4}" fill="#d9e4e9" font-size="11" text-anchor="middle">${r.lane||i+1}</text><g transform="translate(${x} ${y})" class="fm-runner-dot">${fmDot(r,10)}</g></g>`}).join('');
-  return `<div class="fm2d-arena"><div class="fm2d-arena-head"><span>${fmEsc(phase.label||'Race')}</span><b>${phase.finished?'FINISH':Math.round((phase.progress||0)*100)+'m'}</b></div><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Top-down ${fmEsc(discLabel(d))} race"><rect width="${W}" height="${H}" fill="#173f31"/><rect x="36" y="24" width="700" height="${H-48}" rx="18" fill="#884d52" stroke="#a96c70" stroke-width="2"/><line x1="${left}" y1="24" x2="${left}" y2="${H-24}" stroke="#f5f0e9" stroke-width="3"/><line x1="${right}" y1="24" x2="${right}" y2="${H-24}" stroke="#fff" stroke-width="5"/>${lanes}<text x="${left}" y="18" fill="#c8d6dc" font-size="10" text-anchor="middle">START</text><text x="${right}" y="18" fill="#c8d6dc" font-size="10" text-anchor="middle">FINISH</text></svg><div class="fm2d-caption">Simple 2D view • dots represent athletes • white ring = ${fmEsc(nationName(managedNation()))}</div></div>`;
+  const phase=fmPhase(e,d),distance=DISCIPLINES[d]?.distance||100,ordered=[...rows].sort((a,b)=>(a.lane||99)-(b.lane||99)||String(a.name).localeCompare(String(b.name)));
+  const W=760,H=470;
+  if(distance===100){
+    const left=62,right=704,top=48,laneH=Math.min(46,(H-96)/Math.max(1,ordered.length));
+    const lanes=ordered.map((r,i)=>{const y=top+i*laneH+laneH/2,p=fmRaceProgress(r,rows,phase),x=left+p*(right-left);return `<g><line x1="${left}" y1="${y+laneH/2}" x2="${right+20}" y2="${y+laneH/2}" stroke="#f4eadf" stroke-opacity=".3" stroke-width="1.5"/><text x="${left-28}" y="${y+4}" fill="#d9e4e9" font-size="11" text-anchor="middle">${r.lane||i+1}</text><g transform="translate(${x} ${y})" class="fm-runner-dot">${fmDot(r,10)}</g></g>`}).join('');
+    return `<div class="fm2d-arena"><div class="fm2d-arena-head"><span>${fmEsc(phase.label||'Race')}</span><b>${phase.finished?'FINISH':Math.round((phase.progress||0)*distance)+'m'}</b></div><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Top-down ${fmEsc(discLabel(d))} race"><rect width="${W}" height="${H}" fill="#173f31"/><rect x="36" y="24" width="700" height="${H-48}" rx="18" fill="#884d52" stroke="#a96c70" stroke-width="2"/><line x1="${left}" y1="24" x2="${left}" y2="${H-24}" stroke="#f5f0e9" stroke-width="3"/><line x1="${right}" y1="24" x2="${right}" y2="${H-24}" stroke="#fff" stroke-width="5"/>${lanes}<text x="${left}" y="18" fill="#c8d6dc" font-size="10" text-anchor="middle">START</text><text x="${right}" y="18" fill="#c8d6dc" font-size="10" text-anchor="middle">FINISH</text></svg><div class="fm2d-caption">Simple 2D view • dots represent athletes • white ring = ${fmEsc(nationName(managedNation()))}</div></div>`;
+  }
+  const laneCount=Math.max(8,ordered.length),laneLines=Array.from({length:laneCount},(_,i)=>{const rx=286-i*9,ry=166-i*7;return `<ellipse cx="380" cy="235" rx="${rx}" ry="${ry}" fill="none" stroke="#f7eee4" stroke-opacity="${i===0?.55:.27}" stroke-width="${i===0?2.5:1.4}"/>`}).join('');
+  const dots=ordered.map((r,i)=>{const lane=Math.max(0,(r.lane||i+1)-1),p=fmRaceProgress(r,rows,phase),pt=fmOvalPoint(distance,lane,p);return `<g transform="translate(${pt.x.toFixed(1)} ${pt.y.toFixed(1)})" class="fm-runner-dot">${fmDot(r,10)}<text x="0" y="-15" text-anchor="middle" fill="#eaf3f6" font-size="9" font-weight="800">${r.lane||i+1}</text></g>`}).join('');
+  const startAngle=distance===200?Math.PI:0,start={x:380+Math.cos(startAngle)*286,y:235+Math.sin(startAngle)*166},finish={x:666,y:235};
+  return `<div class="fm2d-arena"><div class="fm2d-arena-head"><span>${fmEsc(phase.label||'Race')}</span><b>${phase.finished?'FINISH':Math.round((phase.progress||0)*distance)+'m / '+distance+'m'}</b></div><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Top-down ${fmEsc(discLabel(d))} oval race"><rect width="760" height="470" fill="#1a553d"/><ellipse cx="380" cy="235" rx="320" ry="198" fill="#864d52" stroke="#a86e72" stroke-width="2"/><ellipse cx="380" cy="235" rx="205" ry="103" fill="#246146"/>${laneLines}<line x1="${finish.x}" y1="64" x2="${finish.x}" y2="406" stroke="#fff" stroke-width="4"/><line x1="${start.x}" y1="${start.y-46}" x2="${start.x}" y2="${start.y+46}" stroke="#f5eee7" stroke-opacity=".8" stroke-width="3"/>${dots}<text x="380" y="230" text-anchor="middle" fill="#d8e7df" font-size="15" font-weight="900">${distance}m</text><text x="380" y="250" text-anchor="middle" fill="#91b3a2" font-size="10">STAGGERED LANES</text><text x="${finish.x+8}" y="58" fill="#d7e4e9" font-size="10">FINISH</text></svg><div class="fm2d-caption">Top-down oval • staggered lane race • dots represent athletes • white ring = ${fmEsc(nationName(managedNation()))}</div></div>`;
 }
 function fmShotState(e,d,rows){
   const active=liveEventView?.event===e&&liveEventView?.disc===d?liveEventView:null,meta=e?.engine?.[d],states=new Map(rows.map(r=>[r.id,{row:r,best:null,attempts:0,fouls:0,current:false}]));
@@ -72,7 +91,7 @@ eventVisualHTML=function(e,d){
 function fmOfficialBoard(e,d,rows){return rows.map((r,i)=>`<div class="fm-board-row ${fmManaged(r)?'managed':''}"><b class="fm-pos">${i+1}</b><i class="fm-board-dot" style="background:${nationDotColour(r.nation)}"></i><div class="fm-board-name"><strong>${fmEsc(r.name)}</strong><small>${flag(r.nation)} ${fmEsc(nationName(r.nation))}</small></div><span class="fm-board-value">${fmtPerf(d,r.perf)}</span></div>`).join('')}
 function fmSprintBoard(e,d,rows){
   const phase=fmPhase(e,d),ranked=[...rows].map(r=>({r,p:fmRaceProgress(r,rows,phase)})).sort((a,b)=>b.p-a.p||Number(a.r.perf||99)-Number(b.r.perf||99));
-  return ranked.map((x,i)=>`<div class="fm-board-row ${fmManaged(x.r)?'managed':''}"><b class="fm-pos">${i+1}</b><i class="fm-board-dot" style="background:${nationDotColour(x.r.nation)}"></i><div class="fm-board-name"><strong>${fmEsc(x.r.name)}</strong><small>Lane ${x.r.lane||rows.indexOf(x.r)+1} • ${flag(x.r.nation)} ${fmEsc(nationName(x.r.nation))}</small></div><span class="fm-board-value">${phase.finished&&Number.isFinite(Number(x.r.perf))?fmtPerf(d,x.r.perf):Math.round(x.p*100)+'m'}</span></div>`).join('')
+  const distance=DISCIPLINES[d]?.distance||100;return ranked.map((x,i)=>`<div class="fm-board-row ${fmManaged(x.r)?'managed':''}"><b class="fm-pos">${i+1}</b><i class="fm-board-dot" style="background:${nationDotColour(x.r.nation)}"></i><div class="fm-board-name"><strong>${fmEsc(x.r.name)}</strong><small>Lane ${x.r.lane||rows.indexOf(x.r)+1} • ${flag(x.r.nation)} ${fmEsc(nationName(x.r.nation))}</small></div><span class="fm-board-value">${phase.finished&&Number.isFinite(Number(x.r.perf))?fmtPerf(d,x.r.perf):Math.round(x.p*distance)+'m'}</span></div>`).join('')
 }
 function fmThrowBoard(e,d,rows){
   const states=fmShotState(e,d,rows),arr=[...states.values()].sort((a,b)=>(b.best||-1)-(a.best||-1)||String(a.row.name).localeCompare(String(b.row.name)));

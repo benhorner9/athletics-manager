@@ -9,6 +9,7 @@ A browser-based national athletics management game.
 - `styles/event-2d.css` — top-down 2D Event Day and live scoreboard styling
 - `scripts/game.js` — career simulation, UI and Athletics Engine
 - `scripts/event-2d.js` — top-down 2D event renderer, live scoreboards and field-event highlights
+- `scripts/sprint-expansion.js` — Event Expansion I module for the 200m/400m world, qualification, simulation and commentary
 - `assets/athlete-portraits.webp` — athlete portrait sprite sheet
 - `assets/coach-portraits.webp` — staff portrait sprite sheet
 - `assets/facilities.webp` — facility progression artwork
