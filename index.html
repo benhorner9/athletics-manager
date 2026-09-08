@@ -489,6 +489,15 @@ body.event-focus #competition.view.on{height:100%;overflow:hidden}
 .selection-box.submitted .select-toggle,.selection-box.submitted select{display:none!important}
 .selection-box.submitted .selection-limit-note{opacity:.72}
 
+
+/* event programme scroll safety */
+body.event-focus #competition.view.on{overflow-x:hidden;overflow-y:auto!important;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;scrollbar-gutter:stable}
+body.event-focus #competition.view.on>.event-day-shell,
+body.event-focus #competition.view.on>.event-day,
+body.event-focus #competition.view.on>.event-choice-shell,
+body.event-focus #competition.view.on>.summit-live-shell{padding-bottom:max(18px,env(safe-area-inset-bottom))}
+body.event-focus #competition.view.on>.matchday-shell{height:100%;min-height:100%;padding-bottom:0}
+
 </style>
 
 <style id="summitSeriesStyles">
@@ -3246,6 +3255,7 @@ UPDATES.unshift({date:'8 September 2026',title:'Selection Submission Lock',items
 if(typeof renderMenu==='function')renderMenu();
 /* ===== End Selection submission lock ===== */
 
+UPDATES.unshift({date:'8 September 2026',title:'Event Programme Scroll Fix',items:['Fixed Event Day becoming hard-locked when the discipline programme extends beyond the visible screen. The competition programme can now scroll normally so every discipline remains reachable.','The individual live discipline view keeps the dedicated full-screen match presentation, while overview and programme screens can use vertical scrolling whenever their content needs more room.','Added touch scrolling and safe-area spacing for iPad and phone so lower event cards and completion controls cannot become inaccessible.']});
 </script>
 </body>
 </html>
