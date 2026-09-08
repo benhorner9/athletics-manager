@@ -446,6 +446,14 @@ body.event-focus #competition.view.on{height:100%;overflow:hidden}
 @media(max-width:900px){.matchday-scorebar{grid-template-columns:1fr auto}.matchday-centre{grid-row:2;grid-column:1/-1;order:3;padding-top:3px;border-top:1px solid #1d3342}.matchday-scorebar-right{grid-column:2}.matchday-stat:nth-of-type(2){display:none}.matchday-body{padding:7px}.matchday-commentary{grid-template-columns:112px minmax(0,1fr)}.matchday-commentator{padding:10px}.matchday-call{padding:10px 13px}.matchday-call-text{font-size:17px}.matchday-dashboard{grid-template-columns:1.15fr .85fr .75fr}}
 @media(max-width:650px){body.event-focus{overflow:auto}body.event-focus .main,body.event-focus .content,body.event-focus #competition.view.on{height:auto;min-height:100svh;overflow:visible}.matchday-shell{height:auto;min-height:100svh}.matchday-scorebar{grid-template-columns:1fr;padding:8px}.matchday-scorebar-right{grid-column:1;justify-content:flex-start}.matchday-centre{grid-row:auto;grid-column:1}.matchday-stat{min-width:62px}.matchday-body{padding:6px}.matchday-card{height:auto}.matchday-arena{height:300px}.matchday-commentary{grid-template-columns:1fr;min-height:0}.matchday-commentator{border-right:0;border-bottom:1px solid #203846;padding:7px 10px}.matchday-gp{width:30px;height:30px}.matchday-call{padding:10px}.matchday-call-text{font-size:15px}.matchday-dashboard{grid-template-columns:1fr}.matchday-dash-cell{border-right:0;border-bottom:1px solid #203542}.matchday-dash-cell:last-child{border-bottom:0}}
 
+
+/* select all recommended selection email */
+.selection-case.recommended{border-color:#3e8d6d;color:#a9efcf;background:#0d2f24;box-shadow:0 0 0 1px #63d7a31a inset}
+.selection-recommended-summary{margin:0 14px 12px;padding:10px 11px;border:1px solid #31536a;border-radius:8px;background:#0a2030;font-size:9px;line-height:1.55;color:#9eb7c8}
+.selection-recommended-summary strong{color:#e6f2f8}
+.btn.recommended-picks{background:linear-gradient(180deg,#24704f,#194d39);border-color:#3a9470;color:#fff;box-shadow:0 7px 18px #0002}
+.btn.recommended-picks:hover{filter:brightness(1.08)}
+
 </style>
 
 <style id="summitSeriesStyles">
@@ -2953,6 +2961,81 @@ if(s&&summitRegistrationOpen())sendSummitRegistrationOpeningEmail();
 UPDATES.unshift({date:'8 September 2026',title:'Cinematic 2D Event Experience',items:['Event Day now becomes a true full-screen match presentation: the normal navigation and global top bar disappear so the competition itself owns the entire display.','The live discipline screen has been rebuilt around one clean hierarchy: compact event scorebar, large 2D arena, Gavin Potts live call and a slim management dashboard. Duplicate cards and long rules text have been removed from the viewing flow.','Gavin Potts commentary is now significantly larger and presented as a single current broadcast call with a clear stage heading, making it readable at a glance while watching the animation rather than behaving like a scrolling transcript.','Your entered athletes, competition format, ranking context and essential controls remain visible in one compact strip beneath the commentary, keeping the complete event experience within one iPad-sized viewport.','The result view uses the same cinematic screen and surfaces the decisive final commentary call rather than filling the page with the entire historical commentary transcript.']});
 {const latestIndex=UPDATES.findIndex(u=>u.title==='Cinematic 2D Event Experience');if(latestIndex>0)UPDATES.unshift(UPDATES.splice(latestIndex,1)[0]);}
 if(typeof renderMenu==='function')renderMenu();
+
+/* ===== Select All Recommended ===== */
+function selectionRecommendationPlan(e,d,candidates=eligibleFor(e,d)){
+ const limit=selectionEntryLimit(e,d);if(!limit||!candidates.length)return {athletes:[],reason:'performance',note:'No eligible athlete is currently recommended.'};
+ const committee=selectionCommittee(e,d,candidates),level=selectionLevelKey(e),major=level==='World'||level==='Olympic'||e.kind==='championship'||e.kind==='olympics';
+ const nextMajor=(s.events||[]).filter(x=>!x.completed&&x.week>e.week&&x.week<=e.week+4&&['championship','olympics'].includes(x.kind)&&(x.disc.includes(d)||x.disc.includes('ALL'))).sort((a,b)=>a.week-b.week)[0]||null;
+ const currentApproach=e.selectionReasons?.[d]||'performance';
+ const scored=candidates.map(a=>{
+   const sc=selectionCase(a,e,d);let score=selectionMerit(a)+sc.strength*4,protectedForNext=false;
+   if(committee.performance?.id===a.id)score+=5;
+   if(committee.medical?.id===a.id)score+=1.5;
+   if(committee.pathway?.id===a.id)score+=major?.5:2.5;
+   if(a.form>=86)score+=2;else if(a.form<72)score-=3;
+   if(a.fitness<76)score-=8;else if(a.fitness<82)score-=4;
+   if(a.fatigue>=70)score-=10;else if(a.fatigue>=55)score-=5;else if(a.fatigue<=28)score+=1.5;
+   if(selectionNeedsFitnessTest(a,e))score-=4;
+   if(!major&&a.age<=23&&sc.strength>=1)score+=3;
+   if(currentApproach==='development'&&a.age<=23)score+=6;
+   if(currentApproach==='rest')score+=(100-a.fatigue)*.07;
+   if(nextMajor&&!major){const nextCase=selectionCase(a,nextMajor,d);if(nextCase.strength>=3&&(a.fatigue>=40||a.form>=82)){score-=11;protectedForNext=true}}
+   if(major&&sc.strength===0)score-=14;
+   return {a,sc,score,protectedForNext};
+ }).sort((x,y)=>y.score-x.score||selectionMerit(y.a)-selectionMerit(x.a));
+ let pool=scored;
+ if(major&&scored.some(x=>x.sc.strength>=2))pool=scored.filter(x=>x.sc.strength>=2);
+ const picks=pool.slice(0,Math.min(limit,pool.length));
+ if(!picks.length&&scored.length)picks.push(scored[0]);
+ const performanceLead=committee.performance,leadProtected=!!performanceLead&&!picks.some(x=>x.a.id===performanceLead.id)&&scored.find(x=>x.a.id===performanceLead.id)?.protectedForNext;
+ let reason='performance';
+ if(leadProtected)reason='rest';else if(!major&&picks.some(x=>x.a.age<=23&&x.sc.strength<=1))reason='development';
+ let note;
+ if(leadProtected&&nextMajor)note=`The staff are protecting ${performanceLead.name} with ${nextMajor.name} only ${nextMajor.week-e.week} week${nextMajor.week-e.week===1?'':'s'} later, and recommending the fresher alternatives instead.`;
+ else if(reason==='development')note='The recommended group balances current readiness with a deliberate development opportunity rather than using every place on the strongest established athletes.';
+ else if(picks.some(x=>x.protectedForNext))note='The recommendation balances this meeting against the championship programme ahead, avoiding unnecessary workload where possible.';
+ else note='The recommended group gives the best current balance of selection case, recent performance, readiness, medical position and staff judgement.';
+ return {athletes:picks.map(x=>x.a),reason,note};
+}
+function applyRecommendedEventSelection(e){
+ if(!e||e.completed||e.id==='olympics')return false;
+ let total=0;
+ for(const d of e.disc.filter(x=>x!=='ALL')){const plan=selectionRecommendationPlan(e,d,eligibleFor(e,d));e.entries[d]=plan.athletes.map(a=>a.id);e.selectionReasons??={};e.selectionReasons[d]=plan.reason;total+=plan.athletes.length}
+ if(!total){toast('No athletes are currently recommended for this event');drawReader();return false}
+ e.decision=false;save();const ok=confirmEventSelection(e);if(ok)toast(`${total} recommended athlete${total===1?'':'s'} selected and submitted`);return ok;
+}
+
+function applyRecommendedSummitSelection(){
+ if(!summitRegistrationOpen()){toast('Summit Series registration is closed');return false}
+ const rec=summitCoachRecommendations(),picks=[];
+ for(const d of Object.keys(DISCIPLINES))for(const x of rec[d].recommended)if(x.ad.decision==='RECOMMEND'&&!picks.some(a=>a.id===x.a.id))picks.push(x.a);
+ if(!picks.length){toast('The performance team is not recommending a Summit commitment right now');return false}
+ const ss=summitSeasonState();let added=0;
+ for(const a of picks){if(ss.seriesEntries.includes(a.id))continue;const why=summitUnavailable(a,ss.meetings[1]);if(why)continue;if(summitEntriesForDisc(ss.meetings[1],a.disc).length>=2)continue;toggleSummitEntry(1,a.id);added++}
+ if(added){toast(`${added} recommended Summit athlete${added===1?'':'s'} committed`);drawReader();return true}
+ toast('All recommended Summit athletes are already committed');drawReader();return true
+}
+const _recommendedSelectionDrawReader=drawReader;
+drawReader=function(){
+ _recommendedSelectionDrawReader();
+ const m=s.emails.find(x=>x.id===openMail)||s.emails[s.emails.length-1],e=m?.eventId?s.events.find(x=>x.id===m.eventId):null;
+ if(m?.summitRegistration){const actions=$('reader')?.querySelector('.reader-actions'),rec=summitCoachRecommendations(),strong=[];for(const d of Object.keys(DISCIPLINES))for(const x of rec[d].recommended)if(x.ad.decision==='RECOMMEND'&&!strong.some(a=>a.id===x.a.id))strong.push(x.a);const allCommitted=strong.length&&strong.every(a=>summitSeasonState().seriesEntries.includes(a.id));if(actions&&!$('selectAllSummitRecommended')){const b=document.createElement('button');b.id='selectAllSummitRecommended';b.className='btn recommended-picks';b.textContent=allCommitted?'RECOMMENDED TEAM COMMITTED':'SELECT ALL RECOMMENDED';b.disabled=!summitRegistrationOpen()||!strong.length||allCommitted;b.title='Commit every athlete the performance team strongly recommends for the full Summit Series';actions.prepend(b);b.onclick=()=>applyRecommendedSummitSelection()}return}
+ if(!e||m?.type!=='selection'||!['competition','championship'].includes(e.kind)||e.id==='olympics'||e.completed)return;
+ let recommendedTotal=0;
+ for(const d of e.disc.filter(x=>x!=='ALL')){
+   const plan=selectionRecommendationPlan(e,d,eligibleFor(e,d));recommendedTotal+=plan.athletes.length;
+   for(const a of plan.athletes){const btn=document.querySelector(`[data-disc="${d}"][data-sel="${a.id}"]`),meta=btn?.closest('.selection-athlete')?.querySelector('.selection-athlete-meta');if(meta&&!meta.querySelector('.selection-case.recommended'))meta.insertAdjacentHTML('afterbegin','<span class="selection-case recommended">STAFF RECOMMENDED</span>')}
+   const disciplineHeaders=[...document.querySelectorAll('.selection-discipline')],head=disciplineHeaders.find(x=>x.textContent.trim()===discLabel(d));if(head&&!head.parentElement.querySelector(`[data-rec-summary="${d}"]`)){let anchor=head.nextElementSibling;while(anchor&&!anchor.classList.contains('selection-athlete')&&!anchor.classList.contains('selection-discipline'))anchor=anchor.nextElementSibling;const names=plan.athletes.length?plan.athletes.map(a=>profileEscape(a.name)).join(', '):'No automatic pick',summary=`<div class="selection-recommended-summary" data-rec-summary="${d}"><strong>Recommended team:</strong> ${names}. ${profileEscape(plan.note)}</div>`;if(anchor&&anchor.classList.contains('selection-athlete'))anchor.insertAdjacentHTML('beforebegin',summary);else head.insertAdjacentHTML('afterend',summary)}
+ }
+ const confirm=$('confirmSelection'),actions=confirm?.parentElement;
+ if(actions&&!$('selectAllRecommended')){const b=document.createElement('button');b.id='selectAllRecommended';b.className='btn recommended-picks';b.textContent='SELECT ALL RECOMMENDED';b.disabled=!recommendedTotal;b.title='Select the full staff-recommended team and confirm the event selection';actions.insertBefore(b,confirm);b.onclick=()=>applyRecommendedEventSelection(e)}
+};
+UPDATES.unshift({date:'8 September 2026',title:'Select All Recommended',items:['Every manual event-selection email now includes a Select All Recommended button that chooses the staff-recommended athletes across every discipline and submits the team immediately. Summit Series registration emails use the same one-touch action for athletes the performance team strongly recommends for the full circuit.','The recommended team is shown clearly inside each discipline before you act, and the same recommendation plan powers both the visible advice and the one-touch selection button.','Recommendations consider selection standards, recent performance, form, fitness, fatigue, medical risk, staff views, development value and nearby major championships rather than simply taking the highest-rated athletes.','The system can protect a leading athlete from a lower-priority meeting when a championship is close, use a fresher alternative, or deliberately recommend a younger athlete when the development opportunity is strategically sensible.','Automatic recommended selections also apply the appropriate selection approach such as performance, rest or development, while manual selection remains available for players who want to override the staff view.']});
+{const latestIndex=UPDATES.findIndex(u=>u.title==='Select All Recommended');if(latestIndex>0)UPDATES.unshift(UPDATES.splice(latestIndex,1)[0]);}
+if(typeof renderMenu==='function')renderMenu();
+/* ===== End Select All Recommended ===== */
+
 </script>
 </body>
 </html>
