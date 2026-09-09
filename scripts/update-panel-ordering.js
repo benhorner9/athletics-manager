@@ -3,10 +3,10 @@
 'use strict';
 
 const LATEST_RELEASES=[
-  {date:'9 September 2026',title:'Live Event Panel Ownership',items:[
-    'Shot Put, High Jump and track events now use separate live owners: the event viewer updates only the animation area while the universal scoreboard updates only the right-hand standings panel.',
-    'The previous global innerHTML interception has been removed, restoring throw-by-throw event visuals without bringing back the competing scoreboard renderer.',
-    'The scoreboard remains mounted and continues to update from live event state while commentary and animations advance independently.'
+  {date:'9 September 2026',title:'Shot Put Live Panel Repair',items:[
+    'Restored throw-by-throw event visuals while keeping the right-hand scoreboard stable.',
+    'Only the live scoreboard element is now protected from the older commentary-step renderer; the event animation area is left completely untouched.',
+    'The universal scoreboard can continue updating positions, best marks and attempt series after every throw without the two scoreboard renderers fighting each other.'
   ]},
   {date:'9 September 2026',title:'Development Updates — Newest First',items:[
     'The main-menu Development Updates panel now uses one canonical newest-first release list instead of relying on JavaScript load order.',
