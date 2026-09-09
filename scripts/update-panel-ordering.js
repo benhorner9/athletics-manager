@@ -4,10 +4,10 @@
 
 const LATEST_RELEASES=[
   {date:'9 September 2026',title:'Field Events & Summit Event Day',items:[
-    'Shot Put now plays at a clearer pace with a short landing pause and more varied attempt commentary instead of repeating the same line after every throw.',
-    'High Jump now shows a visible 2D-dot approach, take-off, clearance or miss and landing, with slower pacing so each featured attempt is easy to follow.',
-    'Shot Put and High Jump live standings stay mounted and update in place after each completed attempt, removing the distracting scoreboard flicker.',
-    'Summit Series meetings now use the same modern Event Day presentation, discipline cards, live viewer, commentary, Watch / Skip controls and no-entry skip options as normal competitions.',
+    'Shot Put now plays at a clearer pace with varied attempt commentary and a dedicated measured-distance display on the 2D viewer after every valid throw.',
+    'High Jump shows a visible 2D-dot approach, take-off, clearance or miss and landing, with slower pacing so each featured attempt is easy to follow.',
+    'Field-event standings now have one authoritative scoreboard owner and read completed Shot Put / High Jump attempts directly from the live event state, so every result carries across immediately without competing redraws or flicker.',
+    'Summit Series meetings use the same modern Event Day presentation, discipline cards, live viewer, commentary, Watch / Skip controls and no-entry skip options as normal competitions.',
     'The Event Day progression safeguards remain active so a presentation problem cannot trap a career inside a running event.'
   ]},
   {date:'9 September 2026',title:'Premium Athlete & Coach Profiles',items:[
@@ -27,7 +27,7 @@ const LATEST_RELEASES=[
   {date:'9 September 2026',title:'Shot Put Live Panel Repair',items:[
     'Restored throw-by-throw event visuals while keeping the right-hand scoreboard stable.',
     'Only the live scoreboard element is protected from the older commentary-step renderer; the event animation area remains independent.',
-    'Scoreboard updates are now triggered immediately after the legacy renderer tries to refresh the panel, eliminating the lag between a throw and the standings update.'
+    'Scoreboard updates are triggered immediately after each completed attempt so the live order stays aligned with what has actually happened in the sector.'
   ]},
   {date:'9 September 2026',title:'Event AI Realism',items:[
     'Ability sets the odds rather than predetermining event results, allowing genuine favourites, bad days and upsets.',
