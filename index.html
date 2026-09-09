@@ -7,15 +7,16 @@
 <title>Athletics Manager</title>
 <meta name="application-name" content="Athletics Manager">
 <meta name="apple-mobile-web-app-title" content="Athletics Manager">
-<meta name="description" content="Athletics Manager — build and lead a national athletics programme across a four-year championship cycle.">
+<meta name="description" content="Athletics Manager — lead a national athletics programme across a 40-year career and ten Olympic cycles.">
 <link rel="stylesheet" href="styles/game.css?v=20260908-architecture2">
 <link rel="stylesheet" href="styles/event-2d.css?v=20260908-sprint10">
 <link rel="stylesheet" href="styles/event-2d-refinement.css?v=20260909-refine1">
+<link rel="stylesheet" href="styles/polish.css?v=20260909-polish1">
 </head>
 <body>
 <div id="startup" class="startup">
   <div class="menu-wrap">
-    <section class="menu-hero"><div class="brand-mark">AM</div><div class="menu-kicker">National Athletics Management</div><div class="menu-title">ATHLETICS <span>MANAGER</span></div><p class="menu-desc">Build a 40-year career across ten Olympic cycles. Lead a national programme, shape generations of athletes, change nations and leave a legacy that survives long after the first Games.</p></section>
+    <section class="menu-hero"><div class="brand-mark">AM</div><div class="menu-kicker">National Athletics Management</div><div class="menu-title">ATHLETICS <span>MANAGER</span></div><p class="menu-desc">Lead a national programme across a 40-year career and ten Olympic cycles. Build the squad, staff, pathway and competition plan around each Games.</p></section>
     <aside class="menu-side"><div><div class="page-kicker">Career</div><h2 id="careerTitle">Choose a Nation</h2><div id="saveCard" class="save-card"></div></div><div><div class="menu-actions"><button id="continueBtn" class="btn primary">CONTINUE CAREER</button><button id="newBtn" class="btn secondary">START NEW CAREER</button></div><div id="latestUpdatePanel" class="latest-update"></div></div></aside>
   </div>
 </div>
@@ -39,7 +40,7 @@
   <button data-view="scouting">Scouting</button>
   <button data-view="league">Summit Series</button>
   <button data-view="rankings">Rankings</button>
-  <button data-view="olympics">Olympics</button>
+  <button data-view="olympics">Qualification</button>
   <button data-view="staff">Staff</button>
   <button data-view="finance">Finance</button>
   <button data-view="news">World News <span id="newsBadge" class="badge hidden">0</span></button>
@@ -67,7 +68,7 @@
  </div>
 </main>
 <nav class="bottom-nav" id="bottomNav"><button data-view="home" class="on">HOME</button><button data-view="inbox">INBOX</button><button data-view="squad">SQUAD</button><button data-view="calendar">CALENDAR</button><button id="mobileMoreBtn" type="button" aria-expanded="false" aria-controls="mobileNavDrawer">MORE</button></nav>
-<div id="mobileNavDrawer" class="mobile-nav-drawer" hidden><div class="mobile-nav-sheet"><div class="mobile-nav-head"><div><small>ATHLETICS MANAGER</small><strong>More</strong></div><button id="mobileNavClose" type="button" aria-label="Close menu">×</button></div><div class="mobile-nav-grid"><button data-mobile-view="pool">National Pool</button><button data-mobile-view="training">Training</button><button data-mobile-view="scouting">Scouting</button><button data-mobile-view="league">Summit Series</button><button data-mobile-view="rankings">Rankings</button><button data-mobile-view="olympics">Olympics</button><button data-mobile-view="staff">Staff</button><button data-mobile-view="finance">Finance</button><button data-mobile-view="news">World News</button></div><button id="mobileMainMenu" class="mobile-main-menu" type="button">MAIN MENU</button></div></div>
+<div id="mobileNavDrawer" class="mobile-nav-drawer" hidden><div class="mobile-nav-sheet"><div class="mobile-nav-head"><div><small>ATHLETICS MANAGER</small><strong>More</strong></div><button id="mobileNavClose" type="button" aria-label="Close menu">×</button></div><div class="mobile-nav-grid"><button data-mobile-view="pool">National Pool</button><button data-mobile-view="training">Training</button><button data-mobile-view="scouting">Scouting</button><button data-mobile-view="league">Summit Series</button><button data-mobile-view="rankings">Rankings</button><button data-mobile-view="olympics">Qualification</button><button data-mobile-view="staff">Staff</button><button data-mobile-view="finance">Finance</button><button data-mobile-view="news">World News</button></div><button id="mobileMainMenu" class="mobile-main-menu" type="button">MAIN MENU</button></div></div>
 <div id="toast" class="toast"></div>
 <dialog id="firstDay" aria-label="Your first day as Performance Director"></dialog>
 <dialog id="homeReport" aria-labelledby="homeReportTitle"></dialog>
@@ -77,5 +78,6 @@
 <script src="scripts/event-2d.js?v=20260908-sprint10"></script>
 <script src="scripts/sprint-expansion.js?v=20260908-update10"></script>
 <script src="scripts/event-2d-refinement.js?v=20260909-refine1"></script>
+<script src="scripts/polish.js?v=20260909-polish1"></script>
 </body>
 </html>

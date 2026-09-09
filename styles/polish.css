@@ -1,0 +1,82 @@
+/* Full Game Polish & QA — alignment / overflow / touch pass */
+:root{--am-touch:42px}
+html,body{max-width:100%;overflow-x:hidden}
+.main,.content,.view,.panel,.card,.hq-card,.selection-section,.profile-card,.reader,.reader-body,.reader-head,.section-head,.topbar,.topbar>div,.top-right{min-width:0}
+.content>.view{width:100%}
+
+/* Consistent control geometry without changing the visual language. */
+button,.btn,select,input{touch-action:manipulation}
+.btn,.rail-nav button,.bottom-nav button,.mobile-nav-grid button,.mobile-main-menu{min-height:var(--am-touch)}
+select,input[type="text"],input[type="search"],input[type="number"],input[type="email"]{min-height:40px}
+.btn{display:inline-flex;align-items:center;justify-content:center;line-height:1.1}
+
+/* Header and title alignment. */
+.topbar{gap:14px;align-items:center}
+.topbar>div:first-child{min-width:0;flex:1 1 auto}
+.page-title,.card-title,.section-head h2,.section-head h3{min-width:0;overflow-wrap:anywhere}
+.top-right{flex:0 1 auto;justify-content:flex-end}
+.top-right>*{flex:0 0 auto}
+.section-head{align-items:center;gap:12px}
+.section-head>div:first-child{min-width:0}
+
+/* Dense management screens: keep columns aligned and content inside cards. */
+table{width:100%;max-width:100%;border-collapse:collapse}
+th,td{vertical-align:middle}
+td,.num,.metric,.fm-board-value,.fm-pos{font-variant-numeric:tabular-nums}
+.card,.panel,.hq-card,.selection-section{overflow-wrap:anywhere}
+.card>*:last-child,.panel>*:last-child,.hq-card>*:last-child,.selection-section>*:last-child{margin-bottom:0}
+
+/* Inbox / reports retain the dark reading surface but line up cleanly. */
+.reader.email-reader{max-width:100%}
+.email-message-top{align-items:center}
+.email-sender{min-width:0}
+.email-sender strong,.email-sender span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.email-header-meta{display:flex;flex-wrap:wrap;gap:6px 16px}
+.reader-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+
+/* Profiles and management dialogs should never escape the viewport. */
+dialog{max-width:calc(100vw - 24px);max-height:calc(100svh - 24px)}
+dialog[open]{overscroll-behavior:contain}
+.profile-head,.management-head{min-width:0}
+.profile-head>*,.management-head>*{min-width:0}
+
+/* Event Day: preserve the 50/50 concept and make both halves obey the same grid. */
+.fm-live-split{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
+.fm-live-split>*{min-width:0;min-height:0}
+.fm-live-left,.fm-scoreboard,.fm-scoreboard-inner{min-width:0}
+.fm-board-columns,.fm-board-row{align-items:center}
+.fm-board-name{min-width:0}
+.fm-board-value{white-space:nowrap}
+.fm2d-commentary .matchday-commentator{align-items:center}
+.matchday-scorebar>*{min-width:0}
+.matchday-event-id{min-width:0}
+.matchday-event-id strong,.matchday-event-id span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* iPad / compact desktop: reduce crowding before anything clips. */
+@media (max-width:1180px){
+ .topbar{padding-left:14px;padding-right:14px}
+ .top-right{gap:6px}
+ .top-right .pill{padding-left:8px;padding-right:8px}
+ .section-head{gap:9px}
+ .fm-board-row{gap:6px}
+}
+@media (min-width:761px) and (max-width:980px){
+ .fm-live-split{grid-template-columns:minmax(0,1fr) minmax(290px,1fr)!important}
+ .matchday-scorebar{gap:8px}
+ .matchday-event-id span{max-width:190px}
+}
+
+/* Phone: stack intentionally, keep all controls reachable and respect safe areas. */
+@media (max-width:760px){
+ :root{--am-touch:44px}
+ .topbar{align-items:flex-start;gap:8px}
+ .top-right{width:100%;justify-content:flex-start;flex-wrap:wrap}
+ .top-right #advanceTop{margin-left:auto}
+ .section-head{align-items:flex-start;flex-wrap:wrap}
+ .section-head .btn,.section-head select{max-width:100%}
+ .fm-live-split{grid-template-columns:1fr!important}
+ .fm-scoreboard{width:100%}
+ dialog{max-width:calc(100vw - 12px);max-height:calc(100svh - 12px)}
+ .reader-actions>.btn{flex:1 1 140px}
+ .bottom-nav{padding-bottom:max(0px,env(safe-area-inset-bottom))}
+}
