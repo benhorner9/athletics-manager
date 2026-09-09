@@ -1,0 +1,61 @@
+/* ===== Summit Series Event Engine Integration ===== */
+(function(){
+'use strict';
+
+if(window.__athleticsSummitEventIntegration)return;
+const PREFERRED_LANES=[4,5,3,6,2,7,1,8];
+const SVG={w:760,h:455,cx:380,cy:228,rx:245,ry:130};
+function clamp01(v){return Math.max(0,Math.min(1,Number(v)||0))}
+function stable01(key){return typeof hashString==='function'?((hashString(String(key))>>>0)%10000)/10000:.5}
+function isTrack(d){return DISCIPLINES?.[d]?.type==='time'&&Number(DISCIPLINES?.[d]?.distance)>0}
+function dist(d){return Number(DISCIPLINES?.[d]?.distance)||100}
+function playbackSeconds(n){if(n<=100)return 12;if(n<=200)return 16;if(n<=400)return 22;if(n<=800)return 30;if(n<=1500)return 36;if(n<=5000)return 50;return 60}
+function checkpoints(n){if(n<=100)return [0,40,70,n];if(n<=200)return [0,60,120,170,n];if(n<=400)return [0,100,200,300,n];if(n<=800)return [0,200,400,600,n];if(n<=1500)return [0,300,700,1100,n];if(n<=5000)return [0,1000,2500,4000,n];return [0,2000,5000,8000,n]}
+function athlete(id){return (s?.athletes||[]).find(a=>a.id===id)||null}
+function esc(v){return typeof profileEscape==='function'?profileEscape(String(v??'')):String(v??'')}
+function short(name){const p=String(name||'').trim().split(/\s+/);return (p.at(-1)||p[0]||'').slice(0,11).toUpperCase()}
+
+const baseSummitRows=summitRows;
+summitRows=function(m,d){
+  if(!m||!DISCIPLINES?.[d]||typeof simulateDiscipline!=='function')return baseSummitRows(m,d);
+  const proxy=summitProxy(m),field=summitField(m,d),oldBuild=buildEventField,styles=new Map(field.map(a=>[a.id,a.raceStyle]));let out;
+  try{
+    buildEventField=function(e2,d2){if(e2===proxy&&d2===d)return field;return oldBuild(e2,d2)};
+    out=simulateDiscipline(proxy,d);
+  }catch(_){out=baseSummitRows(m,d)}finally{buildEventField=oldBuild;for(const a of field){const old=styles.get(a.id);if(old===undefined)delete a.raceStyle;else a.raceStyle=old}}
+  if(!Array.isArray(out)||!out.length)return baseSummitRows(m,d);
+  const official=out.filter(r=>!r.eliminated),place=new Map(official.map((r,i)=>[r.id,i]));
+  for(const r of out){const p=place.get(r.id),bad=r.dnf||r.noMark||r.noHeight||r.eliminated;r.points=bad||p===undefined?0:(SUMMIT_POINTS[p]||0)}
+  return out;
+};
+
+const baseCommitSummitRows=commitSummitRows;
+commitSummitRows=function(m,d,rows){
+  const already=Array.isArray(m?.results?.[d]);baseCommitSummitRows(m,d,rows);if(already)return;
+  for(const r of rows||[]){if(!r.dnf)continue;const a=athlete(r.id),p=r.eventAI||summitProxy(m)?.engine?.[d]?.aiRealism?.plans?.[r.id];if(!a||!p)continue;a.injury=Math.max(Number(a.injury)||0,Number(p.injuryWeeks)||1);a.lastCompetitionInjury={season:s.game.season,week:s.game.week,event:`Summit Series ${m.number}`,disc:d,type:p.injuryType||'muscle strain',weeks:Number(p.injuryWeeks)||1};if(a.nation===managedNation()&&typeof newMail==='function')newMail(sender('medical'),`${a.name} pulled up in the Summit Series`,`${a.name} was unable to finish the ${discLabel(d)} after pulling up with ${p.injuryType||'a muscle problem'}. The medical team expect approximately ${Number(p.injuryWeeks)||1} week${Number(p.injuryWeeks)===1?'':'s'} away from full competition.`,'medical')}
+};
+
+function normaliseLanes(stage,d,e){const n=dist(d);if(n>800)return;const used=new Set(),start=e?.engine?.[d]?.race?.startLanes||{};stage.rows.forEach((r,i)=>{let lane=n===800?Number(start[r.id]):Number(r.lane);if(!Number.isFinite(lane)||lane<1||lane>8||used.has(lane))lane=PREFERRED_LANES.find(x=>!used.has(x))||i+1;used.add(lane);r.lane=lane})}
+function buildStage(e,d,rows){const finals=rows.filter(r=>!r.eliminated).map((r,i)=>({id:r.id,name:r.name,nation:r.nation,perf:Number(r.perf),lane:Number(r.lane)||null,place:i+1,eventAI:r.eventAI})),stage={name:'Final',key:`${e.id}|${d}|summit-final`,rows:finals,checkpoints:checkpoints(dist(d))};normaliseLanes(stage,d,e);stage.startOrder=[...stage.rows].sort((a,b)=>stable01(`${stage.key}|${a.id}|start`)-stable01(`${stage.key}|${b.id}|start`));if(stage.startOrder.length>1){const winner=[...stage.rows].sort((a,b)=>a.perf-b.perf)[0];if(stage.startOrder[0]?.id===winner?.id)stage.startOrder.push(stage.startOrder.shift())}stage.startRank=new Map(stage.startOrder.map((r,i)=>[r.id,i]));return stage}
+function tacticalShift(row,stage,distance,t,e,d){const amp=distance<=100?2.5:distance<=200?4.5:distance<=400?7:distance<=800?19:distance<=1500?34:distance<=5000?82:145,rank=stage.startRank.get(row.id)??0,centre=(stage.rows.length-1)/2,start=(centre-rank)*amp/Math.max(2,stage.rows.length-1)*Math.pow(1-t,1.35),phase=stable01(`${stage.key}|${row.id}|phase`)*Math.PI*2,wave=Math.sin(t*Math.PI*2.25+phase)*amp*.32*Math.sin(Math.PI*t),p=e?.engine?.[d]?.aiRealism?.plans?.[row.id],style=p?.raceStyle||row.eventAI?.raceStyle||athlete(row.id)?.raceStyle||'Even Pacer';let styleMove=0;if(distance>400){if(style==='Front Runner')styleMove=amp*.32*(1-t)*Math.sin(Math.PI*t);else if(style==='Kicker')styleMove=t>.58?amp*.36*(t-.58)*Math.sin(Math.PI*t):-amp*.08*Math.sin(Math.PI*t);else if(style==='Strength Runner')styleMove=t>.38?amp*.14*Math.sin(Math.PI*t):0}return start+wave+styleMove}
+function raceState(stage,e,d,local){const distance=dist(d),slowest=Math.max(...stage.rows.map(r=>Math.max(.01,r.perf))),elapsed=local*slowest,items=stage.rows.map(row=>{const base=elapsed/Math.max(.01,row.perf)*distance,t=clamp01(base/distance),metres=Math.max(0,Math.min(distance+8,base+tacticalShift(row,stage,distance,t,e,d)));return {row,metres,finished:metres>=distance}});items.sort((a,b)=>Math.abs(b.metres-a.metres)>.04?b.metres-a.metres:(local<.12?(stage.startRank.get(a.row.id)-stage.startRank.get(b.row.id)):a.row.perf-b.row.perf));items.forEach((x,i)=>x.position=i+1);return {distance,elapsed,items,order:items.map(x=>x.row),allFinished:items.every(x=>x.finished)}}
+
+function point(d,row,metres,index){const n=dist(d);if(n===100){const lane=Number(row.lane)||index+1;return {x:60+640*clamp01(metres/n),y:48+(lane-1)*42}}const startOffset=(400-(n%400))%400,lane=Number(row.lane)||1,merge=n===800?clamp01(metres/140):1,stagger=n===800?(lane-1)*4*(1-merge):0,radial=n<=400?(lane-1)*10.5:(n===800?(lane-1)*10.5*(1-merge)+(index%3-1)*3*merge:(index%3-1)*3),course=startOffset+metres+stagger,angle=-Math.PI/2+Math.PI*2*(course/400),rx=SVG.rx+radial,ry=SVG.ry+radial*.5;return {x:SVG.cx+Math.cos(angle)*rx,y:SVG.cy+Math.sin(angle)*ry}}
+function background(n){if(n===100){const lines=Array.from({length:9},(_,i)=>`<line x1="42" y1="${27+i*42}" x2="724" y2="${27+i*42}" stroke="#f5eadf" stroke-opacity=".28"/>`).join('');return `<rect width="760" height="455" fill="#173f31"/><rect x="42" y="27" width="682" height="336" rx="8" fill="#82484e"/>${lines}<line x1="60" y1="27" x2="60" y2="363" stroke="#fff" stroke-width="3"/><line x1="700" y1="27" x2="700" y2="363" stroke="#fff" stroke-width="5"/>`}return `<rect width="760" height="455" fill="#173f31"/><ellipse cx="380" cy="228" rx="330" ry="205" fill="#82484e"/><ellipse cx="380" cy="228" rx="220" ry="108" fill="#246044"/>${Array.from({length:9},(_,i)=>`<ellipse cx="380" cy="228" rx="${220+i*10.5}" ry="${108+i*10.5}" fill="none" stroke="#f5eadf" stroke-opacity=".24"/>`).join('')}<line x1="350" y1="120" x2="416" y2="82" stroke="#fff" stroke-width="4"/>`}
+function summitTrackHTML(e,d,track){const stage=track.stages[0],n=dist(d);return `<div class="fm2d-arena refined-arena" data-track-race-v4="${esc(stage.key)}"><div class="fm2d-arena-head"><span>Summit Series • ${esc(discLabel(d))}</span><b data-summit-distance>0m / ${n}m</b></div><svg viewBox="0 0 760 455">${background(n)}${stage.rows.map(r=>`<g data-track-runner="${esc(r.id)}"><circle r="10" fill="${nationDotColour(r.nation)}" stroke="${r.nation===managedNation()?'#fff':'#07131d'}" stroke-width="${r.nation===managedNation()?4:2}"/><text data-track-label y="-14" text-anchor="middle" fill="#fff" font-size="8" font-weight="900">${n<=800?esc(r.lane||''):''}</text></g>`).join('')}<text x="380" y="222" text-anchor="middle" fill="#e0ece5" font-size="20" font-weight="950">${n>=10000?'10,000':n}m</text><text data-summit-order x="380" y="245" text-anchor="middle" fill="#d9e7df" font-size="9" font-weight="800"></text></svg><div class="fm2d-caption"><span>Continuous Summit Series race coverage</span><span data-summit-progress>0%</span></div></div>`}
+const baseVisual=eventVisualHTML;
+eventVisualHTML=function(e,d){if(liveEventView?.summitTrackV1&&liveEventView?.event===e&&liveEventView?.disc===d)return summitTrackHTML(e,d,liveEventView.trackOverhaulV4);return baseVisual(e,d)};
+function updateVisual(e,d,state,local){if(currentView!=='competition'||competitionMode!=='discipline')return;const root=document.querySelector('[data-track-race-v4]');if(!root)return;const map=new Map(state.items.map((x,i)=>[x.row.id,{...x,index:i}]));root.querySelectorAll('[data-track-runner]').forEach(g=>{const x=map.get(g.getAttribute('data-track-runner'));if(!x)return;const p=point(d,x.row,x.metres,x.index);g.setAttribute('transform',`translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})`)});const n=dist(d),leader=Math.min(n,Math.max(...state.items.map(x=>x.metres))),de=root.querySelector('[data-summit-distance]'),oe=root.querySelector('[data-summit-order]'),pe=root.querySelector('[data-summit-progress]');if(de)de.textContent=state.allFinished?'FINISH':`${Math.round(leader)}m / ${n}m`;if(oe)oe.textContent=state.order.slice(0,3).map((r,i)=>`${i+1} ${short(r.name)}`).join(' • ');if(pe)pe.textContent=`${Math.round(local*100)}%`}
+function highlight(d,stage,metres,state){const n=dist(d),a=state.order[0],b=state.order[1];if(metres<=0)return `FINAL • THE GUN\nGavin Potts — Away in the Summit Series ${discLabel(d)}. The live order will move with the race.`;if(metres>=n)return `RESULT\nGavin Potts — ${a?.name||'The leader'} wins the Summit Series ${discLabel(d)}${a?` in ${fmtPerf(d,a.perf)}`:''}${b?`, with ${b.name} second`:''}.`;return `${metres} METRES • SUMMIT SERIES\nGavin Potts — ${a?.name||'The leader'} leads at this checkpoint. The order remains live as the race develops.`}
+
+const baseStartSummit=startSummitDiscipline;
+startSummitDiscipline=function(m,d){
+  if(!isTrack(d))return baseStartSummit(m,d);if(!m||m.completed||disciplineRunning||m.week!==s.game.week||Array.isArray(m.results?.[d]))return;
+  const career=s,rows=summitRows(m,d),proxy=summitProxy(m),stage=buildStage(proxy,d,rows);if(!stage.rows.length)return baseStartSummit(m,d);disciplineRunning=true;m.eventDayMode='watch';m.commentary??={};m.commentary[d]=[];const track={version:4,stages:[stage],stageIndex:0,nextCheckpoint:0,previousLeaderId:null,triggered:[],lastSplitMetres:0,lastSplitTime:0,local:0,state:null};liveEventView={event:proxy,disc:d,results:rows,lines:[],index:-1,trackOverhaulV4:track,summitTrackV1:true};drawCompetition();let start=null,raf=0,duration=playbackSeconds(dist(d));
+  function frame(now){if(s!==career||!disciplineRunning||liveEventView?.trackOverhaulV4!==track)return;if(start===null)start=now;const local=clamp01((now-start)/(duration*1000)),state=raceState(stage,proxy,d,local);track.local=local;track.state=state;while(track.nextCheckpoint<stage.checkpoints.length){const cp=stage.checkpoints[track.nextCheckpoint],leader=Math.max(...state.items.map(x=>Math.min(dist(d),x.metres)));if(cp>=dist(d)?!(local>=.999&&state.allFinished):leader<cp)break;track.nextCheckpoint++;track.lastSplitMetres=cp;track.lastSplitTime=cp>=dist(d)?Math.min(...stage.rows.map(r=>r.perf)):state.elapsed;const line=highlight(d,stage,cp,state);track.triggered.push(line);liveEventView.lines=[...track.triggered];liveEventView.index=liveEventView.lines.length-1;m.commentary[d]=[...track.triggered];const comm=$('commentary');if(comm)renderMatchdayCommentary(comm,line)}updateVisual(proxy,d,state,local);window.__athleticsLiveScoreboardSync?.();if(local>=1){commitSummitRows(m,d,rows);disciplineRunning=false;liveEventView=null;if(Object.keys(DISCIPLINES).every(x=>Array.isArray(m.results?.[x])))finishSummitMeeting(m);save();if(m.completed){competitionMode='overview';render()}else drawCompetition();return}raf=requestAnimationFrame(frame)}
+  raf=requestAnimationFrame(frame);track.cancel=()=>cancelAnimationFrame(raf)
+};
+
+window.__athleticsSummitEventIntegration=true;
+})();
+/* ===== End Summit Series Event Engine Integration ===== */
