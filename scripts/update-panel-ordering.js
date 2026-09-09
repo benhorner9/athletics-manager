@@ -3,6 +3,11 @@
 'use strict';
 
 const LATEST_RELEASES=[
+  {date:'9 September 2026',title:'Scoreboard Flicker Root Fix',items:[
+    'Fixed the actual cause of the Event Day scoreboard flicker: the older 2D viewer and the universal live scoreboard were both rewriting the same right-hand panel after commentary updates.',
+    'During a live discipline, only the universal scoreboard is now allowed to update that panel, so Shot Put throws, High Jump attempts and race splits no longer trigger competing full-panel renders.',
+    'Official result screens and Event Day navigation still use the normal renderer once the discipline is complete.'
+  ]},
   {date:'9 September 2026',title:'Development Updates — Newest First',items:[
     'The main-menu Development Updates panel now uses one canonical newest-first release list instead of relying on JavaScript load order.',
     'Same-day patches can no longer jump above newer work just because their script loads later.',
@@ -21,13 +26,29 @@ const LATEST_RELEASES=[
   {date:'9 September 2026',title:'Universal Live Event Scoreboard',items:[
     'The right-hand Event Day scoreboard is the single live standings panel across track and field events.',
     'Track positions update continuously with individual checkpoint splits; throws update after each attempt and High Jump after each clearance, miss or pass.'
-  ]},
-  {date:'9 September 2026',title:'Track Race Overhaul',items:[
-    'Running events now use continuous accelerated playback rather than stop-start commentary-driven movement.',
-    'Commentary is triggered by race checkpoints while athletes keep moving, with official performance times remaining realistic.',
-    'Race order develops during the event rather than simply mirroring starting lanes or the eventual finishing order.'
   ]}
 ];
+
+function installScoreboardWriterGuard(){
+  if(window.__athleticsScoreboardWriterGuard)return;
+  const proto=Element.prototype,descriptor=Object.getOwnPropertyDescriptor(proto,'innerHTML');
+  if(!descriptor?.get||!descriptor?.set)return;
+  Object.defineProperty(proto,'innerHTML',{
+    configurable:descriptor.configurable,
+    enumerable:descriptor.enumerable,
+    get:descriptor.get,
+    set:function(value){
+      const legacyLiveWrite=this?.id==='liveScoreboard'
+        && typeof disciplineRunning!=='undefined'
+        && disciplineRunning
+        && typeof value==='string'
+        && value.includes('fm-scoreboard-inner');
+      if(legacyLiveWrite)return;
+      return descriptor.set.call(this,value);
+    }
+  });
+  window.__athleticsScoreboardWriterGuard=true;
+}
 
 function applyLatestReleases(){
   if(!Array.isArray(UPDATES))return;
@@ -44,6 +65,7 @@ function applyLatestReleases(){
   if(typeof renderMenu==='function')renderMenu();
 }
 
+installScoreboardWriterGuard();
 applyLatestReleases();
 })();
 /* ===== End Development Update Ordering ===== */
