@@ -3,29 +3,31 @@
 'use strict';
 
 const LATEST_RELEASES=[
+  {date:'9 September 2026',title:'Full Event Day Audit',items:[
+    'Audited all 18 current disciplines across lane races, pack races, Shot Put and High Jump so the event animation, commentary, live scoreboard and final result all follow the same event state.',
+    'High Jump live standings now use proper countback: best height, misses at that height and then total failures. An eliminated athlete is no longer incorrectly dropped below someone with a lower clearance.',
+    'Track DNFs are removed from the live running order as soon as the athlete pulls up while retaining their last recorded split.',
+    'Shot Put live ties now compare the next-best valid marks instead of falling back to the pre-simulated finishing order.',
+    'Summit Series now uses the same event simulation and AI realism as normal Event Day, including live continuous track races, throw-by-throw field events and High Jump attempts.'
+  ]},
   {date:'9 September 2026',title:'Shot Put Live Panel Repair',items:[
     'Restored throw-by-throw event visuals while keeping the right-hand scoreboard stable.',
-    'Only the live scoreboard element is now protected from the older commentary-step renderer; the event animation area is left completely untouched.',
-    'The universal scoreboard can continue updating positions, best marks and attempt series after every throw without the two scoreboard renderers fighting each other.'
-  ]},
-  {date:'9 September 2026',title:'Development Updates — Newest First',items:[
-    'The main-menu Development Updates panel now uses one canonical newest-first release list instead of relying on JavaScript load order.',
-    'Same-day patches can no longer jump above newer work just because their script loads later.',
-    'The panel remains capped at the five most recent releases so it is easy to confirm which build changes are live.'
-  ]},
-  {date:'9 September 2026',title:'Live Scoreboard Stability',items:[
-    'The Event Day scoreboard stays mounted instead of rebuilding after every update.',
-    'Shot Put, High Jump and track events update only the rows and values that change while preserving scoreboard scroll position.',
-    'Mobile and iPad builds use cache-busted scripts so live scoreboard fixes are picked up reliably.'
+    'Only the live scoreboard element is protected from the older commentary-step renderer; the event animation area remains independent.',
+    'Scoreboard updates are now triggered immediately after the legacy renderer tries to refresh the panel, eliminating the lag between a throw and the standings update.'
   ]},
   {date:'9 September 2026',title:'Event AI Realism',items:[
-    'Ability now sets the odds rather than predetermining event results, allowing genuine favourites, bad days and upsets.',
-    'Track events include event-day behaviours such as aggressive pacing, late kicks, poor starts, fading, getting boxed in and breakthrough performances.',
+    'Ability sets the odds rather than predetermining event results, allowing genuine favourites, bad days and upsets.',
+    'Track events include aggressive pacing, late kicks, poor starts, fading, getting boxed in and breakthrough performances.',
     'Rare fatigue- and fitness-sensitive in-race injuries can create a DNF, while throws and High Jump resolve attempt by attempt under pressure.'
   ]},
   {date:'9 September 2026',title:'Universal Live Event Scoreboard',items:[
     'The right-hand Event Day scoreboard is the single live standings panel across track and field events.',
     'Track positions update continuously with individual checkpoint splits; throws update after each attempt and High Jump after each clearance, miss or pass.'
+  ]},
+  {date:'9 September 2026',title:'Track Race Overhaul',items:[
+    'Running events use continuous accelerated playback rather than stop-start commentary-driven movement.',
+    'Commentary is triggered by race checkpoints while athletes keep moving and official performance times remain realistic.',
+    'Race order develops during the event instead of mirroring the starting order or eventual result.'
   ]}
 ];
 
@@ -35,10 +37,7 @@ function applyLatestReleases(){
   const nativeUnshift=Array.prototype.unshift;
   UPDATES.unshift=function(...items){
     const fresh=items.filter(Boolean);
-    if(fresh.length){
-      nativeUnshift.apply(this,fresh);
-      if(this.length>5)this.splice(5);
-    }
+    if(fresh.length){nativeUnshift.apply(this,fresh);if(this.length>5)this.splice(5)}
     return this.length;
   };
   if(typeof renderMenu==='function')renderMenu();
