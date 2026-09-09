@@ -2,7 +2,7 @@
 (function(){
 'use strict';
 
-const ATHLETE_PROFILE_FLOW_VERSION=2;
+const ATHLETE_PROFILE_FLOW_VERSION=3;
 let athleteSectionMode='overview';
 let refocusSection=false;
 
@@ -48,6 +48,10 @@ function buildFocusedSection(body,mode){
   }
   body.prepend(stage);body.classList.add('athlete-focused-mode');
 }
+function cleanResultsAndForm(body){
+  const legacy=/^(relationship\s*&\s*career story|relationship and career story|career story|career watch|recent milestone|recent milestones)$/i;
+  body.querySelectorAll('.profile-panel').forEach(panel=>{if(legacy.test(String(panel.querySelector('h2')?.textContent||'').trim()))panel.remove()});
+}
 function orderedButtons(nav){
   return [
     ['overview',nav.querySelector('[data-profile-tab="overview"]')],
@@ -85,6 +89,7 @@ function applyAthleteFlow(){
   const shell=dialog.querySelector('.profile-shell.premium-athlete-profile');if(!shell)return;
   const body=shell.querySelector('.profile-body');if(!body)return;
   wireTabs(shell);
+  if(athleteSectionMode==='results')cleanResultsAndForm(body);
   if(['training','development','injuries'].includes(athleteSectionMode))buildFocusedSection(body,athleteSectionMode);
   body.scrollTop=0;
 }
@@ -98,7 +103,8 @@ if(typeof UPDATES!=='undefined'&&!UPDATES.some(u=>u.title==='Athlete Profile Flo
   'Athlete profile hero spacing has been tightened so status, metadata and rating content cannot collide with the portrait at iPad or mobile widths.',
   'Profile metadata now wraps cleanly instead of clipping or ellipsising important status, coach and performance information.',
   'Overview, Results & Form, Training, Development, Injuries and Records & Milestones now behave as one consistent tab sequence instead of mixing page tabs with scroll-jump links.',
-  'Training, Development and Injuries open as focused profile sections at the top of the content area, eliminating the previous up-and-down scrolling between tabs.'
+  'Training, Development and Injuries open as focused profile sections at the top of the content area, eliminating the previous up-and-down scrolling between tabs.',
+  'Results & Form is now reserved for competition results, form and performance reviews; relationship and career-story blocks remain outside that tab.'
 ]});
 if(typeof renderMenu==='function')renderMenu();
 window.__athleticsAthleteProfileFlow={version:ATHLETE_PROFILE_FLOW_VERSION,apply:applyAthleteFlow};
