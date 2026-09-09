@@ -2,7 +2,7 @@
 (function(){
 'use strict';
 
-const SQUAD_TIDY_VERSION=2;
+const SQUAD_TIDY_VERSION=3;
 
 function squadOverviewHTML(squad){
   const men=squad.filter(a=>String(a.disc||'').startsWith('M')).length;
@@ -22,7 +22,15 @@ function installSquadTidyStyles(){
     .squad-overview-compact>div:last-child{border-right:0}
     .squad-overview-compact small{display:block;margin-bottom:3px;color:var(--muted,#8fa5b2);font-size:8px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .squad-overview-compact strong{display:block;color:var(--text,#eef5f8);font-size:13px;font-weight:900;line-height:1.2}
-    @media(max-width:620px){.squad-overview-compact>div{padding:8px 10px}.squad-overview-compact strong{font-size:12px}}
+
+    /* One sorting control per screen size: headers for tablet/desktop, dropdown for phones. */
+    .mobile-squad-sort{display:none!important}
+    @media(max-width:620px){
+      .squad-overview-compact>div{padding:8px 10px}
+      .squad-overview-compact strong{font-size:12px}
+      .mobile-squad-sort{display:flex!important}
+      .squad-table .sort-head{pointer-events:none;cursor:default}
+    }
   `;
   document.head.appendChild(style);
 }
@@ -42,7 +50,7 @@ if(typeof UPDATES!=='undefined'&&!UPDATES.some(u=>u.title==='Squad Screen Tidy')
   UPDATES.unshift({date:'9 September 2026',title:'Squad Screen Tidy',items:[
     'Removed the discipline-by-discipline athlete-count cards from Squad and National Pool so the management screens continue to scale cleanly as more athletics events are added.',
     'The Squad screen now uses one compact overview showing only squad capacity and the men/women split.',
-    'Event-by-event detail remains available through the sortable Event column without taking over the top of the screen.'
+    'Sorting is now cleaner: iPad and desktop use the clickable table headers, while the Organise by control is reserved for smaller phone screens.'
   ]});
 }
 
