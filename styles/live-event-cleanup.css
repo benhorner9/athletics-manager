@@ -1,0 +1,61 @@
+/* ===== Event Day & Interface Cleanup ===== */
+.clean-home .template-home-hero{grid-template-columns:minmax(0,1fr)!important;min-height:0!important;padding:22px 24px!important}
+.clean-home .template-hero-copy{max-width:none!important}
+.clean-home .template-hero-kicker,.clean-home .template-hero-visual,.clean-home .template-hero-slogan,.clean-home .flow-hero-eventmark,.clean-home .template-hero-actions,.clean-home .dashboard-event-actions,.clean-home .template-hero-copy>p,.clean-home .deck-title>span{display:none!important}
+.clean-home .template-hero-copy h1{margin-top:0!important;max-width:900px!important}
+.clean-home .template-hero-chips{margin-top:12px!important;padding-top:0!important}
+.clean-home .world-leads-active{overflow:hidden!important}
+.clean-world-leads-window{max-height:126px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-right:3px;scrollbar-width:thin}
+.clean-world-leads-window .dashboard-leads{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}
+.clean-world-leads-window .dashboard-leads>div{min-height:112px!important}
+
+/* Email reader: dark, structured and unmistakably an email. */
+.clean-inbox .inbox-layout{grid-template-columns:minmax(270px,320px) minmax(0,1fr);gap:12px;align-items:start}
+.clean-inbox .mail-list{background:#07131d!important;border:1px solid #263f52!important;border-radius:11px!important;box-shadow:0 12px 30px #0003!important;max-height:calc(100dvh - 130px);overflow:auto}
+.clean-inbox .mailitem{padding:14px 14px 13px!important;background:#091722!important;border-bottom:1px solid #1c3242!important}
+.clean-inbox .mailitem.unread{background:#0d2434!important}.clean-inbox .mailitem.on{background:#112b3d!important;box-shadow:inset 3px 0 0 #57c8ff!important}
+.clean-inbox .mailitem .from{font-size:10px!important;letter-spacing:.045em!important;text-transform:none!important;color:#88a6b8!important}
+.clean-inbox .mailitem .subject{font-size:13px!important;line-height:1.4!important;margin-top:5px!important;color:#eef5f9!important}
+.clean-inbox .reader.email-reader{background:#08141e!important;border:1px solid #274256!important;border-radius:11px!important;overflow:hidden!important;box-shadow:0 18px 42px #0004!important}
+.clean-inbox .email-reader .reader-head{padding:20px 24px!important;background:linear-gradient(180deg,#0d2333,#0a1823)!important;border-bottom:1px solid #29475a!important;color:#eaf3f8!important}
+.clean-inbox .email-reader .email-message-top{display:grid!important;grid-template-columns:44px minmax(0,1fr) auto!important;gap:11px!important;align-items:center!important;margin-top:12px!important}
+.clean-inbox .email-reader .email-avatar{width:44px!important;height:44px!important;border-radius:50%!important;display:grid!important;place-items:center!important;background:#15364b!important;border:1px solid #3b637c!important;color:#eaf6fc!important;font-size:12px!important;font-weight:950!important}
+.clean-inbox .email-reader .email-sender strong{display:block!important;font-size:13px!important;color:#f2f7fa!important}.clean-inbox .email-reader .email-sender span{display:block!important;margin-top:2px!important;font-size:10px!important;color:#8098a8!important}
+.clean-inbox .email-reader .email-date{font-size:9px!important;line-height:1.45!important;text-align:right!important;color:#748c9d!important}
+.clean-inbox .email-reader .reader-head h2{font-size:24px!important;line-height:1.22!important;letter-spacing:-.02em!important;margin:16px 0 0!important;color:#f7fbfd!important}
+.clean-inbox .email-reader .email-header-meta{display:flex!important;gap:16px!important;flex-wrap:wrap!important;margin-top:10px!important;color:#8da4b3!important;font-size:10px!important}.clean-inbox .email-reader .email-header-meta strong{color:#c6d5de!important}
+.clean-inbox .email-reader .reader-body{padding:22px 24px 26px!important;background:#091720!important;color:#c7d5de!important;font-size:15px!important;line-height:1.72!important}
+.clean-inbox .email-reader .reader-body p{color:#c7d5de!important;font-size:15px!important;line-height:1.72!important;margin:0 0 14px!important}
+.clean-inbox .email-reader .reader-body strong{color:#f1f6f9!important}
+.clean-inbox .email-reader .mail-section{margin:15px 0!important;padding:15px 16px!important;background:#0e2230!important;border:1px solid #29485d!important;border-radius:9px!important;color:#d8e3ea!important}
+.clean-inbox .email-reader .mail-section h3{margin:0 0 8px!important;color:#f1f6f9!important;font-size:16px!important;line-height:1.3!important}.clean-inbox .email-reader .mail-section p{font-size:14px!important;color:#bdced8!important}
+.clean-inbox .email-reader .reader-actions{padding:14px 24px!important;background:#0b1b27!important;border-top:1px solid #294257!important}
+.clean-inbox .email-reader .selection-box,.clean-inbox .email-reader .contract-doc{background:#0a1b29!important;border-color:#2a485d!important;color:#dce8ef!important}
+
+/* Traits */
+.trait-arrow{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:5px;font-size:15px;font-weight:1000;line-height:1;vertical-align:middle}
+.trait-up{color:#67e0aa;background:#103529;border:1px solid #2f7558}.trait-down{color:#ff7c88;background:#421b22;border:1px solid #7c333e}
+.mail-type-traitGood{color:#67e0aa!important}.mail-type-traitConcern{color:#ff7c88!important}
+
+/* Live Event cleanup */
+.template-live-event .fm2d-caption,.clean-track-arena .fm2d-caption,.clean-field-arena .fm2d-caption,.universal-live-board .uls-foot{display:none!important}
+.template-commentary-line p{font-size:11px!important;line-height:1.55!important}.template-commentary-line small{font-size:8px!important}
+.template-live-commentary .matchday-call{max-height:210px!important}
+.universal-live-board .uls-row{transition:none!important}.universal-live-board .uls-row.changed{background:transparent!important;transform:none!important}
+.clean-track-arena,.clean-field-arena{height:100%!important;min-height:0!important;display:grid!important;grid-template-rows:auto minmax(0,1fr)!important;background:#071522!important}
+.clean-track-arena svg,.clean-field-arena svg{width:100%!important;height:100%!important;min-height:310px!important;display:block!important}
+.clean-track-arena .fm2d-arena-head,.clean-field-arena .fm2d-arena-head{min-height:38px!important;padding:0 12px!important;background:#07131d!important;border-bottom:1px solid #253e50!important;display:flex!important;align-items:center!important;justify-content:space-between!important}
+.clean-track-arena .fm2d-arena-head span,.clean-field-arena .fm2d-arena-head span{font-size:10px!important;color:#c9d9e1!important;font-weight:850!important}.clean-track-arena .fm2d-arena-head b,.clean-field-arena .fm2d-arena-head b{font-size:11px!important;color:#f2f7fa!important}
+
+@media(max-width:900px){
+ .clean-world-leads-window{max-height:122px}.clean-world-leads-window .dashboard-leads{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .clean-inbox .inbox-layout{grid-template-columns:1fr}.clean-inbox .mail-list{max-height:240px}.clean-inbox .email-reader .reader-body{font-size:14px!important;padding:18px!important}.clean-inbox .email-reader .reader-body p{font-size:14px!important}
+}
+@media(max-width:620px){
+ .clean-world-leads-window{max-height:220px}.clean-world-leads-window .dashboard-leads{grid-template-columns:1fr!important}.clean-world-leads-window .dashboard-leads>div{min-height:96px!important}
+ .clean-inbox .email-reader .reader-head{padding:16px!important}.clean-inbox .email-reader .reader-head h2{font-size:21px!important}.clean-inbox .email-reader .email-message-top{grid-template-columns:38px minmax(0,1fr)!important}.clean-inbox .email-reader .email-avatar{width:38px!important;height:38px!important}.clean-inbox .email-reader .email-date{grid-column:2!important;text-align:left!important}.clean-inbox .email-reader .reader-body{padding:16px!important;font-size:14px!important}.clean-inbox .email-reader .mail-section h3{font-size:15px!important}
+ .clean-track-arena svg,.clean-field-arena svg{min-height:280px!important}
+}
+/* ===== End Event Day & Interface Cleanup ===== */
+.clean-inbox .mailitem:has(.mail-type-traitGood) .subject{color:#67e0aa!important}
+.clean-inbox .mailitem:has(.mail-type-traitConcern) .subject{color:#ff7c88!important}
