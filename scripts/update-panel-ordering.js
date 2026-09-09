@@ -3,6 +3,13 @@
 'use strict';
 
 const LATEST_RELEASES=[
+  {date:'9 September 2026',title:'Premium Athlete & Coach Profiles',items:[
+    'Athlete and coach dossiers now use a full-screen premium presentation inspired by the new profile concept, with a cinematic hero, larger portrait, compact metadata and a stronger rating panel.',
+    'Athlete profiles keep the existing live systems underneath the redesign: squad agreements, training load, injuries, development grades, qualification, rivalries, career preferences and performance intelligence remain functional.',
+    'Athlete navigation now includes quick access to Training, Development and Injuries alongside Overview, Results & Form and Records & Milestones.',
+    'Coach dossiers now use the same visual language with role, contract, style, podium, record and athlete-support metrics plus Overview, Coaching & Contract and Career Record tabs.',
+    'The layout is optimised for iPad/desktop with a fixed dossier shell and independently scrolling content, while phones collapse to a clean single-column profile.'
+  ]},
   {date:'9 September 2026',title:'Full Event Day Audit',items:[
     'Audited all 18 current disciplines across lane races, pack races, Shot Put and High Jump so the event animation, commentary, live scoreboard and final result all follow the same event state.',
     'High Jump live standings now use proper countback: best height, misses at that height and then total failures. An eliminated athlete is no longer incorrectly dropped below someone with a lower clearance.',
@@ -23,11 +30,6 @@ const LATEST_RELEASES=[
   {date:'9 September 2026',title:'Universal Live Event Scoreboard',items:[
     'The right-hand Event Day scoreboard is the single live standings panel across track and field events.',
     'Track positions update continuously with individual checkpoint splits; throws update after each attempt and High Jump after each clearance, miss or pass.'
-  ]},
-  {date:'9 September 2026',title:'Track Race Overhaul',items:[
-    'Running events use continuous accelerated playback rather than stop-start commentary-driven movement.',
-    'Commentary is triggered by race checkpoints while athletes keep moving and official performance times remain realistic.',
-    'Race order develops during the event instead of mirroring the starting order or eventual result.'
   ]}
 ];
 
