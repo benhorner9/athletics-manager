@@ -2,18 +2,14 @@
 (function(){
 'use strict';
 
-const SQUAD_TIDY_VERSION=1;
+const SQUAD_TIDY_VERSION=2;
 
 function squadOverviewHTML(squad){
-  const disciplines=Object.keys(DISCIPLINES),covered=new Set(squad.map(a=>a.disc));
   const men=squad.filter(a=>String(a.disc||'').startsWith('M')).length;
   const women=squad.filter(a=>String(a.disc||'').startsWith('W')).length;
-  const uncovered=Math.max(0,disciplines.length-covered.size);
   return `<div class="squad-overview-compact" aria-label="Squad overview">
     <div><small>Squad places</small><strong>${squad.length} / ${SQUAD_LIMIT}</strong></div>
     <div><small>Squad split</small><strong>${men} men · ${women} women</strong></div>
-    <div><small>Events covered</small><strong>${covered.size} / ${disciplines.length}</strong></div>
-    <div class="${uncovered?'needs-cover':'complete-cover'}"><small>Without squad athlete</small><strong>${uncovered}</strong></div>
   </div>`;
 }
 
@@ -26,9 +22,7 @@ function installSquadTidyStyles(){
     .squad-overview-compact>div:last-child{border-right:0}
     .squad-overview-compact small{display:block;margin-bottom:3px;color:var(--muted,#8fa5b2);font-size:8px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .squad-overview-compact strong{display:block;color:var(--text,#eef5f8);font-size:13px;font-weight:900;line-height:1.2}
-    .squad-overview-compact .needs-cover strong{color:#f2c879}
-    .squad-overview-compact .complete-cover strong{color:#8fe0b1}
-    @media(max-width:620px){.squad-overview-compact{display:grid;grid-template-columns:1fr 1fr}.squad-overview-compact>div{border-right:1px solid rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.07)}.squad-overview-compact>div:nth-child(2n){border-right:0}.squad-overview-compact>div:nth-last-child(-n+2){border-bottom:0}}
+    @media(max-width:620px){.squad-overview-compact>div{padding:8px 10px}.squad-overview-compact strong{font-size:12px}}
   `;
   document.head.appendChild(style);
 }
@@ -47,8 +41,8 @@ drawSquad=function(){
 if(typeof UPDATES!=='undefined'&&!UPDATES.some(u=>u.title==='Squad Screen Tidy')){
   UPDATES.unshift({date:'9 September 2026',title:'Squad Screen Tidy',items:[
     'Removed the discipline-by-discipline athlete-count cards from Squad and National Pool so the management screens continue to scale cleanly as more athletics events are added.',
-    'The Squad screen now uses one compact overview showing squad capacity, men/women split, event coverage and the number of disciplines without a current squad athlete.',
-    'Event-by-event detail remains available through the sortable Event column, so no squad-management information has been lost.'
+    'The Squad screen now uses one compact overview showing only squad capacity and the men/women split.',
+    'Event-by-event detail remains available through the sortable Event column without taking over the top of the screen.'
   ]});
 }
 
