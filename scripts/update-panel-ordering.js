@@ -3,6 +3,13 @@
 'use strict';
 
 const LATEST_RELEASES=[
+  {date:'9 September 2026',title:'Field Events & Summit Event Day',items:[
+    'Shot Put now plays at a clearer pace with a short landing pause and more varied attempt commentary instead of repeating the same line after every throw.',
+    'High Jump now shows a visible 2D-dot approach, take-off, clearance or miss and landing, with slower pacing so each featured attempt is easy to follow.',
+    'Shot Put and High Jump live standings stay mounted and update in place after each completed attempt, removing the distracting scoreboard flicker.',
+    'Summit Series meetings now use the same modern Event Day presentation, discipline cards, live viewer, commentary, Watch / Skip controls and no-entry skip options as normal competitions.',
+    'The Event Day progression safeguards remain active so a presentation problem cannot trap a career inside a running event.'
+  ]},
   {date:'9 September 2026',title:'Premium Athlete & Coach Profiles',items:[
     'Athlete and coach dossiers now use a full-screen premium presentation inspired by the new profile concept, with a cinematic hero, larger portrait, compact metadata and a stronger rating panel.',
     'Athlete profiles keep the existing live systems underneath the redesign: squad agreements, training load, injuries, development grades, qualification, rivalries, career preferences and performance intelligence remain functional.',
@@ -26,10 +33,6 @@ const LATEST_RELEASES=[
     'Ability sets the odds rather than predetermining event results, allowing genuine favourites, bad days and upsets.',
     'Track events include aggressive pacing, late kicks, poor starts, fading, getting boxed in and breakthrough performances.',
     'Rare fatigue- and fitness-sensitive in-race injuries can create a DNF, while throws and High Jump resolve attempt by attempt under pressure.'
-  ]},
-  {date:'9 September 2026',title:'Universal Live Event Scoreboard',items:[
-    'The right-hand Event Day scoreboard is the single live standings panel across track and field events.',
-    'Track positions update continuously with individual checkpoint splits; throws update after each attempt and High Jump after each clearance, miss or pass.'
   ]}
 ];
 
