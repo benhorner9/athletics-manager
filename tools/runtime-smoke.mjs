@@ -1,7 +1,6 @@
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
-import {fileURLToPath} from 'node:url';
 import {JSDOM,VirtualConsole} from 'jsdom';
 
 const root=process.cwd();
@@ -70,7 +69,7 @@ try{
    }
   }
  });
- await new Promise((resolve,reject)=>{
+ await new Promise(resolve=>{
   const timer=setTimeout(resolve,3500);
   dom.window.addEventListener('load',()=>{clearTimeout(timer);setTimeout(resolve,900)},{once:true});
   dom.window.addEventListener('error',event=>{fail(`window error: ${event.message||event.error||'unknown error'}`)});
@@ -115,7 +114,8 @@ try{
  fail(`Runtime smoke harness failed: ${err?.stack||err}`);
 } finally {
  try{dom?.window?.close()}catch(_){}
- await new Promise(resolve=>server.close(resolve));
+ try{server.closeAllConnections?.()}catch(_){}
+ try{server.close()}catch(_){}
 }
 
 if(failures.length){
@@ -130,3 +130,4 @@ console.log('✓ staged runtime globals were installed');
 console.log('✓ regression snapshot completed without duplicate runtime ids');
 console.log('✓ main management routes rendered without throwing');
 if(warnings.length)console.log(`! ${warnings.length} non-fatal jsdom/browser-emulation warning${warnings.length===1?'':'s'} ignored`);
+process.exit(0);
