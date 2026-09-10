@@ -4,71 +4,115 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#06111d">
-<title>Athletics Manager</title>
-<meta name="application-name" content="Athletics Manager">
-<meta name="apple-mobile-web-app-title" content="Athletics Manager">
-<meta name="description" content="Athletics Manager — lead a national athletics programme across a 40-year career and ten Olympic cycles.">
-<link rel="stylesheet" href="styles/game.css?v=20260908-architecture2">
-<link rel="stylesheet" href="styles/event-2d.css?v=20260908-sprint10">
-<link rel="stylesheet" href="styles/event-2d-refinement.css?v=20260909-refine1">
-<link rel="stylesheet" href="styles/polish.css?v=20260909-polish1">
-<link rel="stylesheet" href="styles/premium-profiles.css?v=20260909-premium-profile1">
-<link rel="stylesheet" href="styles/athlete-profile-flow-fix.css?v=20260909-athlete-flow2">
-<link rel="stylesheet" href="styles/template-scenes.css?v=20260909-template-scenes1">
-<link rel="stylesheet" href="styles/flow-stability-batch.css?v=20260909-flow-stability2">
-<link rel="stylesheet" href="styles/live-event-cleanup.css?v=20260909-cleanup2">
-<link rel="stylesheet" href="styles/pretest-polish.css?v=20260909-pretest1">
-<link rel="stylesheet" href="styles/pretest-feedback.css?v=20260909-pretest1">
-<link rel="stylesheet" href="styles/event-day-reliability.css?v=20260909-reliability1">
-<link rel="stylesheet" href="styles/consolidation-v3.css?v=20260909-consolidation3">
+<meta name="robots" content="noindex,nofollow">
+<title>Athletics Manager — Early Access</title>
+<meta name="description" content="Private early access build of Athletics Manager.">
+<style>
+:root{color-scheme:dark;--bg:#050c14;--panel:#0b1724;--panel2:#0f2030;--line:rgba(255,255,255,.10);--text:#f4f7fa;--muted:#93a4b5;--accent:#64d393;--accent2:#9be7b8;--danger:#ff8f8f}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text)}
+body{min-height:100svh;display:grid;place-items:center;overflow-x:hidden;background:radial-gradient(circle at 20% 12%,rgba(62,137,103,.18),transparent 34%),radial-gradient(circle at 88% 85%,rgba(42,83,120,.18),transparent 32%),linear-gradient(150deg,#040a11 0%,#07111c 45%,#091522 100%)}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.18;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:32px 32px;mask-image:linear-gradient(to bottom,black,transparent 85%)}
+.shell{width:min(1120px,100%);min-height:min(760px,100svh);padding:clamp(18px,4vw,54px);display:grid;grid-template-columns:minmax(0,1.25fr) minmax(340px,.75fr);gap:clamp(24px,5vw,72px);align-items:center}
+.hero{padding:clamp(8px,3vw,28px)}
+.mark{width:72px;height:72px;border:1px solid rgba(155,231,184,.25);border-radius:20px;display:grid;place-items:center;font-weight:900;font-size:26px;letter-spacing:-1px;color:#06110b;background:linear-gradient(135deg,#9be7b8,#58c889);box-shadow:0 18px 50px rgba(60,170,112,.20);margin-bottom:34px}
+.eyebrow{display:flex;align-items:center;gap:10px;color:var(--accent2);text-transform:uppercase;letter-spacing:.18em;font-size:12px;font-weight:800;margin-bottom:16px}.eyebrow:before{content:"";width:34px;height:1px;background:var(--accent)}
+h1{font-size:clamp(48px,7vw,86px);line-height:.88;letter-spacing:-.065em;margin:0;max-width:760px;text-transform:uppercase;font-weight:950}h1 span{display:block;color:var(--accent)}
+.hero p{max-width:610px;color:#afbdca;font-size:clamp(16px,2vw,19px);line-height:1.65;margin:28px 0 0}
+.build-note{display:flex;align-items:center;gap:10px;margin-top:34px;color:#7f91a3;font-size:13px}.dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 5px rgba(100,211,147,.10)}
+.card{position:relative;border:1px solid var(--line);background:linear-gradient(180deg,rgba(15,32,48,.94),rgba(8,20,31,.96));box-shadow:0 26px 80px rgba(0,0,0,.32);border-radius:28px;padding:clamp(26px,4vw,40px);overflow:hidden;backdrop-filter:blur(14px)}
+.card:before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),transparent)}
+.card-kicker{text-transform:uppercase;letter-spacing:.18em;font-size:11px;color:var(--accent2);font-weight:850;margin-bottom:10px}.card h2{font-size:31px;letter-spacing:-.035em;margin:0 0 10px}.card-copy{margin:0 0 30px;color:var(--muted);line-height:1.55;font-size:14px}
+label{display:block;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#c6d1db;margin-bottom:9px}.input-wrap{position:relative}input{width:100%;height:58px;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:#07121d;color:white;padding:0 52px 0 16px;font:inherit;font-size:17px;outline:none;transition:.2s border-color,.2s box-shadow}input:focus{border-color:rgba(100,211,147,.7);box-shadow:0 0 0 4px rgba(100,211,147,.09)}
+.peek{position:absolute;right:8px;top:8px;height:42px;min-width:42px;border:0;border-radius:10px;background:transparent;color:#8fa0b1;font-weight:800;cursor:pointer}.peek:hover{background:rgba(255,255,255,.05);color:white}
+.enter{width:100%;height:58px;margin-top:16px;border:0;border-radius:14px;background:linear-gradient(135deg,#9be7b8,#58c889);color:#06120c;font-size:14px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;box-shadow:0 14px 30px rgba(69,177,117,.16);transition:.18s transform,.18s filter}.enter:hover{filter:brightness(1.05)}.enter:active{transform:translateY(1px)}.enter[disabled]{opacity:.65;cursor:wait}
+.status{min-height:22px;margin-top:14px;font-size:13px;color:var(--muted)}.status.error{color:var(--danger)}.status.success{color:var(--accent2)}
+.rule{height:1px;background:var(--line);margin:24px 0 20px}.small{color:#718496;font-size:12px;line-height:1.55}.small strong{color:#9dafbe}
+@media(max-width:800px){body{display:block}.shell{grid-template-columns:1fr;min-height:100svh;padding:28px 20px 38px;gap:28px}.hero{padding:12px 4px 0}.mark{width:60px;height:60px;border-radius:17px;font-size:22px;margin-bottom:26px}h1{font-size:clamp(50px,15vw,72px)}.hero p{font-size:16px;margin-top:22px}.build-note{margin-top:22px}.card{border-radius:22px;padding:26px 22px}.card h2{font-size:28px}}
+</style>
 </head>
 <body>
-<div id="startup" class="startup">
-  <div class="menu-wrap">
-    <section class="menu-hero"><div class="brand-mark">AM</div><div class="menu-kicker">National Athletics Management</div><div class="menu-title">ATHLETICS <span>MANAGER</span></div><p class="menu-desc">Lead a national programme across a 40-year career and ten Olympic cycles. Build the squad, staff, pathway and competition plan around each Games.</p></section>
-    <aside class="menu-side"><div><div class="page-kicker">Career</div><h2 id="careerTitle">Choose a Nation</h2><div id="saveCard" class="save-card"></div></div><div><div class="menu-actions"><button id="continueBtn" class="btn primary">CONTINUE CAREER</button><button id="newBtn" class="btn secondary">START NEW CAREER</button></div><div id="latestUpdatePanel" class="latest-update"></div></div></aside>
-  </div>
-</div>
-<div id="nationModal" class="nation-modal hidden">
- <div class="nation-dialog">
-  <div class="nation-head"><div class="page-kicker">New Career</div><h2>Choose Your Nation</h2><p>Each nation begins with its own athletics culture, resources and board pressure. You can reshape that identity over a long career; your first contract covers one four-year Olympic cycle.</p></div>
-  <div id="nationGrid" class="nation-grid"></div>
-  <div class="nation-actions"><div id="nationSelected" class="nation-selected">Select a national programme to continue.</div><button id="beginCareerBtn" class="btn primary" disabled>REVIEW JOB OFFER</button><button id="cancelNationBtn" class="btn ghost">CANCEL</button></div>
- </div>
-</div>
-<aside class="rail"><div class="rail-brand"><small id="railNation">National Programme</small><strong>ATHLETICS<br>MANAGER</strong></div><nav class="rail-nav" id="railNav"><button data-view="home" class="on">Home <span id="homeBadge"></span></button><button data-view="inbox">Inbox <span id="mailBadge" class="badge hidden">0</span></button><button data-view="squad">Squad</button><button data-view="pool">National Pool</button><button data-view="calendar">Calendar</button><button data-view="training">Training</button><button data-view="scouting">Scouting</button><button data-view="league">Summit Series</button><button data-view="rankings">Rankings</button><button data-view="olympics">Qualification</button><button id="myProfileShortcut" type="button">My Profile</button><button data-view="staff">Staff</button><button data-view="finance">Finance</button><button data-view="news">World News <span id="newsBadge" class="badge hidden">0</span></button></nav><div class="rail-spacer"></div><button id="menuBtn" class="rail-menu">MAIN MENU</button></aside>
-<main class="main"><header class="topbar"><div><div id="pageKicker" class="page-kicker">National Programme</div><div id="pageTitle" class="page-title">Performance Centre</div></div><div class="top-right"><span class="pill"><span class="save-dot"></span>AUTOSAVED</span><span id="yearPill" class="pill">YEAR 1</span><span id="weekPill" class="pill">WEEK 1</span><button id="advanceTop" class="btn primary">ADVANCE WEEK</button></div></header><div class="people-finder" id="peopleFinder"><label><input id="peopleSearch" type="search" placeholder="Search athletes, coaches or your profile…" aria-label="Search people" aria-controls="peopleResults" aria-expanded="false" autocomplete="off"></label><div id="peopleResults" class="people-results" hidden aria-label="People search results"></div></div><div class="content"><section id="home" class="view on"></section><section id="squad" class="view"></section><section id="pool" class="view"></section><section id="league" class="view"></section><section id="inbox" class="view"></section><section id="news" class="view"></section><section id="calendar" class="view"></section><section id="training" class="view"></section><section id="activities" class="view"></section><section id="scouting" class="view"></section><section id="staff" class="view"></section><section id="finance" class="view"></section><section id="competition" class="view"></section><section id="rankings" class="view"></section><section id="olympics" class="view"></section></div></main>
-<nav class="bottom-nav" id="bottomNav"><button data-view="home" class="on">HOME</button><button data-view="inbox">INBOX</button><button data-view="squad">SQUAD</button><button data-view="calendar">CALENDAR</button><button id="mobileMoreBtn" type="button" aria-expanded="false" aria-controls="mobileNavDrawer">MORE</button></nav><div id="mobileNavDrawer" class="mobile-nav-drawer" hidden><div class="mobile-nav-sheet"><div class="mobile-nav-head"><div><small>ATHLETICS MANAGER</small><strong>More</strong></div><button id="mobileNavClose" type="button" aria-label="Close menu">×</button></div><div class="mobile-nav-grid"><button data-mobile-view="pool">National Pool</button><button data-mobile-view="training">Training</button><button data-mobile-view="scouting">Scouting</button><button data-mobile-view="league">Summit Series</button><button data-mobile-view="rankings">Rankings</button><button data-mobile-view="olympics">Qualification</button><button id="mobileMyProfile" type="button">My Profile</button><button data-mobile-view="staff">Staff</button><button data-mobile-view="finance">Finance</button><button data-mobile-view="news">World News</button></div><button id="mobileMainMenu" class="mobile-main-menu" type="button">MAIN MENU</button></div></div>
-<div id="toast" class="toast"></div><dialog id="firstDay" aria-label="Your first day as Performance Director"></dialog><dialog id="homeReport" aria-labelledby="homeReportTitle"></dialog><dialog id="athleteProfile" aria-labelledby="profileName"></dialog><dialog id="managementProfile" aria-labelledby="managementName"></dialog>
-<script src="scripts/game.js?v=20260908-architecture2"></script>
-<script src="scripts/event-2d.js?v=20260908-sprint10"></script>
-<script src="scripts/sprint-expansion.js?v=20260908-update10"></script>
-<script src="scripts/event-2d-refinement.js?v=20260909-refine1"></script>
-<script src="scripts/endurance-expansion.js?v=20260909-update11"></script>
-<script src="scripts/track-race-core-v5.js?v=20260910-corecleanup2"></script>
-<script src="scripts/event-ai-realism.js?v=20260909-event-ai1"></script>
-<script src="scripts/event-ai-display.js?v=20260910-event-ai-display2"></script>
-<script src="scripts/track-live-scoreboard-v1.js?v=20260909-corecleanup1"></script>
-<script src="scripts/polish.js?v=20260909-polish1"></script>
-<script src="scripts/first-15-refinement.js?v=20260909-first15r1"></script>
-<script src="scripts/squad-screen-tidy.js?v=20260909-squad-tidy3"></script>
-<script src="scripts/update-panel-tidy.js?v=20260909-five-releases"></script>
-<script src="scripts/scoreboard-instance-ownership.js?v=20260909-scoreboard-owner4"></script>
-<script src="scripts/update-panel-ordering.js?v=20260909-corecleanup1"></script>
-<script src="scripts/premium-profiles.js?v=20260909-premium-profile1"></script>
-<script src="scripts/athlete-profile-flow-fix.js?v=20260909-athlete-flow4"></script>
-<script src="scripts/template-scenes.js?v=20260909-template-scenes1"></script>
-<script src="scripts/flow-stability-core.js?v=20260909-corecleanup1"></script>
-<script src="scripts/ui-cleanup.js?v=20260909-cleanup2"></script>
-<script src="scripts/feedback-config.js?v=20260909-pretest1"></script>
-<script src="scripts/pretest-editorial.js?v=20260909-pretest1"></script>
-<script src="scripts/pretest-feedback.js?v=20260909-pretest1"></script>
-<script src="scripts/selection-summit-reliability.js?v=20260909-reliability2"></script>
-<script src="scripts/summit-event-unified.js?v=20260909-corecleanup1"></script>
-<script src="scripts/qualification-compact-v2.js?v=20260909-consolidation3"></script>
-<script src="scripts/event-flow-v3.js?v=20260909-consolidation3"></script>
-<script src="scripts/field-dot-playback.js?v=20260909-fieldscore1"></script>
-<script src="scripts/field-scoreboard-authority.js?v=20260909-fieldscore1"></script>
-<script src="scripts/progression-selection-core.js?v=20260910-corecleanup2"></script>
-<script src="scripts/event-day-integrity.js?v=20260909-corecleanup1"></script>
-</body></html>
+<main class="shell">
+  <section class="hero" aria-label="Athletics Manager">
+    <div class="mark" aria-hidden="true">AM</div>
+    <div class="eyebrow">National Athletics Management</div>
+    <h1>Athletics <span>Manager</span></h1>
+    <p>Build a national programme, shape generations of athletes and manage the road to the world’s biggest stage across a 40-year career.</p>
+    <div class="build-note"><span class="dot"></span><span>Private development build · Early Access</span></div>
+  </section>
+
+  <section class="card" aria-labelledby="accessTitle">
+    <div class="card-kicker">Restricted Access</div>
+    <h2 id="accessTitle">Enter the programme</h2>
+    <p class="card-copy">This build is currently available to invited testers only. Enter the access password to continue.</p>
+    <form id="accessForm" novalidate>
+      <label for="accessPassword">Access Password</label>
+      <div class="input-wrap">
+        <input id="accessPassword" type="password" autocomplete="current-password" autocapitalize="none" spellcheck="false" required autofocus>
+        <button class="peek" id="peekBtn" type="button" aria-label="Show password">SHOW</button>
+      </div>
+      <button class="enter" id="enterBtn" type="submit">Enter Game</button>
+      <div id="status" class="status" aria-live="polite"></div>
+    </form>
+    <div class="rule"></div>
+    <div class="small"><strong>Athletics Manager Early Access</strong><br>Your approved device will remember access until the tester password is changed.</div>
+  </section>
+</main>
+<script>
+(function(){
+  const STORAGE_KEY='athletics_manager_access_v1';
+  const ACCESS_HASH='e56bf289bbc79aa237b0fe23e136fb59327c177de7a9b2f611cdb57b882005d1';
+  const form=document.getElementById('accessForm');
+  const input=document.getElementById('accessPassword');
+  const status=document.getElementById('status');
+  const button=document.getElementById('enterBtn');
+  const peek=document.getElementById('peekBtn');
+
+  try {
+    if(localStorage.getItem(STORAGE_KEY)===ACCESS_HASH){
+      window.location.replace('game.html');
+      return;
+    }
+  } catch(e) {}
+
+  async function sha256(value){
+    const bytes=new TextEncoder().encode(value);
+    const digest=await crypto.subtle.digest('SHA-256',bytes);
+    return Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  }
+
+  peek.addEventListener('click',()=>{
+    const showing=input.type==='text';
+    input.type=showing?'password':'text';
+    peek.textContent=showing?'SHOW':'HIDE';
+    peek.setAttribute('aria-label',showing?'Show password':'Hide password');
+    input.focus();
+  });
+
+  form.addEventListener('submit',async(e)=>{
+    e.preventDefault();
+    status.className='status';
+    status.textContent='Checking access…';
+    button.disabled=true;
+    try{
+      const entered=await sha256(input.value);
+      if(entered!==ACCESS_HASH){
+        status.className='status error';
+        status.textContent='Incorrect access password. Please try again.';
+        input.select();
+        return;
+      }
+      localStorage.setItem(STORAGE_KEY,ACCESS_HASH);
+      status.className='status success';
+      status.textContent='Access approved. Loading Athletics Manager…';
+      window.location.replace('game.html');
+    }catch(err){
+      status.className='status error';
+      status.textContent='Could not verify access on this device.';
+    }finally{
+      button.disabled=false;
+    }
+  });
+})();
+</script>
+</body>
+</html>
