@@ -22,6 +22,14 @@ jobs:
       - name: Check out latest game
         uses: actions/checkout@v4
 
+      - name: Validate Live Event engine
+        run: node --check scripts/live-event-engine-v3.js
+
+      - name: Verify legacy renderers are not active
+        run: |
+          ! grep -Eq 'event-2d|track-race-core|track-live-scoreboard|field-dot-playback|field-scoreboard-authority|scoreboard-instance-ownership|live-event-engine-v2' game.html
+          ! grep -q '<ellipse' scripts/live-event-engine-v3.js
+
       - name: Deploy game to hosting
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:

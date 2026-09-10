@@ -10,42 +10,23 @@ if(typeof renderMenu==='function')renderMenu();
 })();
 /* ===== End Development Update Panel Tidy ===== */
 
-/* ===== Live Event Engine Loader ===== */
+/* ===== Live 2D V3 Release Note ===== */
 (function(){
 'use strict';
-if(window.__amLiveEventLoader)return;window.__amLiveEventLoader=1;
-function load(){
- if(!document.querySelector('link[data-am-live-engine-css]')){
-  const css=document.createElement('link');css.rel='stylesheet';css.href='styles/live-event-engine-v1.css?v=20260910-live2';css.dataset.amLiveEngineCss='1';document.head.appendChild(css);
- }
- if(!document.querySelector('script[data-am-live-engine-js]')){
-  const js=document.createElement('script');js.src='scripts/live-event-engine-v2.js?v=20260910-live2';js.dataset.amLiveEngineJs='1';js.async=false;document.body.appendChild(js);
- }
-}
-if(document.readyState==='complete')setTimeout(load,0);else window.addEventListener('load',load,{once:true});
-})();
-/* ===== End Live Event Engine Loader ===== */
-
-/* ===== Live 2D Rebuild Release Note ===== */
-(function(){
-'use strict';
-if(window.__amLive2DReleaseNote)return;window.__amLive2DReleaseNote=1;
+if(window.__amLive2DV3ReleaseNote)return;window.__amLive2DV3ReleaseNote=1;
 const update={
- timestamp:'2026-09-10T10:31:00+01:00',
+ timestamp:'2026-09-10T11:25:00+01:00',
  date:'10 September 2026',
- title:'Live 2D Event Viewer Rebuild',
+ title:'Live 2D Engine Reset',
  items:[
-  'Rebuilt the Live Event presentation around one shared event timeline so animation, standings and commentary all read from the same simulation result.',
-  'Track races now support live race progression, position changes, checkpoints, lap-based pacing and up to eight competitors without revealing the final result early.',
-  'Field events now play attempts individually, with recorded throws and jumps driving the visual distance, scoreboard changes and commentary reactions.',
-  'Added event controls for pause and 1x / 2x / 4x speed, plus a clear completion route so finished events cannot leave the player trapped on Event Day.',
-  'The new Live 2D layer is designed as the single reusable foundation for future track, throws and jumps work rather than adding more separate event renderers.'
+  'Removed the competing legacy 2D race and field renderers from the active game so one Live Event engine now owns Event Day presentation.',
+  'Replaced the broken V2 script with a clean V3 engine that drives animation, live standings and Gavin Potts commentary from the same simulated result.',
+  '100m, 200m, 400m, 800m and longer races now use one stadium track made from two straights and two bends; the old oval renderer is no longer part of the build.',
+  'Track movement now updates continuously through requestAnimationFrame rather than jumping between commentary screens, with Pause and 1x / 2x / 4x controls tied to the same event state.',
+  'Throws and High Jump use the simulation attempt data directly, and official results are only committed after the live sequence finishes.'
  ]
 };
-function add(){
- if(typeof window.addDevelopmentUpdate==='function'){window.addDevelopmentUpdate(update);return}
- setTimeout(add,50);
-}
+function add(){if(typeof window.addDevelopmentUpdate==='function'){window.addDevelopmentUpdate(update);return}setTimeout(add,50)}
 add();
 })();
-/* ===== End Live 2D Rebuild Release Note ===== */
+/* ===== End Live 2D V3 Release Note ===== */
