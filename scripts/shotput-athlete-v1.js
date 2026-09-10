@@ -123,4 +123,5 @@ window.__athleticsShotPutAthlete={version:2,sync};
  }
  if(!window.__amEventExitAuthorityV1)load('scripts/event-exit-authority-v1.js?v=20260910-exit1','data-am-event-exit-authority');
  if(!window.__amHighJumpBroadcastV1)load('scripts/high-jump-broadcast-v1.js?v=20260910-hjhighlights1','data-am-hj-broadcast');
+ if(!window.__amTrainingV2Bootstrap)load('scripts/training-v2-bootstrap.js?v=20260910-training2','data-am-training-v2');
 })();
