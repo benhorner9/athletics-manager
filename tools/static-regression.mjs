@@ -7,6 +7,7 @@ const failures=[];
 const notes=[];
 const fail=msg=>failures.push(msg);
 const note=msg=>notes.push(msg);
+const read=file=>fs.readFileSync(path.join(root,file),'utf8');
 
 if(!fs.existsSync(htmlPath)){
  console.error('game.html is missing');
@@ -73,6 +74,7 @@ before('scripts/staff-finance-v2.js','scripts/world-season-v2.js');
 for(const script of requiredScripts.filter(x=>x!=='scripts/integration-regression-v1.js'))before(script,'scripts/integration-regression-v1.js');
 
 if(scriptOrder.includes('scripts/inbox-decision-system-v2.js'))fail('Deleted inbox-decision-system-v2.js has been reintroduced.');
+if(scriptOrder.includes('scripts/onboarding-copy-cleanup-v1.js'))fail('Removed onboarding-copy-cleanup-v1.js has been reintroduced into game.html.');
 if(!localRefs.includes('styles/game.css'))fail('Legacy game.css was removed before migration parity was proven.');
 if(!scriptOrder.includes('scripts/game.js'))fail('Legacy game.js was removed before migration parity was proven.');
 
@@ -92,9 +94,43 @@ if(fs.existsSync(integration)){
  for(const token of ['__athleticsRegression','popstate','getProgressionBlockers','competitionRouteValid'])if(!text.includes(token))fail(`Integration runtime missing safeguard: ${token}`);
 }
 
+/* Source contracts for bugs already discovered during the staged migration. These checks
+   prevent a future wrapper/edit from silently restoring the broken behaviour. */
+const sourceContracts={
+ 'scripts/home-v2.js':[
+  ['const c=core();if(c?.openAction)','Home decision routing must verify openAction before returning'],
+  ['window.AthleticsUI?.format?.money','Home money formatting must use the window-scoped UI platform']
+ ],
+ 'scripts/inbox-v3.js':[
+  ['const c=core();if(c?.openAction)','Inbox decision routing must verify openAction before returning']
+ ],
+ 'scripts/scouting-v3.js':[
+  ['function reportForAthlete(a)','Scouting report fallback helper is missing'],
+  ['window.__athleticsScoutingV3','Scouting V3 public migration handle is missing']
+ ],
+ 'scripts/selection-immersion-v1.js':[
+  ['function decorateAthletes(ctx,d,dlg)','Selection athlete-story decorator is missing'],
+  ['__selectionImmersion','Selection immersion wrapper ownership marker is missing']
+ ],
+ 'scripts/competition-journey-v2.js':[
+  ['window.__athleticsCompetitionJourneyV2','Competition Journey migration handle is missing']
+ ],
+ 'scripts/inbox-decision-core-v1.js':[
+  ['getProgressionBlockers:blockers','Inbox decision core must remain the progression-blocker authority'],
+  ['openAction','Inbox decision core action router is missing']
+ ]
+};
+for(const [file,contracts] of Object.entries(sourceContracts)){
+ const full=path.join(root,file);
+ if(!fs.existsSync(full)){fail(`Source contract file missing: ${file}`);continue}
+ const text=read(file);
+ for(const [token,message] of contracts)if(!text.includes(token))fail(`${message} (${file})`);
+}
+
 note(`${routes.length} route containers present`);
 note(`${localRefs.length} local assets referenced by game.html`);
 note(`${requiredScripts.length} critical runtimes checked for load order`);
+note(`${Object.keys(sourceContracts).length} critical source modules checked for migration contracts`);
 note('Legacy shell remains present; this gate intentionally blocks premature removal during staged migration');
 
 if(failures.length){
