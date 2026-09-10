@@ -30,3 +30,32 @@ function add(){if(typeof window.addDevelopmentUpdate==='function'){window.addDev
 add();
 })();
 /* ===== End Live 2D V3 Release Note ===== */
+
+/* ===== High Jump Live Spoiler Guard ===== */
+(function(){
+'use strict';
+if(window.__amHighJumpSpoilerGuard)return;window.__amHighJumpSpoilerGuard=1;
+const countPattern=/^\s*\d+\s*\/\s*\d+\s*$/;
+function isHighJump(){
+ try{return !!activeEventDisc&&DISCIPLINES?.[activeEventDisc]?.type==='height'}catch(_){return false}
+}
+function scrub(){
+ if(!isHighJump())return;
+ const root=document.getElementById('competition');
+ if(!root?.classList.contains('on'))return;
+ const visual=document.getElementById('liveEventVisual');
+ const currentHeight=visual?.querySelector('svg .v3big')?.textContent?.trim()||'CURRENT HEIGHT';
+ const boardMeta=document.querySelector('#liveScoreboard .v3board > header > span');
+ if(boardMeta&&countPattern.test(boardMeta.textContent||''))boardMeta.textContent=currentHeight;
+ const controlMeta=visual?.querySelector('.v3controls > span');
+ if(controlMeta&&countPattern.test(controlMeta.textContent||''))controlMeta.textContent=currentHeight;
+ visual?.querySelectorAll('.v3intro span').forEach(el=>{if(/\battempts?\b/i.test(el.textContent||''))el.textContent='HIGH JUMP FIELD'});
+ document.querySelectorAll('#commentary .v3line time').forEach(el=>{if(countPattern.test(el.textContent||''))el.textContent='LIVE'});
+}
+let queued=false;
+function queue(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;scrub()})}
+const target=document.getElementById('competition');
+if(target)new MutationObserver(queue).observe(target,{childList:true,subtree:true,characterData:true});
+queue();
+})();
+/* ===== End High Jump Live Spoiler Guard ===== */
