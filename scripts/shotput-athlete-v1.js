@@ -1,7 +1,7 @@
-/* ===== Shot Put Athlete Marker V2 ===== */
+/* ===== Shot Put Athlete Marker V3 ===== */
 (function(){
 'use strict';
-if(window.__amShotPutAthleteV2)return;window.__amShotPutAthleteV2=1;
+if(window.__amShotPutAthleteV3)return;window.__amShotPutAthleteV3=1;
 
 let raf=0,overlay=null,host=null;
 const SVG_NS='http://www.w3.org/2000/svg';
@@ -19,6 +19,7 @@ function remove(){
 function make(hostEl){
  const el=document.createElement('div');
  el.className='am-shotput-athlete-dot';
+ el.dataset.amShotputAnchor='circle';
  el.setAttribute('aria-hidden','true');
  el.innerHTML='<i></i>';
  Object.assign(el.style,{position:'absolute',borderRadius:'50%',border:'3px solid #fff',boxShadow:'0 3px 10px #0009',pointerEvents:'none',zIndex:'8',transform:'translate(-50%,-50%)',transition:'background .1s linear'});
@@ -56,6 +57,49 @@ function ensureDistanceMarkers(svg){
  });
  svg.appendChild(g);
 }
+function throwingCircle(svg){
+ return [...svg.querySelectorAll('circle')].find(el=>
+  Math.abs(Number(el.getAttribute('cx'))-148)<.01&&
+  Math.abs(Number(el.getAttribute('cy'))-272)<.01&&
+  Math.abs(Number(el.getAttribute('r'))-52)<.01
+ )||null;
+}
+function circleFrame(svg,hostEl){
+ const hr=hostEl.getBoundingClientRect();
+ const circle=throwingCircle(svg);
+ if(circle){
+  const cr=circle.getBoundingClientRect();
+  if(cr.width>0&&cr.height>0)return{
+   cx:cr.left-hr.left+cr.width/2,
+   cy:cr.top-hr.top+cr.height/2,
+   r:Math.min(cr.width,cr.height)/2,
+   scale:Math.min(cr.width,cr.height)/104
+  };
+ }
+ /* Fallback honours SVG preserveAspectRatio instead of assuming the viewBox fills its box. */
+ const sr=svg.getBoundingClientRect(),vb=svg.viewBox?.baseVal;
+ const vw=vb?.width||760,vh=vb?.height||455;
+ const scale=Math.min(sr.width/vw,sr.height/vh)||1;
+ const drawW=vw*scale,drawH=vh*scale;
+ const ox=sr.left-hr.left+(sr.width-drawW)/2-(vb?.x||0)*scale;
+ const oy=sr.top-hr.top+(sr.height-drawH)/2-(vb?.y||0)*scale;
+ return{cx:ox+148*scale,cy:oy+272*scale,r:52*scale,scale};
+}
+function athletePose(c,frame){
+ const p=c.phase==='act'?Math.min(1,Math.max(0,Number(c.t||0)/.95)):c.phase==='res'?1:0;
+ const r=frame.r;
+ /* The thrower moves around the circle centre, never around the SVG/container origin. */
+ let dx=-.25*r,dy=.12*r,angle=-24;
+ if(c.phase==='act'){
+  const turn=Math.min(1,p/.62);
+  dx=(-.25+.55*turn)*r;
+  dy=(.12-.30*Math.sin(Math.PI*turn))*r;
+  angle=-38+150*turn;
+ }else if(c.phase==='res'){
+  dx=.30*r;dy=.12*r;angle=112;
+ }
+ return{x:frame.cx+dx,y:frame.cy+dy,angle};
+}
 function sync(){
  const c=window.AMLiveEventV3?.active;
  if(!isShot(c)){remove();return false}
@@ -65,22 +109,11 @@ function sync(){
  const nextHost=root.parentElement;if(!nextHost)return true;
  if(host!==nextHost||!overlay?.isConnected){remove();host=nextHost;if(getComputedStyle(host).position==='static')host.style.position='relative';overlay=make(host)}
  const q=c.seq?.[c.i]||c.seq?.[c.seq.length-1];if(!q)return true;
- const p=c.phase==='act'?Math.min(1,Math.max(0,Number(c.t||0)/.95)):c.phase==='res'?1:0;
- /* Circle centre in the V3 Shot Put scene is 148,272 with a radius of 52. */
- let x=148,y=272,angle=-18;
- if(c.phase==='act'){
-  const turn=Math.min(1,p/.62);
-  x=148+28*turn;
-  y=272-14*Math.sin(Math.PI*turn);
-  angle=-35+145*turn;
- }else if(c.phase==='res'){
-  x=176;y=272;angle=110;
- }
- const sr=svg.getBoundingClientRect(),hr=host.getBoundingClientRect();
- const scale=Math.max(.72,Math.min(1.2,sr.width/760));
+ const frame=circleFrame(svg,host),pose=athletePose(c,frame);
+ const scale=Math.max(.72,Math.min(1.2,frame.scale||1));
  const size=24*scale;
- Object.assign(overlay.style,{left:`${sr.left-hr.left+(x/760)*sr.width}px`,top:`${sr.top-hr.top+(y/455)*sr.height}px`,width:`${size}px`,height:`${size}px`,background:colour(q.r?.nation)});
- overlay.querySelector('i').style.transform=`rotate(${angle}deg)`;
+ Object.assign(overlay.style,{left:`${pose.x}px`,top:`${pose.y}px`,width:`${size}px`,height:`${size}px`,background:colour(q.r?.nation)});
+ overlay.querySelector('i').style.transform=`rotate(${pose.angle}deg)`;
  return true;
 }
 function loop(){raf=0;if(sync()&&isShot(window.AMLiveEventV3?.active))raf=requestAnimationFrame(loop)}
@@ -100,16 +133,16 @@ const competition=document.getElementById('competition');
 if(competition)new MutationObserver(()=>{if(isShot(window.AMLiveEventV3?.active))kick();else if(!window.AMLiveEventV3?.active)remove()}).observe(competition,{childList:true,subtree:true});
 
 try{
- const update={timestamp:'2026-09-10T14:58:00+01:00',date:'10 September 2026',title:'Shot Put 2D Fix',items:[
-  'The active thrower now stays inside the Shot Put circle through the movement and release.',
-  '5m, 10m, 15m, 20m and 25m reference markers now sit directly on the throwing sector.'
+ const update={timestamp:'2026-09-11T00:36:00+01:00',date:'11 September 2026',title:'Shot Put Circle Anchor Fix',items:[
+  'The active thrower is now anchored directly to the rendered throwing circle rather than the Event Day container.',
+  'The throwing movement stays inside the circle and remains correctly aligned when the viewer changes size or aspect ratio.'
  ]};
  if(Array.isArray(UPDATES)&&!UPDATES.some(x=>x?.timestamp===update.timestamp)){UPDATES.unshift(update);if(UPDATES.length>5)UPDATES.splice(5);if(typeof renderMenu==='function')renderMenu()}
 }catch(_){ }
 
-window.__athleticsShotPutAthlete={version:2,sync};
+window.__athleticsShotPutAthlete={version:3,sync,circleFrame};
 })();
-/* ===== End Shot Put Athlete Marker V2 ===== */
+/* ===== End Shot Put Athlete Marker V3 ===== */
 
 /* Load final Event Day runtime layers after the core renderers. */
 (function(){
