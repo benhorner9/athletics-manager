@@ -1,0 +1,13 @@
+/* ===== Selection Immersion V1 ===== */
+.sci-insight-stack{display:grid;gap:7px;margin:0 0 10px}
+.sci-battle,.sci-opinion,.sci-strategy,.sci-replacement{border:1px solid #27465a;border-radius:9px;background:#091c29;padding:9px 10px}
+.sci-battle small,.sci-opinion small,.sci-strategy small,.sci-replacement small{display:block;color:#7899ad;font-size:7px;font-weight:950;letter-spacing:.1em;text-transform:uppercase}
+.sci-battle strong,.sci-opinion strong,.sci-replacement strong{display:block;margin-top:3px;font-size:10px;color:#eef6fa}
+.sci-battle p,.sci-opinion p,.sci-strategy p,.sci-replacement p{margin:4px 0 0;color:#99adba;font-size:8px;line-height:1.45}
+.sci-opinion{border-color:#735b31;background:#211c11}.sci-opinion small{color:#d7ad61}
+.sci-strategy{border-color:#3c5675;background:#0b1b2c}.sci-strategy small{color:#7fadd7}
+.sci-replacement{border-color:#356f5a;background:#0a211a}.sci-replacement small{color:#7ed4af}.sci-replacement .btn{margin-top:8px;min-height:32px;font-size:8px}
+.sci-athlete-story{display:flex;flex-wrap:wrap;gap:4px;margin:2px 0 7px}.sci-athlete-story span{border:1px solid #40556a;border-radius:999px;background:#0d2130;color:#a9bfcd;padding:3px 6px;font-size:6px;font-weight:900;letter-spacing:.06em}
+.sci-confirm-stories{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:13px 0}.sci-confirm-stories>div{padding:9px;border:1px solid #2b4a5d;border-radius:8px;background:#091a26}.sci-confirm-stories small{display:block;color:#7f9daf;font-size:7px;font-weight:950;letter-spacing:.08em}.sci-confirm-stories strong{display:block;margin-top:3px;font-size:9px;color:#edf5f8}
+@media(max-width:760px){.sci-confirm-stories{grid-template-columns:1fr}.sci-battle,.sci-opinion,.sci-strategy,.sci-replacement{padding:9px}.sci-athlete-story{grid-column:1/-1}}
+/* ===== End Selection Immersion V1 ===== */
