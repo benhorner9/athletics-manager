@@ -34,6 +34,22 @@ jobs:
           exec(compile(script, '/tmp/apply_update.py', 'exec'))
           PY
 
+      - name: Enforce staged-migration safety
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! grep -q 'styles/game.css' game.html; then
+            echo 'Legacy cutover blocked: styles/game.css must remain until migration QA is explicitly completed.' >&2
+            exit 1
+          fi
+          if ! grep -q 'scripts/game.js' game.html; then
+            echo 'Legacy cutover blocked: scripts/game.js must remain until migration QA is explicitly completed.' >&2
+            exit 1
+          fi
+          if [ -f tools/static-regression.mjs ]; then
+            node tools/static-regression.mjs
+          fi
+
       - name: Check JavaScript syntax
         run: |
           if compgen -G 'scripts/*.js' > /dev/null; then
