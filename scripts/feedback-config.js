@@ -72,6 +72,7 @@ function renderHub(){
  const reader=$('reader'),m=(s?.emails||[]).find(x=>x.id===openMail)||(s?.emails||[]).at?.(-1),e=m?.eventId?(s.events||[]).find(x=>x.id===m.eventId):null;
  if(!reader||!m||!e||m.summitRegistration||m.type!=='selection'||e.id==='olympics'||!['competition','championship'].includes(e.kind))return;
  const submitted=!!m.selectionSubmitted||!!e.decision;if(!submitted&&e.completed)return;
+ reader.querySelector('.am-selection-confirmed')?.remove();reader.querySelector('.selection-submitted-banner')?.remove();
  const body=reader.querySelector('.reader-body'),actions=reader.querySelector('.reader-actions');if(!body||!actions)return;
  body.innerHTML=hubHTML(m,e,submitted);
  actions.className='reader-actions am-v2-selection-actions';
