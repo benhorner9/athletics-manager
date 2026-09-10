@@ -1,7 +1,29 @@
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
+import {spawn} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
 import {JSDOM,VirtualConsole} from 'jsdom';
+
+const scriptPath=fileURLToPath(import.meta.url);
+
+if(process.env.AM_SMOKE_CHILD!=='1'){
+ const child=spawn(process.execPath,[scriptPath],{
+  cwd:process.cwd(),
+  env:{...process.env,AM_SMOKE_CHILD:'1'},
+  stdio:['ignore','pipe','pipe']
+ });
+ child.stdout.pipe(process.stdout);
+ child.stderr.pipe(process.stderr);
+ const timer=setTimeout(()=>{
+  console.error('\nATHLETICS MANAGER RUNTIME SMOKE: TIMED OUT\n');
+  console.error('The child process stopped responding. The last [smoke] route printed above identifies the likely blocking renderer.');
+  child.kill('SIGKILL');
+ },25000);
+ const code=await new Promise(resolve=>child.on('exit',(value,signal)=>resolve(value??(signal?124:1))));
+ clearTimeout(timer);
+ process.exit(code);
+}
 
 const root=process.cwd();
 const failures=[];
@@ -12,7 +34,7 @@ const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=u
 const server=http.createServer((req,res)=>{
  try{
   const url=new URL(req.url,'http://127.0.0.1');
-  let rel=decodeURIComponent(url.pathname).replace(/^\/+/, '')||'index.html';
+  const rel=decodeURIComponent(url.pathname).replace(/^\/+/, '')||'index.html';
   const full=path.resolve(root,rel);
   if(!full.startsWith(path.resolve(root)+path.sep)&&full!==path.resolve(root)){res.writeHead(403);res.end('Forbidden');return}
   if(!fs.existsSync(full)||!fs.statSync(full).isFile()){res.writeHead(404);res.end('Not found');return}
@@ -23,6 +45,7 @@ const server=http.createServer((req,res)=>{
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const {port}=server.address();
 const url=`http://127.0.0.1:${port}/game.html`;
+console.log(`[smoke] loading ${url}`);
 
 const virtualConsole=new VirtualConsole();
 virtualConsole.on('jsdomError',err=>{
@@ -33,8 +56,6 @@ virtualConsole.on('jsdomError',err=>{
 });
 virtualConsole.on('error',(...args)=>{
  const text=args.map(String).join(' ');
- /* The compressed Scouting V2 bootstrap uses blob script URLs, which jsdom does not execute.
-    Its caught bootstrap error is not a page crash and Scouting V3 retains a legacy fallback. */
  if(/Scouting V2 failed to load|Not implemented:/i.test(text))return;
  warnings.push(text);
 });
@@ -72,9 +93,10 @@ try{
  await new Promise(resolve=>{
   const timer=setTimeout(resolve,3500);
   dom.window.addEventListener('load',()=>{clearTimeout(timer);setTimeout(resolve,900)},{once:true});
-  dom.window.addEventListener('error',event=>{fail(`window error: ${event.message||event.error||'unknown error'}`)});
-  dom.window.addEventListener('unhandledrejection',event=>{fail(`unhandled rejection: ${event.reason||'unknown rejection'}`)});
+  dom.window.addEventListener('error',event=>fail(`window error: ${event.message||event.error||'unknown error'}`));
+  dom.window.addEventListener('unhandledrejection',event=>fail(`unhandled rejection: ${event.reason||'unknown rejection'}`));
  });
+ console.log('[smoke] page load settled');
 
  const w=dom.window;
  const requiredGlobals=[
@@ -95,20 +117,20 @@ try{
    if(snapshot?.activeViews?.length!==1)fail(`Regression snapshot has ${snapshot?.activeViews?.length||0} active views.`);
   }catch(err){fail(`Regression snapshot threw: ${err?.stack||err}`)}
  }
+ console.log('[smoke] runtime globals and snapshot checked');
 
- /* Verify the main staged routes can be rendered from the initialized career shell without
-    throwing. Appointment/onboarding guards may redirect; the test therefore checks safety,
-    not a specific destination. Competition is excluded because it requires an event context. */
  const smokeRoutes=['home','inbox','squad','pool','calendar','training','scouting','league','rankings','olympics','staff','finance','news'];
  if(typeof w.view==='function'){
   w.document.getElementById('startup')?.classList.add('hidden');
   for(const target of smokeRoutes){
+   console.log(`[smoke] route ${target}`);
    try{w.view(target);await new Promise(resolve=>setTimeout(resolve,20))}
    catch(err){fail(`Route ${target} threw during smoke render: ${err?.stack||err}`)}
    const on=[...w.document.querySelectorAll('.view.on')];
    if(on.length!==1)fail(`Route ${target} left ${on.length} active views.`);
   }
  }else fail('Global view() router is unavailable.');
+ console.log('[smoke] route render sweep finished');
 
 } catch(err){
  fail(`Runtime smoke harness failed: ${err?.stack||err}`);
