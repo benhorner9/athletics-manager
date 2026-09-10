@@ -4,8 +4,8 @@
 if(window.__amAlphaMenuGate)return;window.__amAlphaMenuGate=1;
 
 const ACCESS_KEY='athletics_manager_alpha_menu_access_v2';
-const ACCESS_GENERATION='15';
-const ACCESS_HASH='e927860732a3e8cb9bbcb80d394ea0ebbe99ea647a727b9919e00f30caeb59b9';
+const ACCESS_GENERATION='16';
+const ACCESS_HASH='d7f66b709efd8b0cb4d1e81cc13d5ed34bfa59137d1ee65ecbb3dddd610680ee';
 
 const menu=document.querySelector('.menu-side');
 const form=document.getElementById('alphaAccessForm');
