@@ -1,0 +1,42 @@
+name: UI Regression Gate
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'game.html'
+      - 'scripts/**'
+      - 'styles/**'
+      - 'tools/static-regression.mjs'
+      - '.github/workflows/ui-regression.yml'
+  pull_request:
+    paths:
+      - 'game.html'
+      - 'scripts/**'
+      - 'styles/**'
+      - 'tools/static-regression.mjs'
+      - '.github/workflows/ui-regression.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  static-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate UI asset graph and migration order
+        run: node tools/static-regression.mjs
+      - name: Check JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            node --check "$file"
+          done < <(find scripts -type f -name '*.js' -print0)
