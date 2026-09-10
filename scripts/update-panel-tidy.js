@@ -59,3 +59,31 @@ if(target)new MutationObserver(queue).observe(target,{childList:true,subtree:tru
 queue();
 })();
 /* ===== End High Jump Live Spoiler Guard ===== */
+
+/* ===== New Player Save Guard ===== */
+(function(){
+'use strict';
+if(window.__amNewPlayerSaveGuard)return;window.__amNewPlayerSaveGuard=1;
+const ENTRY_KEY='am_had_career_save_at_entry';
+let enteredWithoutSave=false;
+try{enteredWithoutSave=sessionStorage.getItem(ENTRY_KEY)==='0'}catch(_){ }
+if(!enteredWithoutSave)return;
+let careerStarted=false;
+try{localStorage.removeItem(SAVE_KEY)}catch(_){ }
+const realSave=save;
+save=function(){
+ if(!careerStarted){
+  try{localStorage.removeItem(SAVE_KEY)}catch(_){ }
+  try{renderMenu()}catch(_){ }
+  return;
+ }
+ return realSave();
+};
+const begin=document.getElementById('beginCareerBtn');
+if(begin)begin.addEventListener('click',()=>{
+ careerStarted=true;
+ try{sessionStorage.setItem(ENTRY_KEY,'1')}catch(_){ }
+},{capture:true});
+try{renderMenu()}catch(_){ }
+})();
+/* ===== End New Player Save Guard ===== */
