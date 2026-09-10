@@ -1,0 +1,27 @@
+/* Main menu interaction polish */
+#startup,
+#startup *,
+#nationModal,
+#nationModal *{
+  -webkit-user-select:none;
+  user-select:none;
+  -webkit-touch-callout:none;
+}
+
+#startup button,
+#startup .save-card,
+#startup .save-stat,
+#startup .alpha-access-card,
+#nationModal button,
+#nationModal .nation-card{
+  -webkit-tap-highlight-color:transparent;
+}
+
+#startup input,
+#startup textarea,
+#nationModal input,
+#nationModal textarea{
+  -webkit-user-select:text;
+  user-select:text;
+  -webkit-touch-callout:default;
+}
