@@ -1,8 +1,8 @@
-/* Athletics Manager — Squad Testing in Training V1 */
+/* Athletics Manager — Squad Testing in Training V2 */
 (function(){
 'use strict';
-if(window.__amTrainingSquadTestingV1)return;
-window.__amTrainingSquadTestingV1=1;
+if(window.__amTrainingSquadTestingV2)return;
+window.__amTrainingSquadTestingV2=1;
 
 let selectedWeek=null;
 
@@ -19,7 +19,30 @@ function labelWeek(week){
   try{return typeof dateLabel==='function'?dateLabel(week):'Week '+week}catch(_){return 'Week '+week}
 }
 function athleteById(id){return state()?.athletes?.find(a=>String(a.id)===String(id))||null}
+function eventNamesInWeek(week){
+  const target=Number(week),names=[];
+  if(!Number.isFinite(target))return names;
+  try{
+    for(const event of state()?.events||[]){
+      if(Number(event?.week)!==target)continue;
+      if(event?.season!=null&&Number(event.season)!==currentSeason())continue;
+      names.push(String(event?.name||event?.title||event?.kind||'Federation event'));
+    }
+  }catch(_){ }
+  try{
+    if(typeof summitMeetings==='function'){
+      for(const meeting of summitMeetings()||[]){
+        if(Number(meeting?.week)===target)names.push(String(meeting?.name||('Summit Series '+(meeting?.number||''))).trim());
+      }
+    }else if(typeof SUMMIT_WEEKS!=='undefined'&&Array.isArray(SUMMIT_WEEKS)&&SUMMIT_WEEKS.map(Number).includes(target)){
+      names.push('Summit Series');
+    }
+  }catch(_){ }
+  return [...new Set(names.filter(Boolean))];
+}
+function eventWeekBlocked(week){return eventNamesInWeek(week).length>0}
 function unavailableReason(a,week){
+  if(week==null)return 'No free testing week available';
   if(!a)return 'Unavailable';
   if(a.retired)return 'Retired';
   if(a.inSquad===false)return 'National Pool';
@@ -51,13 +74,14 @@ function renderTesting(){
   const tabs=shell?.querySelector('.tr2-tabs');
   if(!shell||!tabs)return;
   const now=currentWeek();
-  selectedWeek=Math.max(now,Math.min(52,Number(selectedWeek)||now));
   tabs.querySelectorAll('[data-tr2-tab]').forEach(b=>b.classList.toggle('on',b.dataset.tr2Tab==='testing'));
   [...shell.children].forEach(node=>{if(node!==shell.firstElementChild&&node!==tabs)node.remove()});
 
   const bookedWeeks=new Set(testingPlans().filter(p=>p.status==='scheduled').map(p=>Number(p.week)));
-  const weeks=[];
-  for(let w=now;w<=Math.min(52,now+11);w++)weeks.push(w);
+  const freeWeeks=[];
+  for(let w=now;w<=52;w++)if(!eventWeekBlocked(w))freeWeeks.push(w);
+  const weeks=freeWeeks.slice(0,12);
+  if(!weeks.includes(Number(selectedWeek)))selectedWeek=weeks[0]??null;
   const athletes=team();
   const history=testingPlans().slice().sort((a,b)=>(b.week||0)-(a.week||0));
 
@@ -69,8 +93,8 @@ function renderTesting(){
       <div class="panel-body tr2-testing-grid">
         <div>
           <strong>1 · Choose week</strong>
-          <p class="tr2-testing-rule">Schedule a controlled squad test in any upcoming week. Tests run when that week is advanced.</p>
-          <div class="tr2-testing-weeks">${weeks.map(w=>`<button type="button" class="tr2-testing-week ${w===selectedWeek?'on':''} ${bookedWeeks.has(w)?'booked':''}" data-test-week="${w}"><strong>Week ${w}</strong><small>${esc(labelWeek(w))}</small></button>`).join('')}</div>
+          <p class="tr2-testing-rule">Only free weeks are shown. Weeks containing competitions, championships, Summit Series meetings or other federation events are unavailable for squad testing.</p>
+          <div class="tr2-testing-weeks">${weeks.length?weeks.map(w=>`<button type="button" class="tr2-testing-week ${w===selectedWeek?'on':''} ${bookedWeeks.has(w)?'booked':''}" data-test-week="${w}"><strong>Week ${w}</strong><small>${esc(labelWeek(w))}</small></button>`).join(''):'<p class="tr2-testing-empty">No free testing weeks remain this season.</p>'}</div>
         </div>
         <div>
           <strong>2 · Select athletes</strong>
@@ -88,12 +112,17 @@ function renderTesting(){
 
   content.querySelectorAll('[data-test-week]').forEach(button=>button.addEventListener('click',()=>{selectedWeek=Number(button.dataset.testWeek);renderTesting()}));
   const book=byId('tr2BookTest');
-  const updateBook=()=>{const ids=[...content.querySelectorAll('[data-test-athlete]:checked')];if(book)book.disabled=!ids.length||bookedWeeks.has(selectedWeek)};
+  const updateBook=()=>{const ids=[...content.querySelectorAll('[data-test-athlete]:checked')];if(book)book.disabled=!ids.length||selectedWeek==null||bookedWeeks.has(selectedWeek)||eventWeekBlocked(selectedWeek)};
   content.querySelectorAll('[data-test-athlete]').forEach(input=>input.addEventListener('change',updateBook));
   updateBook();
   book?.addEventListener('click',()=>{
     const ids=[...content.querySelectorAll('[data-test-athlete]:checked')].map(x=>x.dataset.testAthlete);
-    if(!ids.length)return;
+    if(!ids.length||selectedWeek==null)return;
+    if(eventWeekBlocked(selectedWeek)){
+      try{if(typeof toast==='function')toast('Squad testing cannot be booked in a week with another event');}catch(_){ }
+      renderTesting();
+      return;
+    }
     try{
       if(typeof bookPlan==='function')bookPlan('testing','development',ids,selectedWeek);
       selectedWeek=Math.max(currentWeek(),selectedWeek);
@@ -149,6 +178,17 @@ function enhanceCalendar(){
   if(note)note.textContent='Select a date to review its week. Competitions, training camps and squad testing commitments are shown here; testing is managed from Training → Squad Testing.';
 }
 
+if(typeof bookPlan==='function'){
+  const previousBookPlan=bookPlan;
+  bookPlan=function(kind,type,ids,week){
+    if(kind==='testing'&&eventWeekBlocked(Number(week))){
+      try{if(typeof toast==='function')toast('Squad testing cannot be booked in a week with another event');}catch(_){ }
+      return;
+    }
+    return previousBookPlan.apply(this,arguments);
+  };
+}
+
 if(typeof drawCalendar==='function'){
   const previousDrawCalendar=drawCalendar;
   drawCalendar=function(){
@@ -168,5 +208,5 @@ if(typeof drawTraining==='function'){
   };
 }
 try{if(typeof currentView!=='undefined'&&currentView==='training')enhanceTraining()}catch(_){ }
-window.__athleticsSquadTestingTraining={version:1,enhance:enhanceTraining,render:renderTesting,calendar:enhanceCalendar};
+window.__athleticsSquadTestingTraining={version:2,enhance:enhanceTraining,render:renderTesting,calendar:enhanceCalendar,eventWeekBlocked,eventNamesInWeek};
 })();
