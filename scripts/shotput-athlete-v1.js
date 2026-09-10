@@ -1,9 +1,10 @@
-/* ===== Shot Put Athlete Marker V1 ===== */
+/* ===== Shot Put Athlete Marker V2 ===== */
 (function(){
 'use strict';
-if(window.__amShotPutAthleteV1)return;window.__amShotPutAthleteV1=1;
+if(window.__amShotPutAthleteV2)return;window.__amShotPutAthleteV2=1;
 
 let raf=0,overlay=null,host=null;
+const SVG_NS='http://www.w3.org/2000/svg';
 const isShot=c=>{
  if(!c||c.kind!=='field')return false;
  const name=DISCIPLINES?.[c.d]?.label||String(c.d||'');
@@ -26,23 +27,54 @@ function make(hostEl){
  hostEl.appendChild(el);
  return el;
 }
+function svgNode(name,attrs={}){
+ const el=document.createElementNS(SVG_NS,name);
+ Object.entries(attrs).forEach(([key,value])=>el.setAttribute(key,String(value)));
+ return el;
+}
+function ensureDistanceMarkers(svg){
+ if(svg.querySelector('.am-shotput-distance-markers'))return;
+ /* Remove the old labels that sat below the sector. */
+ svg.querySelectorAll('text.v3sub').forEach(el=>{
+  if(/^(5|10|15|20|25)m$/.test(String(el.textContent||'').trim()))el.remove();
+ });
+ const g=svgNode('g',{class:'am-shotput-distance-markers','aria-hidden':'true'});
+ [5,10,15,20,25].forEach(m=>{
+  const ratio=m/25;
+  const x=148+545*ratio;
+  const half=180*ratio;
+  const line=svgNode('line',{
+   x1:x,y1:272-half+8,x2:x,y2:272+half-8,
+   stroke:'#e7f1ea','stroke-opacity':'.24','stroke-width':'2','stroke-dasharray':'5 7'
+  });
+  const text=svgNode('text',{
+   x:x,y:272-half+22,'text-anchor':'middle',fill:'#f2f7f3','fill-opacity':'.82',
+   'font-size':'12','font-weight':'900','letter-spacing':'.04em'
+  });
+  text.textContent=`${m}m`;
+  g.append(line,text);
+ });
+ svg.appendChild(g);
+}
 function sync(){
  const c=window.AMLiveEventV3?.active;
  if(!isShot(c)){remove();return false}
  const root=document.getElementById('liveEventVisual'),svg=root?.querySelector('svg.v3svg');
  if(!root||!svg)return true;
+ ensureDistanceMarkers(svg);
  const nextHost=root.parentElement;if(!nextHost)return true;
  if(host!==nextHost||!overlay?.isConnected){remove();host=nextHost;if(getComputedStyle(host).position==='static')host.style.position='relative';overlay=make(host)}
  const q=c.seq?.[c.i]||c.seq?.[c.seq.length-1];if(!q)return true;
  const p=c.phase==='act'?Math.min(1,Math.max(0,Number(c.t||0)/.95)):c.phase==='res'?1:0;
- let x=132,y=274,angle=-18;
+ /* Circle centre in the V3 Shot Put scene is 148,272 with a radius of 52. */
+ let x=148,y=272,angle=-18;
  if(c.phase==='act'){
-  const wind=Math.min(1,p/.42);
-  x=132+30*wind;
-  y=274-11*Math.sin(Math.PI*wind);
-  angle=-35+115*wind;
+  const turn=Math.min(1,p/.62);
+  x=148+28*turn;
+  y=272-14*Math.sin(Math.PI*turn);
+  angle=-35+145*turn;
  }else if(c.phase==='res'){
-  x=162;y=274;angle=80;
+  x=176;y=272;angle=110;
  }
  const sr=svg.getBoundingClientRect(),hr=host.getBoundingClientRect();
  const scale=Math.max(.72,Math.min(1.2,sr.width/760));
@@ -63,18 +95,21 @@ if(typeof startSummitDiscipline==='function'){
  startSummitDiscipline=function(){const out=base.apply(this,arguments);kick();return out};
 }
 
-/* Reconnect if another screen redraw starts a live Shot Put before this patch sees the start call. */
+/* Reconnect after Event Day redraws because V3 rebuilds the SVG during each attempt. */
 const competition=document.getElementById('competition');
 if(competition)new MutationObserver(()=>{if(isShot(window.AMLiveEventV3?.active))kick();else if(!window.AMLiveEventV3?.active)remove()}).observe(competition,{childList:true,subtree:true});
 
 try{
- const update={timestamp:'2026-09-10T14:12:00+01:00',date:'10 September 2026',title:'Shot Put Athlete Animation',items:['Shot Put Live 2D now shows the active athlete moving through the throwing circle so the shot visibly releases from the competitor rather than appearing to launch on its own.']};
+ const update={timestamp:'2026-09-10T14:58:00+01:00',date:'10 September 2026',title:'Shot Put 2D Fix',items:[
+  'The active thrower now stays inside the Shot Put circle through the movement and release.',
+  '5m, 10m, 15m, 20m and 25m reference markers now sit directly on the throwing sector.'
+ ]};
  if(Array.isArray(UPDATES)&&!UPDATES.some(x=>x?.timestamp===update.timestamp)){UPDATES.unshift(update);if(UPDATES.length>5)UPDATES.splice(5);if(typeof renderMenu==='function')renderMenu()}
 }catch(_){ }
 
-window.__athleticsShotPutAthlete={version:1,sync};
+window.__athleticsShotPutAthlete={version:2,sync};
 })();
-/* ===== End Shot Put Athlete Marker V1 ===== */
+/* ===== End Shot Put Athlete Marker V2 ===== */
 
 /* Load final Event Day runtime layers after the core renderers. */
 (function(){
