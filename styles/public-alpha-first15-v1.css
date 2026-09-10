@@ -17,7 +17,6 @@
  .event-day-shell .event-disc-premium .event-disc-action{margin-top:14px!important}
  .event-day-shell .event-disc-premium .event-disc-action>.btn,.event-day-shell .am-watch-skip .btn{width:100%!important;min-height:58px!important;margin:0!important}
  .event-day-shell .am-watch-skip{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:10px!important;width:100%!important}
- .event-side-stack .event-side-card:last-child{display:none!important}
 }
 @media(max-width:700px){
  .event-day-shell .event-disc-premium .event-disc-card{padding:14px!important}
