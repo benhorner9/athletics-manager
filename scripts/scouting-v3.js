@@ -72,7 +72,7 @@ function filtered(base){
  rows.sort((x,y)=>Number(y.report?.season||0)-Number(x.report?.season||0)||Number(y.report?.week||0)-Number(x.report?.week||0)||String(x.a.name).localeCompare(String(y.a.name)));
  return rows;
 }
-function reportForAthlete(a){return latestReports().find(x=>String(x.a.id)===String(a.id))||{a,report:{season:a.discoveredSeason||season(),week:a.discoveredWeek||1,reason:a.source||'National pool'}}
+function reportForAthlete(a){return latestReports().find(x=>String(x.a.id)===String(a.id))||{a,report:{season:a.discoveredSeason||season(),week:a.discoveredWeek||1,reason:a.source||'National pool'}}}
 function watchRows(){return allWatchIds().map(athlete).filter(Boolean).map(reportForAthlete)}
 function advice(){
  const recent=latestReports(),watch=watchRows(),unreviewed=recent.filter(x=>!reviewed(x.a.id)).length,rem=assignmentRemaining();

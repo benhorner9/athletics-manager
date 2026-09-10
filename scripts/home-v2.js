@@ -18,7 +18,7 @@ function blockers(){return safe(()=>core()?.getProgressionBlockers?.()||[],[])}
 function team(){return safe(()=>managedTeam(),[])}
 function pool(){return safe(()=>nationalPool(),[])}
 function next(){return safe(()=>nextEvent(),null)}
-function moneyText(n){return safe(()=>AthleticsUI?.format?.money?.(n),safe(()=>money(n),`£${Math.round(Number(n)||0).toLocaleString('en-GB')}`))}
+function moneyText(n){return safe(()=>window.AthleticsUI?.format?.money?.(n),safe(()=>money(n),`£${Math.round(Number(n)||0).toLocaleString('en-GB')}`))}
 function eventLabel(e){if(!e)return'No scheduled competition';const n=Number(e.week)-week();if(e.completed)return'Completed';if(n<0)return'Awaiting review';if(n===0)return'This week';if(n===1)return'Next week';return`In ${n} weeks`}
 function seasonStage(){const w=week();if(cycleYear()===4&&w>=32)return'Olympic phase';if(w<=8)return'Early season';if(w<=20)return'Foundation';if(w<=34)return'Competition phase';return'Championship phase'}
 function trainingQueue(){return safe(()=>window.__athleticsTrainingAttentionDecisions?.queue?.()||[],[])}
@@ -28,7 +28,7 @@ function eventDiscs(e){return (e?.disc||[]).filter(d=>d&&d!=='ALL')}
 function selectedCount(e){if(!e)return 0;const ids=new Set();for(const d of eventDiscs(e))for(const id of e.entries?.[d]||[])ids.add(id);return ids.size}
 function validEventAction(e){return !!e&&Number(e.week)<=week()&&!e.completed}
 function actionDue(a){const d=Number(a.deadline);if(!Number.isFinite(d))return'REQUIRES ACTION';const n=d-week();return n<=0?'DUE NOW':n===1?'1 WEEK':`${n} WEEKS`}
-function actionDestination(a){try{core()?.openAction?.(a);return}catch(_){};if(a.destination)try{view(a.destination)}catch(_){}
+function actionDestination(a){if(!a)return;const c=core();if(c?.openAction){try{c.openAction(a);return}catch(_){}}if(a.destination)try{view(a.destination)}catch(_){}
 }
 function worldRows(mode){
  if(mode==='leads'){
