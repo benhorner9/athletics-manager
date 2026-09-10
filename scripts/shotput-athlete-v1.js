@@ -76,12 +76,16 @@ window.__athleticsShotPutAthlete={version:1,sync};
 })();
 /* ===== End Shot Put Athlete Marker V1 ===== */
 
-/* Load the final completed-event exit authority after all Event Day layers. */
+/* Load final Event Day runtime layers after the core renderers. */
 (function(){
- if(window.__amEventExitAuthorityV1||document.querySelector('script[data-am-event-exit-authority]'))return;
- const script=document.createElement('script');
- script.src='scripts/event-exit-authority-v1.js?v=20260910-exit1';
- script.async=false;
- script.dataset.amEventExitAuthority='1';
- document.head.appendChild(script);
+ function load(src,marker){
+  if(document.querySelector(`script[${marker}]`))return;
+  const script=document.createElement('script');
+  script.src=src;
+  script.async=false;
+  script.setAttribute(marker,'1');
+  document.head.appendChild(script);
+ }
+ if(!window.__amEventExitAuthorityV1)load('scripts/event-exit-authority-v1.js?v=20260910-exit1','data-am-event-exit-authority');
+ if(!window.__amHighJumpBroadcastV1)load('scripts/high-jump-broadcast-v1.js?v=20260910-hjhighlights1','data-am-hj-broadcast');
 })();
