@@ -7,6 +7,7 @@ if(window.__amUICutoverV1)return;window.__amUICutoverV1=1;
 
 const $=id=>document.getElementById(id);
 const GENERATION='production';
+const BUILD='2026.09.11-cutover01';
 const ROUTES={
  home:{selector:'.home-v2,[data-am-ui-screen="home-v2"]',delay:650},
  inbox:{selector:'.am-inbox-v3,[data-am-ui-screen="inbox-v3"]',delay:650},
@@ -33,6 +34,11 @@ const COMPONENTS={
 };
 let ticket=0;
 
+function ensureStyles(){
+ if($('amUICutoverStyles'))return;const style=document.createElement('style');style.id='amUICutoverStyles';style.textContent=`
+ .am-cutover-error{min-height:min(560px,calc(100dvh - 120px));display:grid;place-items:center;padding:24px}.am-cutover-error>div{width:min(560px,100%);padding:24px;border:1px solid rgba(104,168,202,.22);border-radius:14px;background:linear-gradient(180deg,rgba(9,29,43,.96),rgba(6,21,32,.96));box-shadow:0 22px 60px rgba(0,0,0,.3)}.am-cutover-error small{display:block;color:#72c9ee;font-size:9px;font-weight:900;letter-spacing:.13em}.am-cutover-error h2{margin:7px 0 8px;color:#edf6fa;font-size:24px}.am-cutover-error p{margin:0;color:#91aebb;font-size:11px;line-height:1.55}.am-cutover-error-actions{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}@media(max-width:620px){.am-cutover-error{padding:14px}.am-cutover-error>div{padding:18px}.am-cutover-error-actions{display:grid;grid-template-columns:1fr}.am-cutover-error-actions .btn{width:100%}}
+ `;document.head.appendChild(style)
+}
 function currentRoute(){try{return typeof currentView==='string'?currentView:'home'}catch(_){return document.querySelector('.view.on')?.id||'home'}}
 function startupOpen(){const el=$('startup');return !!el&&!el.classList.contains('hidden')}
 function candidate(route=currentRoute()){
@@ -47,7 +53,8 @@ function errorBoundary(route,reason='The production interface did not finish loa
  return true;
 }
 function markProduction(){
- document.body.classList.add('am-ui-cutover');document.documentElement.dataset.amUiGeneration=GENERATION;
+ ensureStyles();document.body.classList.add('am-ui-cutover');document.documentElement.dataset.amUiGeneration=GENERATION;
+ const stamp=document.querySelector('.am-build-stamp');if(stamp)stamp.innerHTML=`<b>Closed Alpha</b>Production UI ${BUILD}`;
  const ui=window.AthleticsUI;if(!ui?.migration)return;
  for(const [route,def] of Object.entries(ROUTES)){
   const item=ui.migration.screens?.[route];if(item){item.status='active';item.replacement=def.selector;item.cutover=true}
@@ -89,6 +96,6 @@ const content=document.querySelector('.content');if(content)observer.observe(con
 window.addEventListener('pageshow',()=>{markProduction();schedule()});
 window.addEventListener('orientationchange',()=>setTimeout(()=>schedule(),120));
 
-window.__athleticsUICutover={version:1,generation:GENERATION,verify,active,errorBoundary,schedule};
+window.__athleticsUICutover={version:1,generation:GENERATION,build:BUILD,verify,active,errorBoundary,schedule};
 schedule();
 })();
