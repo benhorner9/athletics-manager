@@ -1,19 +1,3 @@
 /* ===== Consolidation V3 Styles ===== */
 .am-field-board{height:100%;min-height:250px;display:flex;flex-direction:column;background:#091923}.am-field-board>header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:12px;border-bottom:1px solid #1e3647}.am-field-board>header small{display:block;font-size:8px;font-weight:950;letter-spacing:.1em;color:#6f8c9d}.am-field-board>header strong{display:block;margin-top:2px;font-size:14px;color:#eef6fa}.am-field-board>header>b{font-size:10px;color:#bad0da}.am-field-board-list{min-height:0;overflow:auto;flex:1}.am-field-board-row{display:grid;grid-template-columns:28px 8px minmax(0,1fr) 72px;gap:8px;align-items:center;padding:8px 10px;border-bottom:1px solid #ffffff0d}.am-field-board-row.current{background:#ffffff0b}.am-field-board-row.managed{box-shadow:inset 2px 0 #dcecf4}.am-field-board-row>b{font-size:12px;text-align:center}.am-field-board-row>i{width:7px;height:7px;border-radius:50%}.am-field-board-row>span{min-width:0}.am-field-board-row>span strong{display:block;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#eef6fa}.am-field-board-row>span small{display:block;margin-top:2px;font-size:8px;color:#819aa8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.am-field-board-row>em{font-style:normal;font-weight:900;font-size:10px;text-align:right;color:#f3f7f9}.am-field-board>footer{padding:8px 10px;border-top:1px solid #1e3647;font-size:8px;color:#78909d}.qc .panel .table-wrap{max-height:54vh;overflow:auto}.qc .panel{overflow:hidden}.qc-head p{max-width:720px;line-height:1.5}.qc-controls{position:sticky;top:62px;z-index:4;background:#071420;padding:4px 0}.am-track-final,.am-dot-field{isolation:isolate}@media(max-width:700px){.am-field-board-row{grid-template-columns:24px 7px minmax(0,1fr) 62px}.qc .panel .table-wrap{max-height:58vh}.qc-controls{position:static}}
 /* ===== End Consolidation V3 Styles ===== */
-
-/* ===== Temporary Live View Reset ===== */
-#liveEventVisual{
-  background:#07131e!important;
-  background-image:none!important;
-  overflow:hidden!important;
-}
-#liveEventVisual>*{
-  display:none!important;
-}
-#liveEventVisual::before,
-#liveEventVisual::after{
-  content:none!important;
-  display:none!important;
-}
-/* ===== End Temporary Live View Reset ===== */
