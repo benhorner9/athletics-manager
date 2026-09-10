@@ -19,7 +19,8 @@ const UI_EXACT=new Map([
  ['Enter the current Closed Alpha code to unlock career access.','Alpha code required.'],
  ['Access granted on this device.','Access granted.'],
  ['Code not recognised. Check the current Alpha code and try again.','Code not recognised.'],
- ['Could not check the code. Reload the game and try again.','Could not check code. Try again.']
+ ['Could not check the code. Reload the game and try again.','Could not check code. Try again.'],
+ ['Next staff choice after the enforced withdrawal.','Staff recommendation.']
 ]);
 
 const HUMAN_REPLACEMENTS=[
@@ -46,7 +47,11 @@ const HUMAN_REPLACEMENTS=[
  [/the staff recommendation already factors that into this selection\.?/gi,''],
  [/this is a new selection battle without much previous selection history\.?/gi,'Little separates them so far.'],
  [/in a very close call/gi,'in a close call'],
+ [/owns the stronger season mark/gi,'has the better season mark'],
+ [/would give ([^.!?]+) the opportunity here/gi,'prefers $1 here'],
  [/gives the programme a sensible chance to protect ([^.!?]+) without a major drop in current level/gi,'lets $1 rest without giving up much'],
+ [/the unaffected selections remain in place\. Open the Selection Centre to accept the recommended replacement, choose another athlete or leave the event empty\./gi,'The rest of your team is unchanged. Open Selection Centre to replace them or leave the event empty.'],
+ [/rather than generic flavour text/gi,''],
  [/a sensible chance/gi,'a chance'],
  [/genuine option/gi,'option'],
  [/genuine selection battle/gi,'selection battle'],
@@ -139,7 +144,7 @@ if(typeof openingArcReportHTML==='function'&&!openingArcReportHTML.__editorialV2
   .replace(/<p class="muted" style="line-height:1\.65">The opening chapter follows the first decisions that matter\. You can leave it at any time and manage the programme normally\.<\/p>/,'')
   .replace(/Meet the programme and set the opening plan\./g,'Take charge.')
   .replace(/See how the squad responded before changing the load\./g,'Review training response.')
-  .replace(/Week \$\{[^}]+\} puts senior and National Pool sprinters on the same clock\./g,'Senior squad vs National Pool.')
+  .replace(/Week \d+ puts senior and National Pool sprinters on the same clock\./g,'Senior squad vs National Pool.')
   .replace(/Use the test as evidence, not an automatic promotion\./g,'Review the squad after testing.')};
  fn.__editorialV2=true;openingArcReportHTML=fn;
 }
@@ -160,7 +165,12 @@ function cleanRendered(root=document.body){
   return NodeFilter.FILTER_ACCEPT;
  }});
  const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
- for(const node of nodes){const raw=node.nodeValue;if(!raw||!raw.trim())continue;const cleaned=cleanUI(raw);if(cleaned&&cleaned!==raw.trim())node.nodeValue=raw.replace(raw.trim(),cleaned)}
+ for(const node of nodes){
+  const raw=node.nodeValue;if(!raw||!raw.trim())continue;
+  const p=node.parentElement,character=p?.closest('#amSelectionCentreV2,.selection-brief,.sci-insight-stack,.latest-update');
+  let cleaned=cleanUI(raw);if(character)cleaned=cleanHuman(cleaned,character.closest('.latest-update')?'release':'staff');
+  if(cleaned&&cleaned!==raw.trim())node.nodeValue=raw.replace(raw.trim(),cleaned);
+ }
 }
 
 cleanStatic();cleanSavedCopy();cleanRendered();
