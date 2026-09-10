@@ -25,6 +25,17 @@ async function run(code,label){
   document.head.appendChild(script);
  });
 }
+async function loadScoutingV2(){
+ if(window.__amScoutingV2Bootstrap)return;
+ await new Promise((resolve,reject)=>{
+  const script=document.createElement('script');
+  script.src='scripts/scouting-v2-bootstrap.js?v=20260910-scouting2';
+  script.async=false;script.dataset.scoutingV2Bootstrap='1';
+  script.onload=resolve;
+  script.onerror=()=>reject(new Error('Scouting V2 bootstrap failed'));
+  document.head.appendChild(script);
+ });
+}
 async function boot(){
  try{
   const [css,engine,camps,ui]=await Promise.all([
@@ -45,6 +56,7 @@ async function boot(){
   await run(await testingResponse.text(),'squad-testing');
   if(typeof currentView!=='undefined'&&currentView==='training'&&typeof drawTraining==='function')drawTraining();
   if(typeof currentView!=='undefined'&&currentView==='calendar'&&window.__athleticsSquadTestingTraining?.calendar)window.__athleticsSquadTestingTraining.calendar();
+  await loadScoutingV2();
   console.info('[Athletics Manager] Training System V2 loaded');
  }catch(err){console.error('[Athletics Manager] Training System V2 failed to load',err)}
 }
