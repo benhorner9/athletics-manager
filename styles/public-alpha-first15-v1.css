@@ -6,6 +6,9 @@
 .pa15-decision-card{position:relative}.pa15-decision-card>.status{position:absolute;top:16px;right:16px}.pa15-decision-card h3{margin:8px 0 6px}.pa15-decision-card p{margin:0}
 .pa15-test-block{margin-top:10px;border:1px solid #24435a;border-radius:10px;overflow:hidden}.pa15-test-head,.pa15-test-result{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 11px}.pa15-test-head{grid-template-columns:1fr auto;background:#0a1d2b}.pa15-test-head span,.pa15-test-result small{font-size:9px;color:#7f9aaf}.pa15-test-result{border-top:1px solid #1d394d}.pa15-test-result>b{color:#6f8ca2}.pa15-test-result span{display:grid;gap:2px}.pa15-pool-review{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;padding:11px 0;border-top:1px solid #24435a}.pa15-pool-review:first-of-type{border-top:0}.pa15-pool-review>div{display:grid;gap:2px}.pa15-pool-review small{font-size:9px;color:#7f9aaf}.pa15-pool-review p{grid-column:1/-1;margin:0;color:#a9b9c5}
 
+/* No trailer-style slogans in the management UI. */
+.firstday-footer,.firstday-art figcaption strong,.template-hero-slogan{display:none!important}
+
 @media(max-width:1100px){
  .event-day-shell .event-disc-premium{gap:12px!important}
  .event-day-shell .event-disc-premium .event-disc-card{padding:16px!important;min-height:0!important;border-radius:18px!important}
