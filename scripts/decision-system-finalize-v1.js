@@ -1,0 +1,67 @@
+/* Athletics Manager — Decision System Finalizer V1
+   Adds contract/cycle-review ownership to the central progression gate and
+   completes the sequential decision workflow without duplicating the inbox UI. */
+(function(){
+'use strict';
+if(window.__amDecisionSystemFinalizerV1)return;window.__amDecisionSystemFinalizerV1=1;
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const core=window.__athleticsInboxDecisionCore;if(!core)return;
+const week=()=>Number(s?.game?.week||1);
+const careerWeek=()=>typeof coachWeek==='function'?Number(coachWeek()):Number(s?.game?.careerWeek||week());
+const store=()=>{const x=s.inboxDecisionSystem??={};x.actions??={};x.emailMeta??={};x.staffContractDecisions??={};x.log??=[];return x};
+function saveSafe(){try{save()}catch(_){}}
+function log(kind,data={}){const x=store();x.log.push({kind,at:Date.now(),careerWeek:careerWeek(),...data});if(x.log.length>300)x.log.splice(0,x.log.length-300)}
+function responsibilities(){s.managementResponsibilities??={competitionSelection:'player',training:'staff',scoutingAssignments:'staff',trainingCamps:'player',contracts:'player'};return s.managementResponsibilities}
+function staffDecisionId(role,c){return `staff:contract:${role}:${c.id}:${c.until}`}
+function contractMail(c){return [...(s.emails||[])].reverse().find(m=>m.subject===`Contract decision: ${c.name}`)||null}
+function staffActions(){
+ if(responsibilities().contracts!=='player')return[];
+ try{ensureCoaches?.()}catch(_){}
+ const out=[],now=careerWeek();
+ for(const [role,c] of Object.entries(s.coaches||{})){
+  if(!c)continue;const left=Number(c.until)-now;if(left<=0||left>4)continue;
+  const actionId=staffDecisionId(role,c),decision=store().staffContractDecisions[actionId];if(decision?.resolved)continue;
+  const m=contractMail(c),blocks=left<=1,deadline=week()+left;
+  const a={actionId,emailId:m?.id||null,title:`Contract Decision – ${c.name}`,reason:`${c.name}'s ${STAFF_DEF?.[role]?.name||'staff'} contract has ${left} week${left===1?'':'s'} remaining.`,source:'staff',entityId:role,deadline,deadlineCareerWeek:Number(c.until),priority:blocks?'critical':left<=2?'important':'normal',blocks,destination:'staff',possibleResponses:['renew','release_at_expiry']};
+  out.push(a);const prev=store().actions[actionId];store().actions[actionId]={...(prev||{}),...a,resolution:'awaiting_response'};if(!prev)log('action_created',{actionId,source:'staff'});
+  if(m){const z=store().emailMeta[m.id]??={emailId:m.id};Object.assign(z,{actionId,interactionType:blocks?'progress_blocker':'decision_required',priority:a.priority,responseRequired:true,blocksProgress:blocks,deadlineWeek:deadline,resolution:'awaiting_response',resolutionState:'awaiting_response',sourceSystem:'staff',entityId:role,destination:'staff'})}
+ }
+ return out
+}
+function systemActions(){
+ const out=[];try{const c=careerState();if(c?.pendingReview)out.push({actionId:`career-review:${c.cycleNumber||1}:${c.careerYear||1}`,emailId:null,title:'Olympic Cycle Review',reason:'The federation review must be completed before the next season can begin.',source:'career_review',entityId:'cycle-review',deadline:week(),priority:'critical',blocks:true,destination:'career_review',possibleResponses:['accept_job']})}catch(_){}
+ return out
+}
+const rawActions=core.getUnresolvedActions.bind(core),rawBlockers=core.getProgressionBlockers.bind(core),rawOpen=core.openAction?.bind(core);
+function merge(rows){const map=new Map();for(const a of rows||[]){if(!a?.actionId)continue;const old=map.get(a.actionId);if(!old||Number(a.blocks)>Number(old.blocks))map.set(a.actionId,a)}return [...map.values()].sort((a,b)=>Number(b.blocks)-Number(a.blocks)||(Number(a.deadlineCareerWeek??a.deadline??9999)-Number(b.deadlineCareerWeek??b.deadline??9999)))}
+function actions(){return merge([...rawActions(),...staffActions(),...systemActions()])}
+function blockers(){return actions().filter(a=>a.blocks)}
+function due(a){if(a.source==='staff'&&Number.isFinite(a.deadlineCareerWeek)){const n=a.deadlineCareerWeek-careerWeek();return n<=1?'DUE THIS WEEK':n===2?'DUE NEXT WEEK':`DUE IN ${n} WEEKS`}const n=Number(a.deadline)-week();return n<=0?'DUE THIS WEEK':n===1?'DUE NEXT WEEK':`DUE IN ${n} WEEKS`}
+function markMailResolved(a,decision){const m=a.emailId?(s.emails||[]).find(x=>x.id===a.emailId):null;if(!m)return;const z=store().emailMeta[m.id]??={emailId:m.id};Object.assign(z,{resolution:'completed',resolutionState:'completed',responseRequired:false,blocksProgress:false,blocks:false,decision,completedWeek:week()});m.unread=false}
+function resolveStaff(role,decision){const a=staffActions().find(x=>x.entityId===role);if(!a)return false;if(decision==='renew'){
+  const before=Number(s.coaches?.[role]?.until||0);try{renewCoach(role)}catch(err){console.error(err);return false}const after=Number(s.coaches?.[role]?.until||0);if(after<=before)return false;
+  store().staffContractDecisions[a.actionId]={resolved:true,decision:'renewed',careerWeek:careerWeek(),emailId:a.emailId||null,role,name:a.title.replace('Contract Decision – ','')};store().actions[a.actionId]={...(store().actions[a.actionId]||a),resolution:'completed',blocks:false,decision:'renewed'};markMailResolved(a,'renewed');log('action_resolved',{actionId:a.actionId,decision:'renewed'});saveSafe();return true
+ }
+ store().staffContractDecisions[a.actionId]={resolved:true,decision:'release_at_expiry',careerWeek:careerWeek(),emailId:a.emailId||null,role,name:a.title.replace('Contract Decision – ','')};store().actions[a.actionId]={...(store().actions[a.actionId]||a),resolution:'completed',blocks:false,decision:'release_at_expiry'};markMailResolved(a,'release_at_expiry');log('action_resolved',{actionId:a.actionId,decision:'release_at_expiry'});saveSafe();try{toast('Contract will expire at the end of its term')}catch(_){}return true
+}
+function confirmDialog(title,body,label,fn){let d=$('amDecisionFinalConfirm');if(!d){d=document.createElement('dialog');d.id='amDecisionFinalConfirm';d.className='amdf-confirm';document.body.appendChild(d)}d.innerHTML=`<div class="amdf-confirm-card"><small>CONFIRM DECISION</small><h2>${esc(title)}</h2><p>${esc(body)}</p><div><button class="btn ghost" data-cancel>CANCEL</button><button class="btn primary" data-confirm>${esc(label)}</button></div></div>`;d.querySelector('[data-cancel]').onclick=()=>d.close();d.querySelector('[data-confirm]').onclick=()=>{d.querySelector('[data-confirm]').disabled=true;const ok=fn();if(ok!==false)d.close();setTimeout(afterDecision,40)};if(!d.open)d.showModal()}
+function openAction(a){if(a.source==='staff'){if(a.emailId){openMail=a.emailId;view('inbox')}else view('staff');return}if(a.source==='career_review'){try{openCycleReview()}catch(_){}return}return rawOpen?rawOpen(a):view('inbox')}
+function gateDialog(){let d=$('amFinalProgressionGate');if(!d){d=document.createElement('dialog');d.id='amFinalProgressionGate';d.className='amdf-gate';document.body.appendChild(d)}return d}
+function showGate(rows=blockers()){
+ if(!rows.length)return;const d=gateDialog();d.innerHTML=`<div class="amdf-gate-card"><small>BEFORE YOU CONTINUE</small><h2>${rows.length} Decision${rows.length===1?'':'s'} Require Your Attention</h2><p>The game is waiting for explicit management decisions. Reading a message does not resolve it.</p><div class="amdf-gate-list">${rows.map((a,i)=>`<article><div><span>${esc(due(a))}</span><strong>${esc(a.title)}</strong><p>${esc(a.reason)}</p></div><button class="btn ${i?'secondary':'primary'}" data-action="${esc(a.actionId)}">${i?'REVIEW':'REVIEW FIRST DECISION'}</button></article>`).join('')}</div><button class="btn ghost" data-close>CLOSE</button></div>`;d.querySelector('[data-close]').onclick=()=>d.close();d.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>{const a=actions().find(x=>x.actionId===b.dataset.action);if(!a)return;d.close();openAction(a)});if(!d.open)d.showModal();log('progression_blocked',{actions:rows.map(a=>a.actionId)})
+}
+function afterDecision(){const left=blockers();if(left.length){showGate(left);return}try{toast('All required decisions complete')}catch(_){}try{render()}catch(_){} }
+function enhanceStaffMail(){const reader=$('reader');if(!reader)return;const m=(s.emails||[]).find(x=>x.id===openMail);if(!m||!/^Contract decision:/i.test(m.subject||''))return;const a=staffActions().find(x=>x.emailId===m.id),resolved=Object.values(store().staffContractDecisions).find(x=>x?.resolved&&x.emailId===m.id);const actionsEl=reader.querySelector('.reader-actions');if(!actionsEl)return;if(!a){if(resolved){const z=store().emailMeta[m.id]??={emailId:m.id};Object.assign(z,{resolution:'completed',resolutionState:'completed',responseRequired:false,blocksProgress:false,decision:resolved.decision});actionsEl.innerHTML='';if(!reader.querySelector('.amdf-complete')){const box=document.createElement('div');box.className='amdf-complete';box.innerHTML=`<small>DECISION COMPLETE</small><strong>${resolved.decision==='renewed'?'Contract renewed':'Release at expiry confirmed'}</strong>`;reader.querySelector('.reader-body')?.appendChild(box)}}return}
+ actionsEl.innerHTML=`<button class="btn ghost" data-amdf-expire>LET CONTRACT EXPIRE</button><button class="btn secondary" data-amdf-staff>OPEN STAFF</button><button class="btn primary" data-amdf-renew>RENEW CONTRACT</button>`;actionsEl.querySelector('[data-amdf-staff]').onclick=()=>view('staff');actionsEl.querySelector('[data-amdf-renew]').onclick=()=>confirmDialog(`Renew ${a.title.replace('Contract Decision – ','')}?`,'The renewal fee will be paid immediately and the contract will be extended for another 52 weeks.','RENEW CONTRACT',()=>resolveStaff(a.entityId,'renew'));actionsEl.querySelector('[data-amdf-expire]').onclick=()=>confirmDialog(`Let ${a.title.replace('Contract Decision – ','')} leave at expiry?`,'The contract will end at the deadline and Level 1 interim cover will take over until you appoint a replacement.','LET CONTRACT EXPIRE',()=>resolveStaff(a.entityId,'release_at_expiry'))
+}
+function decorateResolvedContractRows(){const root=$('inbox');if(!root)return;for(const [id,d] of Object.entries(store().staffContractDecisions)){if(!d?.resolved||!d.emailId)continue;const row=root.querySelector(`[data-amv2-open="${CSS.escape(String(d.emailId))}"]`);if(!row)continue;const tag=row.querySelector('.amv2-tags em');if(tag){tag.textContent='DECISION COMPLETE';tag.classList.remove('critical','important')}}}
+function styles(){if($('amDecisionFinalStyles'))return;const e=document.createElement('style');e.id='amDecisionFinalStyles';e.textContent=`.amdf-gate,.amdf-confirm{border:0;background:transparent;color:#edf7fb;width:min(680px,calc(100vw - 24px));padding:0}.amdf-gate::backdrop,.amdf-confirm::backdrop{background:rgba(0,7,13,.82)}.amdf-gate-card,.amdf-confirm-card{border:1px solid rgba(239,64,87,.36);border-radius:14px;background:#081a28;padding:16px}.amdf-gate-card>small,.amdf-confirm-card>small{color:#ff95a4;font-size:8px;font-weight:900;letter-spacing:.12em}.amdf-gate-card h2,.amdf-confirm-card h2{margin:5px 0 8px}.amdf-gate-card>p,.amdf-confirm-card>p{font-size:10px;color:#91a9b7}.amdf-gate-list{display:grid;gap:8px;margin:12px 0}.amdf-gate-list article{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:10px;border:1px solid rgba(117,166,196,.16);border-radius:9px}.amdf-gate-list span,.amdf-gate-list strong,.amdf-gate-list p{display:block}.amdf-gate-list span{font-size:7px;color:#dda95e;font-weight:900}.amdf-gate-list strong{font-size:11px;margin-top:3px}.amdf-gate-list p{font-size:8px;color:#7896a8;margin:3px 0 0}.amdf-confirm-card>div{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}.amdf-complete{margin-top:10px;padding:9px 10px;border:1px solid rgba(78,181,126,.24);border-radius:8px;background:rgba(44,118,78,.12)}.amdf-complete small,.amdf-complete strong{display:block}.amdf-complete small{font-size:7px;color:#7fd0a2}.amdf-complete strong{font-size:10px;margin-top:2px}@media(max-width:650px){.amdf-gate-list article{grid-template-columns:1fr}.amdf-confirm-card>div{flex-direction:column}.amdf-confirm-card .btn{width:100%}}`;document.head.appendChild(e)}
+core.getUnresolvedActions=actions;core.getProgressionBlockers=blockers;core.openAction=openAction;core.showGate=showGate;
+const prevInbox=typeof drawInbox==='function'?drawInbox:null;if(prevInbox)drawInbox=function(){const r=prevInbox.apply(this,arguments);requestAnimationFrame(decorateResolvedContractRows);return r};
+const prevReader=typeof drawReader==='function'?drawReader:null;if(prevReader)drawReader=function(){const r=prevReader.apply(this,arguments);setTimeout(enhanceStaffMail,0);return r};
+const prevRender=typeof render==='function'?render:null;if(prevRender)render=function(){const r=prevRender.apply(this,arguments);requestAnimationFrame(()=>{try{window.__athleticsDecisionIntegrity?.refresh?.()}catch(_){};if(currentView==='inbox')enhanceStaffMail()});return r};
+document.addEventListener('click',e=>{if(e.target?.closest?.('#selectionDecisionV3 [data-submit],#signContract,[data-career-job]'))setTimeout(()=>{const g=blockers();if(g.length)showGate(g)},100)},true);
+styles();staffActions();saveSafe();
+window.__athleticsDecisionFinalizer={version:1,actions,blockers,resolveStaff,showGate,debug:()=>({actions:actions(),blockers:blockers(),staffDecisions:store().staffContractDecisions,responsibilities:responsibilities()})};
+})();
