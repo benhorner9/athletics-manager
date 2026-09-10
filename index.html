@@ -61,6 +61,7 @@ label{display:block;font-size:12px;font-weight:800;letter-spacing:.08em;text-tra
 (function(){
   const STORAGE_KEY='athletics_manager_access_v1';
   const ACCESS_HASH='e56bf289bbc79aa237b0fe23e136fb59327c177de7a9b2f611cdb57b882005d1';
+  const FALLBACK_HASH='531080bf';
   const form=document.getElementById('accessForm');
   const input=document.getElementById('accessPassword');
   const status=document.getElementById('status');
@@ -74,10 +75,21 @@ label{display:block;font-size:12px;font-weight:800;letter-spacing:.08em;text-tra
     }
   } catch(e) {}
 
-  async function sha256(value){
+  function fallbackHash(value){
     const bytes=new TextEncoder().encode(value);
-    const digest=await crypto.subtle.digest('SHA-256',bytes);
-    return Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,'0')).join('');
+    let h=0x811c9dc5;
+    for(const b of bytes){h^=b;h=Math.imul(h,0x01000193)>>>0;}
+    return h.toString(16).padStart(8,'0');
+  }
+
+  async function verify(value){
+    if(window.crypto&&window.crypto.subtle&&window.TextEncoder){
+      const bytes=new TextEncoder().encode(value);
+      const digest=await window.crypto.subtle.digest('SHA-256',bytes);
+      const hash=Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,'0')).join('');
+      return hash===ACCESS_HASH;
+    }
+    return fallbackHash(value)===FALLBACK_HASH;
   }
 
   peek.addEventListener('click',()=>{
@@ -94,8 +106,8 @@ label{display:block;font-size:12px;font-weight:800;letter-spacing:.08em;text-tra
     status.textContent='Checking access…';
     button.disabled=true;
     try{
-      const entered=await sha256(input.value);
-      if(entered!==ACCESS_HASH){
+      const approved=await verify(input.value);
+      if(!approved){
         status.className='status error';
         status.textContent='Incorrect access password. Please try again.';
         input.select();
