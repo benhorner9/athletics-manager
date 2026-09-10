@@ -3,7 +3,7 @@
 'use strict';
 if(window.__amTrainingV2Bootstrap)return;window.__amTrainingV2Bootstrap=1;
 const BASE='scripts/training-v2/';
-const VERSION='20260910-training2f';
+const VERSION='20260910-training2g';
 async function text(path){
  const response=await fetch(BASE+path+'?v='+VERSION,{cache:'no-store'});
  if(!response.ok)throw new Error(path+' '+response.status);
@@ -40,7 +40,11 @@ async function boot(){
   const cleanupResponse=await fetch('scripts/calendar-training-cleanup-v1.js?v='+VERSION,{cache:'no-store'});
   if(!cleanupResponse.ok)throw new Error('calendar-training-cleanup-v1.js '+cleanupResponse.status);
   await run(await cleanupResponse.text(),'calendar-cleanup');
+  const testingResponse=await fetch('scripts/training-squad-testing-v1.js?v='+VERSION,{cache:'no-store'});
+  if(!testingResponse.ok)throw new Error('training-squad-testing-v1.js '+testingResponse.status);
+  await run(await testingResponse.text(),'squad-testing');
   if(typeof currentView!=='undefined'&&currentView==='training'&&typeof drawTraining==='function')drawTraining();
+  if(typeof currentView!=='undefined'&&currentView==='calendar'&&window.__athleticsSquadTestingTraining?.calendar)window.__athleticsSquadTestingTraining.calendar();
   console.info('[Athletics Manager] Training System V2 loaded');
  }catch(err){console.error('[Athletics Manager] Training System V2 failed to load',err)}
 }
