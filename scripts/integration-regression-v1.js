@@ -143,7 +143,7 @@ function browserBack(event){
  }
  const ui=window.AthleticsUI;let handled=false;
  try{handled=!!ui?.back?.('home')}catch(_){}
- if(handled){suppressHistory=true;requestAnimationFrame(()=>{try{ui?.refresh?.()}catch(_){};syncHistory();schedule()});return}
+ if(handled){suppressHistory=true;requestAnimationFrame(()=>{syncHistory();schedule()});return}
  if(event.state?.athleticsManager){try{view(event.state.amRoute||'home')}catch(_){}}
 }
 
@@ -189,7 +189,6 @@ function repair(){
    try{view('calendar')}catch(_){try{view('home')}catch(__){}}
    return;
   }
-  try{window.AthleticsUI?.refresh?.()}catch(_){}
   syncHistory();
  }finally{repairing=false}
 }
