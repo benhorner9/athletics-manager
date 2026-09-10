@@ -3,15 +3,20 @@
 'use strict';
 if(window.__amTrainingV2Bootstrap)return;window.__amTrainingV2Bootstrap=1;
 const BASE='scripts/training-v2/';
-const VERSION='20260910-training2';
-async function unpack(path){
+const VERSION='20260910-training2b';
+async function text(path){
  const response=await fetch(BASE+path+'?v='+VERSION,{cache:'no-store'});
  if(!response.ok)throw new Error(path+' '+response.status);
- const b64=(await response.text()).trim(),raw=atob(b64),bytes=new Uint8Array(raw.length);
+ return (await response.text()).trim();
+}
+async function decode(b64){
+ const raw=atob(b64),bytes=new Uint8Array(raw.length);
  for(let i=0;i<raw.length;i++)bytes[i]=raw.charCodeAt(i);
  const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
  return await new Response(stream).text();
 }
+async function unpack(path){return decode(await text(path))}
+async function unpackJoined(paths){return decode((await Promise.all(paths.map(text))).join(''))}
 async function run(code,label){
  await new Promise((resolve,reject)=>{
   const url=URL.createObjectURL(new Blob([code],{type:'text/javascript'})),script=document.createElement('script');
@@ -22,7 +27,12 @@ async function run(code,label){
 }
 async function boot(){
  try{
-  const [css,engine,camps,ui]=await Promise.all([unpack('styles.gz.b64'),unpack('engine.gz.b64'),unpack('camps.gz.b64'),unpack('ui.gz.b64')]);
+  const [css,engine,camps,ui]=await Promise.all([
+   unpack('styles.gz.b64'),
+   unpackJoined(['engine-a.b64','engine-b.b64']),
+   unpack('camps.gz.b64'),
+   unpack('ui.gz.b64')
+  ]);
   if(!document.getElementById('amTrainingV2Styles')){const style=document.createElement('style');style.id='amTrainingV2Styles';style.textContent=css;document.head.appendChild(style)}
   await run(engine,'engine');await run(camps,'camps');await run(ui,'ui');
   if(typeof currentView!=='undefined'&&currentView==='training'&&typeof drawTraining==='function')drawTraining();
