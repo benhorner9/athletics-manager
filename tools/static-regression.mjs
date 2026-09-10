@@ -54,7 +54,8 @@ const requiredScripts=[
  'scripts/scouting-v3.js',
  'scripts/staff-finance-v2.js',
  'scripts/world-season-v2.js',
- 'scripts/integration-regression-v1.js'
+ 'scripts/integration-regression-v1.js',
+ 'scripts/ui-cutover-v1.js'
 ];
 const scriptOrder=[...html.matchAll(/<script\b[^>]+src=["']([^"']+)["']/gi)].map(x=>x[1].split('?')[0]);
 for(const script of requiredScripts)if(!scriptOrder.includes(script))fail(`Required runtime is not loaded: ${script}`);
@@ -71,21 +72,30 @@ before('scripts/ui-platform-v1.js','scripts/home-v2.js');
 before('scripts/competition-journey-v2.js','scripts/competition-journey-route-guard-v1.js');
 before('scripts/scouting-v3.js','scripts/world-season-v2.js');
 before('scripts/staff-finance-v2.js','scripts/world-season-v2.js');
-for(const script of requiredScripts.filter(x=>x!=='scripts/integration-regression-v1.js'))before(script,'scripts/integration-regression-v1.js');
+for(const script of requiredScripts.filter(x=>!['scripts/integration-regression-v1.js','scripts/ui-cutover-v1.js'].includes(x)))before(script,'scripts/integration-regression-v1.js');
+before('scripts/integration-regression-v1.js','scripts/ui-cutover-v1.js');
 
 if(scriptOrder.includes('scripts/inbox-decision-system-v2.js'))fail('Deleted inbox-decision-system-v2.js has been reintroduced.');
 if(scriptOrder.includes('scripts/onboarding-copy-cleanup-v1.js'))fail('Removed onboarding-copy-cleanup-v1.js has been reintroduced into game.html.');
-if(!localRefs.includes('styles/game.css'))fail('Legacy game.css was removed before migration parity was proven.');
-if(!scriptOrder.includes('scripts/game.js'))fail('Legacy game.js was removed before migration parity was proven.');
+/* game.js/game.css remain because they still own gameplay and shell primitives. They are not an approved presentation fallback. */
+if(!localRefs.includes('styles/game.css'))fail('Core game.css primitives are missing; extract them before removing this file.');
+if(!scriptOrder.includes('scripts/game.js'))fail('Core game.js gameplay runtime is missing; extract gameplay before removing this file.');
 
-const staged=[
- 'styles/ui-platform-v1.css','styles/home-v2.css','styles/inbox-v3.css','styles/squad-athlete-v2.css','styles/calendar-v2.css',
- 'styles/competition-journey-v2.css','styles/training-v3.css','styles/scouting-v3.css','styles/staff-finance-v2.css','styles/world-season-v2.css'
+const retiredPresentation=[
+ 'styles/premium-profiles.css','styles/athlete-profile-flow-fix.css','styles/flow-stability-batch.css','styles/event-overview-actions-v1.css',
+ 'scripts/premium-profiles.js','scripts/athlete-profile-flow-fix.js','scripts/squad-screen-tidy.js'
 ];
-for(const file of staged){
+for(const file of retiredPresentation)if(localRefs.includes(file)||scriptOrder.includes(file))fail(`Retired presentation layer was reintroduced into game.html: ${file}`);
+
+const productionAssets=[
+ 'styles/ui-platform-v1.css','styles/home-v2.css','styles/inbox-v3.css','styles/squad-athlete-v2.css','styles/calendar-v2.css',
+ 'styles/competition-journey-v2.css','styles/training-v3.css','styles/scouting-v3.css','styles/staff-finance-v2.css','styles/world-season-v2.css',
+ 'styles/event-flow-stability.css'
+];
+for(const file of productionAssets){
  const full=path.join(root,file);
- if(!fs.existsSync(full))fail(`Missing staged UI asset: ${file}`);
- else if(fs.statSync(full).size<100)fail(`Staged UI asset looks empty: ${file}`);
+ if(!fs.existsSync(full))fail(`Missing production UI asset: ${file}`);
+ else if(fs.statSync(full).size<100)fail(`Production UI asset looks empty: ${file}`);
 }
 
 const integration=path.join(root,'scripts/integration-regression-v1.js');
@@ -94,8 +104,7 @@ if(fs.existsSync(integration)){
  for(const token of ['__athleticsRegression','popstate','getProgressionBlockers','competitionRouteValid'])if(!text.includes(token))fail(`Integration runtime missing safeguard: ${token}`);
 }
 
-/* Source contracts for bugs already discovered during the staged migration. These checks
-   prevent a future wrapper/edit from silently restoring the broken behaviour. */
+/* Source contracts for bugs already discovered during the rebuild. */
 const sourceContracts={
  'scripts/home-v2.js':[
   ['const c=core();if(c?.openAction)','Home decision routing must verify openAction before returning'],
@@ -106,18 +115,23 @@ const sourceContracts={
  ],
  'scripts/scouting-v3.js':[
   ['function reportForAthlete(a)','Scouting report fallback helper is missing'],
-  ['window.__athleticsScoutingV3','Scouting V3 public migration handle is missing']
+  ['window.__athleticsScoutingV3','Scouting V3 public handle is missing']
  ],
  'scripts/selection-immersion-v1.js':[
   ['function decorateAthletes(ctx,d,dlg)','Selection athlete-story decorator is missing'],
   ['__selectionImmersion','Selection immersion wrapper ownership marker is missing']
  ],
  'scripts/competition-journey-v2.js':[
-  ['window.__athleticsCompetitionJourneyV2','Competition Journey migration handle is missing']
+  ['window.__athleticsCompetitionJourneyV2','Competition Journey public handle is missing']
  ],
  'scripts/inbox-decision-core-v1.js':[
   ['getProgressionBlockers:blockers','Inbox decision core must remain the progression-blocker authority'],
   ['openAction','Inbox decision core action router is missing']
+ ],
+ 'scripts/ui-cutover-v1.js':[
+  ['am-ui-cutover','Production cutover body marker is missing'],
+  ['errorBoundary','Production cutover recovery boundary is missing'],
+  ["generation:GENERATION",'Production cutover generation contract is missing']
  ]
 };
 for(const [file,contracts] of Object.entries(sourceContracts)){
@@ -130,8 +144,8 @@ for(const [file,contracts] of Object.entries(sourceContracts)){
 note(`${routes.length} route containers present`);
 note(`${localRefs.length} local assets referenced by game.html`);
 note(`${requiredScripts.length} critical runtimes checked for load order`);
-note(`${Object.keys(sourceContracts).length} critical source modules checked for migration contracts`);
-note('Legacy shell remains present; this gate intentionally blocks premature removal during staged migration');
+note(`${Object.keys(sourceContracts).length} critical source modules checked for production contracts`);
+note('Retired presentation layers are absent from the active asset graph; core gameplay/shell primitives remain until later extraction');
 
 if(failures.length){
  console.error('\nATHLETICS MANAGER STATIC REGRESSION: FAILED\n');
