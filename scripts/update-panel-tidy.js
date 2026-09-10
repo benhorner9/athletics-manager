@@ -10,6 +10,29 @@ if(typeof renderMenu==='function')renderMenu();
 })();
 /* ===== End Development Update Panel Tidy ===== */
 
+/* ===== Selection Immersion Release Note ===== */
+(function(){
+'use strict';
+if(window.__amSelectionImmersionReleaseNote)return;window.__amSelectionImmersionReleaseNote=1;
+if(!Array.isArray(UPDATES))return;
+const update={
+ timestamp:'2026-09-10T12:45:00+01:00',
+ date:'10 September 2026',
+ title:'Selection Stories & Staff Intelligence',
+ items:[
+  'Close selection calls can now become genuine selection battles, using recent selection history and head-to-head evidence instead of generic flavour text.',
+  'Event coaches use real staff identities where available, with occasional differing Head Coach opinions when two athletes are genuinely close.',
+  'Coach recommendations now look ahead to major championships and can favour a fresher alternative when protecting a leading athlete makes strategic sense.',
+  'First senior selections are recognised as debut opportunities, while established athletes can occasionally react after repeated omissions rather than complaining after every missed team.',
+  'If a submitted athlete becomes unavailable before competition day, the existing team reopens as a draft, removes only the unavailable athlete and offers a recommended replacement without disturbing the rest of the selection.'
+ ]
+};
+const exists=UPDATES.some(x=>x&&x.timestamp===update.timestamp&&x.title===update.title);
+if(!exists)Array.prototype.unshift.call(UPDATES,update);
+if(typeof renderMenu==='function')renderMenu();
+})();
+/* ===== End Selection Immersion Release Note ===== */
+
 /* ===== Live 2D V3 Release Note ===== */
 (function(){
 'use strict';
