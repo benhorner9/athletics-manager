@@ -3,7 +3,7 @@
 'use strict';
 if(window.__amTrainingV2Bootstrap)return;window.__amTrainingV2Bootstrap=1;
 const BASE='scripts/training-v2/';
-const VERSION='20260910-training2g';
+const VERSION='20260910-training2h';
 async function text(path){
  const response=await fetch(BASE+path+'?v='+VERSION,{cache:'no-store'});
  if(!response.ok)throw new Error(path+' '+response.status);
