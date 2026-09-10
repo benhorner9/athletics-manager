@@ -1,0 +1,40 @@
+name: Deploy Athletics Manager Live
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: athletics-manager-live-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy via FTPS
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out latest game
+        uses: actions/checkout@v4
+
+      - name: Deploy game to hosting
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: ${{ secrets.FTP_PORT || 21 }}
+          server-dir: ${{ secrets.FTP_REMOTE_DIR || './' }}
+          local-dir: ./
+          log-level: standard
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/.github/**
+            **/README.md
