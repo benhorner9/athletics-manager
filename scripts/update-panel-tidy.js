@@ -10,6 +10,29 @@ if(typeof renderMenu==='function')renderMenu();
 })();
 /* ===== End Development Update Panel Tidy ===== */
 
+/* ===== Alpha Menu Gate Release Note ===== */
+(function(){
+'use strict';
+if(window.__amAlphaMenuGateReleaseNote)return;window.__amAlphaMenuGateReleaseNote=1;
+if(!Array.isArray(UPDATES))return;
+const update={
+ timestamp:'2026-09-10T12:56:00+01:00',
+ date:'10 September 2026',
+ title:'Closed Alpha Menu Access',
+ items:[
+  'Closed Alpha access now lives directly on the existing main menu rather than adding a separate password screen.',
+  'Continue Career and Start New Career stay locked until the current tester code has been accepted.',
+  'Successful access is remembered on that device, so returning testers do not need to enter the code on every visit.',
+  'Alpha access is stored separately from career saves, so locking or changing access does not delete a player career.',
+  'The menu fails closed: if the access script does not load correctly, career-entry controls remain locked instead of silently granting access.'
+ ]
+};
+const exists=UPDATES.some(x=>x&&x.timestamp===update.timestamp&&x.title===update.title);
+if(!exists)Array.prototype.unshift.call(UPDATES,update);
+if(typeof renderMenu==='function')renderMenu();
+})();
+/* ===== End Alpha Menu Gate Release Note ===== */
+
 /* ===== Selection Immersion Release Note ===== */
 (function(){
 'use strict';
