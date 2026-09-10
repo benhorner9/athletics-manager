@@ -1,0 +1,24 @@
+/* ===== Main Menu Alpha Access Gate ===== */
+.alpha-access-card{margin:0 0 10px;padding:12px;border:1px solid #27465a;border-radius:10px;background:linear-gradient(180deg,#0a1c29,#081722);box-shadow:inset 0 1px 0 rgba(255,255,255,.025)}
+.alpha-access-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px}
+.alpha-access-head small{font-size:7px;font-weight:950;letter-spacing:.12em;color:#83a0b2;text-transform:uppercase}
+.alpha-access-head span{padding:4px 7px;border:1px solid #365d75;border-radius:999px;color:#9bb5c5;font-size:7px;font-weight:900;letter-spacing:.08em}
+.alpha-access-card strong{display:block;color:#eef6fa;font-size:11px;margin-bottom:3px}
+.alpha-access-card p{margin:0 0 9px;color:#809aaa;font-size:8px;line-height:1.45}
+.alpha-access-entry{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px}
+.alpha-access-entry input{width:100%;min-width:0;height:38px;padding:0 10px;border:1px solid #31536a;border-radius:8px;outline:none;background:#06131d;color:#eef6fa;font:800 10px/1 inherit;letter-spacing:.05em;text-transform:uppercase}
+.alpha-access-entry input::placeholder{color:#577184;text-transform:none;letter-spacing:0}
+.alpha-access-entry input:focus{border-color:#62a5cf;box-shadow:0 0 0 2px rgba(98,165,207,.12)}
+.alpha-access-entry .btn{min-height:38px;padding:7px 12px;font-size:8px}
+.alpha-access-status{display:block;min-height:14px;margin-top:7px;color:#7892a4;font-size:7px;line-height:1.45}
+.alpha-access-status.good{color:#75d4a2}.alpha-access-status.bad{color:#f18a8a}
+.menu-side.alpha-locked .menu-actions button{opacity:.38;filter:saturate(.45);pointer-events:none}
+.menu-side.alpha-locked .menu-actions::before{content:'ALPHA ACCESS REQUIRED';display:block;grid-column:1/-1;margin-bottom:3px;color:#d49e63;font-size:7px;font-weight:950;letter-spacing:.09em;text-align:center}
+.alpha-access-card.is-unlocked{padding:10px 12px;border-color:#2e654e;background:#091c19}
+.alpha-access-card.is-unlocked .alpha-access-entry,.alpha-access-card.is-unlocked p{display:none}
+.alpha-access-card.is-unlocked .alpha-access-head{margin-bottom:2px}
+.alpha-access-card.is-unlocked .alpha-access-head span{border-color:#34785b;color:#79d7a5}
+.alpha-access-card.is-unlocked strong{margin:0}
+.alpha-access-card.is-unlocked .alpha-access-status{margin-top:2px;color:#75d4a2}
+@media(max-width:650px){.alpha-access-card{padding:10px}.alpha-access-entry{grid-template-columns:1fr}.alpha-access-entry .btn{width:100%}}
+/* ===== End Main Menu Alpha Access Gate ===== */
