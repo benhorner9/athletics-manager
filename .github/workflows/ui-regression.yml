@@ -8,6 +8,7 @@ on:
       - 'scripts/**'
       - 'styles/**'
       - 'tools/static-regression.mjs'
+      - 'tools/runtime-smoke.mjs'
       - '.github/workflows/ui-regression.yml'
   pull_request:
     paths:
@@ -15,15 +16,16 @@ on:
       - 'scripts/**'
       - 'styles/**'
       - 'tools/static-regression.mjs'
+      - 'tools/runtime-smoke.mjs'
       - '.github/workflows/ui-regression.yml'
 
 permissions:
   contents: read
 
 jobs:
-  static-regression:
+  regression:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -40,3 +42,7 @@ jobs:
           while IFS= read -r -d '' file; do
             node --check "$file"
           done < <(find scripts -type f -name '*.js' -print0)
+      - name: Install runtime smoke dependency
+        run: npm install --no-save --no-package-lock jsdom@26
+      - name: Execute browserless runtime smoke
+        run: node tools/runtime-smoke.mjs
