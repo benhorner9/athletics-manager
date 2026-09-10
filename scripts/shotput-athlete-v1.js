@@ -75,3 +75,13 @@ try{
 window.__athleticsShotPutAthlete={version:1,sync};
 })();
 /* ===== End Shot Put Athlete Marker V1 ===== */
+
+/* Load the final completed-event exit authority after all Event Day layers. */
+(function(){
+ if(window.__amEventExitAuthorityV1||document.querySelector('script[data-am-event-exit-authority]'))return;
+ const script=document.createElement('script');
+ script.src='scripts/event-exit-authority-v1.js?v=20260910-exit1';
+ script.async=false;
+ script.dataset.amEventExitAuthority='1';
+ document.head.appendChild(script);
+})();
