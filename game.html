@@ -23,12 +23,13 @@
 <link rel="stylesheet" href="styles/live-event-engine-v3.css?v=20260910-live3">
 <link rel="stylesheet" href="styles/selection-centre-v2.css?v=20260910-selection2">
 <link rel="stylesheet" href="styles/selection-immersion-v1.css?v=20260910-selection-immersion1">
+<link rel="stylesheet" href="styles/alpha-menu-gate.css?v=20260910-alpha14">
 </head>
 <body>
 <div id="startup" class="startup">
   <div class="menu-wrap">
     <section class="menu-hero"><div class="brand-mark">AM</div><div class="menu-kicker">National Athletics Management</div><div class="menu-title">ATHLETICS <span>MANAGER</span></div><p class="menu-desc">Lead a national programme across a 40-year career and ten Olympic cycles. Build the squad, staff, pathway and competition plan around each Games.</p></section>
-    <aside class="menu-side"><div><div class="page-kicker">Career</div><h2 id="careerTitle">Choose a Nation</h2><div id="saveCard" class="save-card"></div></div><div><div class="menu-actions"><button id="continueBtn" class="btn primary">CONTINUE CAREER</button><button id="newBtn" class="btn secondary">START NEW CAREER</button></div><div id="latestUpdatePanel" class="latest-update"></div></div></aside>
+    <aside class="menu-side alpha-locked"><div><div class="page-kicker">Career</div><h2 id="careerTitle">Choose a Nation</h2><div id="saveCard" class="save-card"></div></div><div><form id="alphaAccessForm" class="alpha-access-card" autocomplete="off"><div class="alpha-access-head"><small>Closed Alpha</small><span>ACCESS REQUIRED</span></div><strong>Tester Access</strong><p>Enter the current Alpha code to unlock career access on this device.</p><div class="alpha-access-entry"><input id="alphaAccessCode" type="text" inputmode="text" autocomplete="one-time-code" autocapitalize="characters" spellcheck="false" placeholder="Alpha access code" aria-label="Alpha access code"><button id="alphaAccessSubmit" class="btn secondary" type="submit">UNLOCK</button></div><span id="alphaAccessStatus" class="alpha-access-status">Enter the current Closed Alpha code to unlock career access.</span></form><div class="menu-actions"><button id="continueBtn" class="btn primary">CONTINUE CAREER</button><button id="newBtn" class="btn secondary">START NEW CAREER</button></div><div id="latestUpdatePanel" class="latest-update"></div></div></aside>
   </div>
 </div>
 <div id="nationModal" class="nation-modal hidden">
@@ -69,4 +70,5 @@
 <script src="scripts/live-event-engine-v3.js?v=20260910-live3"></script>
 <script src="scripts/selection-centre-v2.js?v=20260910-selection2"></script>
 <script src="scripts/selection-immersion-v1.js?v=20260910-selection-immersion1"></script>
+<script src="scripts/alpha-menu-gate.js?v=20260910-alpha14"></script>
 </body></html>
