@@ -25,3 +25,27 @@ function load(){
 if(document.readyState==='complete')setTimeout(load,0);else window.addEventListener('load',load,{once:true});
 })();
 /* ===== End Live Event Engine Loader ===== */
+
+/* ===== Live 2D Rebuild Release Note ===== */
+(function(){
+'use strict';
+if(window.__amLive2DReleaseNote)return;window.__amLive2DReleaseNote=1;
+const update={
+ timestamp:'2026-09-10T10:31:00+01:00',
+ date:'10 September 2026',
+ title:'Live 2D Event Viewer Rebuild',
+ items:[
+  'Rebuilt the Live Event presentation around one shared event timeline so animation, standings and commentary all read from the same simulation result.',
+  'Track races now support live race progression, position changes, checkpoints, lap-based pacing and up to eight competitors without revealing the final result early.',
+  'Field events now play attempts individually, with recorded throws and jumps driving the visual distance, scoreboard changes and commentary reactions.',
+  'Added event controls for pause and 1x / 2x / 4x speed, plus a clear completion route so finished events cannot leave the player trapped on Event Day.',
+  'The new Live 2D layer is designed as the single reusable foundation for future track, throws and jumps work rather than adding more separate event renderers.'
+ ]
+};
+function add(){
+ if(typeof window.addDevelopmentUpdate==='function'){window.addDevelopmentUpdate(update);return}
+ setTimeout(add,50);
+}
+add();
+})();
+/* ===== End Live 2D Rebuild Release Note ===== */
