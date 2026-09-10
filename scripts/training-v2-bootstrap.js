@@ -3,7 +3,7 @@
 'use strict';
 if(window.__amTrainingV2Bootstrap)return;window.__amTrainingV2Bootstrap=1;
 const BASE='scripts/training-v2/';
-const VERSION='20260910-training2h';
+const VERSION='20260910-training2i';
 async function text(path){
  const response=await fetch(BASE+path+'?v='+VERSION,{cache:'no-store'});
  if(!response.ok)throw new Error(path+' '+response.status);
@@ -54,6 +54,9 @@ async function boot(){
   const testingResponse=await fetch('scripts/training-squad-testing-v1.js?v='+VERSION,{cache:'no-store'});
   if(!testingResponse.ok)throw new Error('training-squad-testing-v1.js '+testingResponse.status);
   await run(await testingResponse.text(),'squad-testing');
+  const attentionResponse=await fetch('scripts/training-attention-decisions-v2.js?v='+VERSION,{cache:'no-store'});
+  if(!attentionResponse.ok)throw new Error('training-attention-decisions-v2.js '+attentionResponse.status);
+  await run(await attentionResponse.text(),'attention-decisions');
   if(typeof currentView!=='undefined'&&currentView==='training'&&typeof drawTraining==='function')drawTraining();
   if(typeof currentView!=='undefined'&&currentView==='calendar'&&window.__athleticsSquadTestingTraining?.calendar)window.__athleticsSquadTestingTraining.calendar();
   await loadScoutingV2();
