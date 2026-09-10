@@ -2,9 +2,10 @@
 (function(){
 'use strict';
 
-const ATHLETE_PROFILE_FLOW_VERSION=4;
+const ATHLETE_PROFILE_FLOW_VERSION=5;
 let athleteSectionMode='overview';
 let refocusSection=false;
+let athleteFlowFrame=0;
 
 function athleteDialog(){return typeof $==='function'?$('athleteProfile'):document.getElementById('athleteProfile')}
 function currentAthlete(){return s?.athletes?.find(x=>x.id===profileId)||null}
@@ -173,6 +174,8 @@ function applyAthleteFlow(){
   const shell=dialog.querySelector('.profile-shell.premium-athlete-profile');if(!shell)return;
   const body=shell.querySelector('.profile-body');if(!body)return;
   wireTabs(shell);
+  const existing=body.querySelector(':scope > [data-athlete-view]');
+  if(existing&&existing.dataset.athleteView===athleteSectionMode){body.scrollTop=0;return}
   if(athleteSectionMode==='overview')buildOverview(body,a);
   else if(athleteSectionMode==='results')buildResults(body,a);
   else if(athleteSectionMode==='training')buildTraining(body,a);
@@ -181,11 +184,15 @@ function applyAthleteFlow(){
   else buildRecords(body,a);
   body.scrollTop=0;
 }
+function scheduleAthleteFlow(){
+  if(athleteFlowFrame)cancelAnimationFrame(athleteFlowFrame);
+  athleteFlowFrame=requestAnimationFrame(()=>{athleteFlowFrame=0;applyAthleteFlow()});
+}
 
 const previousDrawAthleteProfile=drawAthleteProfile;
-drawAthleteProfile=function(){previousDrawAthleteProfile();queueMicrotask(applyAthleteFlow)};
+drawAthleteProfile=function(){previousDrawAthleteProfile();scheduleAthleteFlow()};
 const previousOpenAthleteProfile=openAthleteProfile;
-openAthleteProfile=function(id){athleteSectionMode='overview';previousOpenAthleteProfile(id);queueMicrotask(applyAthleteFlow)};
+openAthleteProfile=function(id){athleteSectionMode='overview';previousOpenAthleteProfile(id);scheduleAthleteFlow()};
 
 if(typeof UPDATES!=='undefined'&&!UPDATES.some(u=>u.title==='Athlete Profile Tab Audit'))UPDATES.unshift({date:'9 September 2026',title:'Athlete Profile Tab Audit',items:[
   'Rebuilt athlete-profile tab ownership so Career Watch, relationship history and career preferences stay in Overview instead of leaking into Results or Records.',
