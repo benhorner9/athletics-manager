@@ -52,15 +52,29 @@ function queue(){return squad().map(a=>({a,issue:issueFor(a)})).filter(x=>x.issu
 function ensureStyles(){
  if(byId('amTrainingAttentionDecisionStyles'))return;
  const style=document.createElement('style');style.id='amTrainingAttentionDecisionStyles';style.textContent=`
- .tr2-nav-badge[hidden]{display:none!important}.tr2-decision-shell{display:grid;gap:14px}.tr2-decision-intro{border:1px solid rgba(122,166,199,.18);background:rgba(7,25,38,.56);border-radius:10px;padding:12px 14px;font-size:12px;line-height:1.55;color:#a9c0cf}.tr2-decision-intro strong{color:#eef7fb}.tr2-decision-list{display:grid;gap:9px}.tr2-decision-card{border:1px solid rgba(122,166,199,.2);border-radius:10px;background:rgba(7,25,38,.66);padding:13px 14px;display:grid;gap:10px}.tr2-decision-card.bad{border-left:3px solid #d44d61}.tr2-decision-card.warn{border-left:3px solid #d3aa58}.tr2-decision-card.notice{border-left:3px solid #6aa7c8}.tr2-decision-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.tr2-decision-head strong,.tr2-decision-head small{display:block}.tr2-decision-head small{margin-top:3px;color:#7896a8;font-size:10px}.tr2-decision-tag{font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;padding:5px 8px;background:rgba(201,70,90,.16);color:#f2a7b2;white-space:nowrap}.tr2-decision-card.warn .tr2-decision-tag{background:rgba(211,170,88,.13);color:#e2c684}.tr2-decision-card.notice .tr2-decision-tag{background:rgba(106,167,200,.13);color:#9dcde7}.tr2-decision-copy{font-size:12px;line-height:1.55;color:#b7cad5}.tr2-decision-copy p{margin:0 0 5px}.tr2-decision-copy b{color:#eef7fb}.tr2-decision-actions{display:flex;gap:8px;flex-wrap:wrap}.tr2-decision-empty{padding:24px 16px;text-align:center;border:1px dashed rgba(122,166,199,.2);border-radius:10px;color:#7896a8}.tr2-decision-empty strong{display:block;color:#dcebf2;margin-bottom:5px}.tr2-tabs [data-am-attention-tab="1"]{white-space:nowrap}@media(max-width:720px){.tr2-decision-head{flex-direction:column}.tr2-decision-actions{flex-direction:column}.tr2-decision-actions .btn{width:100%}}
+ .tr2-nav-badge[hidden]{display:none!important}.tr2-tabs [data-am-attention-tab="1"]{white-space:nowrap;display:inline-flex;align-items:center;gap:7px}.tr2-attention-count{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:6px;background:#ef4057;color:#fff;font-size:10px;font-weight:900;line-height:1;letter-spacing:0}.tr2-decision-shell{display:grid;gap:14px}.tr2-decision-intro{border:1px solid rgba(122,166,199,.18);background:rgba(7,25,38,.56);border-radius:10px;padding:12px 14px;font-size:12px;line-height:1.55;color:#a9c0cf}.tr2-decision-intro strong{color:#eef7fb}.tr2-decision-list{display:grid;gap:9px}.tr2-decision-card{border:1px solid rgba(122,166,199,.2);border-radius:10px;background:rgba(7,25,38,.66);padding:13px 14px;display:grid;gap:10px}.tr2-decision-card.bad{border-left:3px solid #d44d61}.tr2-decision-card.warn{border-left:3px solid #d3aa58}.tr2-decision-card.notice{border-left:3px solid #6aa7c8}.tr2-decision-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.tr2-decision-head strong,.tr2-decision-head small{display:block}.tr2-decision-head small{margin-top:3px;color:#7896a8;font-size:10px}.tr2-decision-tag{font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;padding:5px 8px;background:rgba(201,70,90,.16);color:#f2a7b2;white-space:nowrap}.tr2-decision-card.warn .tr2-decision-tag{background:rgba(211,170,88,.13);color:#e2c684}.tr2-decision-card.notice .tr2-decision-tag{background:rgba(106,167,200,.13);color:#9dcde7}.tr2-decision-copy{font-size:12px;line-height:1.55;color:#b7cad5}.tr2-decision-copy p{margin:0 0 5px}.tr2-decision-copy b{color:#eef7fb}.tr2-decision-actions{display:flex;gap:8px;flex-wrap:wrap}.tr2-decision-empty{padding:24px 16px;text-align:center;border:1px dashed rgba(122,166,199,.2);border-radius:10px;color:#7896a8}.tr2-decision-empty strong{display:block;color:#dcebf2;margin-bottom:5px}@media(max-width:720px){.tr2-decision-head{flex-direction:column}.tr2-decision-actions{flex-direction:column}.tr2-decision-actions .btn{width:100%}}
  `;document.head.appendChild(style);
 }
 function attentionTab(){
  const tabs=byId('training')?.querySelector('.tr2-tabs');if(!tabs)return null;
  let button=[...tabs.querySelectorAll('button')].find(b=>/needs\s+attention/i.test(b.textContent||'')||/attention/i.test(String(b.dataset?.tr2Tab||'')));
- if(!button){button=document.createElement('button');button.type='button';button.dataset.amAttentionTab='1';button.textContent='NEEDS ATTENTION';const first=tabs.firstElementChild;if(first?.nextSibling)tabs.insertBefore(button,first.nextSibling);else tabs.appendChild(button);button.addEventListener('click',()=>setTimeout(renderQueue,0));}
+ if(!button){button=document.createElement('button');button.type='button';button.textContent='NEEDS ATTENTION';const first=tabs.firstElementChild;if(first?.nextSibling)tabs.insertBefore(button,first.nextSibling);else tabs.appendChild(button)}
+ /* The base Training UI already creates this tab. Mark it as owned by the decision queue too, so stale base warning badges cannot survive. */
+ button.dataset.amAttentionTab='1';
  if(!button.dataset.amDecisionQueueBound){button.dataset.amDecisionQueueBound='1';button.addEventListener('click',()=>setTimeout(renderQueue,0));}
  return button;
+}
+function syncAttentionTab(tab,n){
+ if(!tab)return;
+ const wanted=String(n||0),existing=tab.querySelector('.tr2-attention-count');
+ const label=tab.querySelector('.tr2-attention-label');
+ const alreadyCorrect=tab.dataset.amAttentionCount===wanted&&!!label&&((n>0&&existing?.textContent===wanted)||(!n&&!existing));
+ tab.setAttribute('aria-label',n?`Needs Attention, ${n} unresolved training decision${n===1?'':'s'}`:'Needs Attention, no unresolved training decisions');
+ if(alreadyCorrect)return;
+ tab.replaceChildren();
+ const text=document.createElement('span');text.className='tr2-attention-label';text.textContent='NEEDS ATTENTION';tab.appendChild(text);
+ if(n){const badge=document.createElement('span');badge.className='tr2-attention-count';badge.textContent=wanted;badge.setAttribute('aria-hidden','true');tab.appendChild(badge)}
+ tab.dataset.amAttentionCount=wanted;
 }
 function updateBadge(n){
  for(const root of [byId('railNav'),byId('mobileNavDrawer')]){
@@ -74,7 +88,7 @@ function updateHeader(n){
  if(head){const next=n?`${n} NEED ATTENTION`:'SQUAD ON TRACK';if(head.textContent!==next)head.textContent=next;head.classList.toggle('warn',!!n);head.classList.toggle('good',!n)}
  const metric=[...(root?.querySelectorAll('.tr2-summary .tr2-metric')||[])].find(m=>/needs\s+attention/i.test(m.querySelector('small')?.textContent||''));
  if(metric){const strong=metric.querySelector('strong'),span=metric.querySelector('span');if(strong)strong.textContent=String(n);if(span)span.textContent=n?'Unresolved management decisions':'No unresolved decisions';metric.classList.toggle('bad',!!n)}
- const tab=attentionTab();if(tab&&tab.dataset.amAttentionTab==='1')tab.textContent=n?`NEEDS ATTENTION · ${n}`:'NEEDS ATTENTION';
+ syncAttentionTab(attentionTab(),n);
 }
 function trimOverview(items){
  const root=byId('training'),panel=root?.querySelector('.tr2-attention');if(!panel)return;
@@ -118,5 +132,5 @@ const root=byId('training');if(root)new MutationObserver(schedule).observe(root,
 document.addEventListener('change',event=>{if(event.target?.closest?.('#training'))setTimeout(schedule,0)},true);
 document.addEventListener('click',event=>{if(event.target?.closest?.('#training'))setTimeout(schedule,0)},true);
 try{if(typeof currentView!=='undefined'&&currentView==='training')schedule();else{const n=queue().length;updateBadge(n)}}catch(_){ }
-window.__athleticsTrainingAttentionDecisions={version:2,queue,issueFor,refresh:apply};
+window.__athleticsTrainingAttentionDecisions={version:3,queue,issueFor,refresh:apply};
 })();
