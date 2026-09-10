@@ -5,7 +5,8 @@ if(window.__amInboxDecisionIntegrityV1)return;window.__amInboxDecisionIntegrityV
 const $=id=>document.getElementById(id);
 const core=window.__athleticsInboxDecisionCore;
 if(!core)return;
-function dedupe(rows){const map=new Map();for(const row of rows||[]){if(!row?.actionId)continue;const old=map.get(row.actionId);if(!old||Number(row.blocks)>Number(old.blocks)||Number(row.emailId!=null)>Number(old.emailId!=null))map.set(row.actionId,row)}return [...map.values()].sort((a,b)=>Number(b.blocks)-Number(a.blocks)||Number(a.deadline||999)-Number(b.deadline||999))}
+function mailPos(id){if(!id)return-1;return (s.emails||[]).findIndex(m=>String(m.id)===String(id))}
+function dedupe(rows){const map=new Map();for(const row of rows||[]){if(!row?.actionId)continue;const old=map.get(row.actionId);if(!old||Number(row.blocks)>Number(old.blocks)||(Number(row.blocks)===Number(old.blocks)&&mailPos(row.emailId)>mailPos(old.emailId))||(old.emailId==null&&row.emailId!=null))map.set(row.actionId,row)}return [...map.values()].sort((a,b)=>Number(b.blocks)-Number(a.blocks)||Number(a.deadline||999)-Number(b.deadline||999))}
 const rawActions=core.getUnresolvedActions.bind(core),rawBlockers=core.getProgressionBlockers.bind(core);
 core.getUnresolvedActions=()=>dedupe(rawActions());
 core.getProgressionBlockers=()=>dedupe(rawBlockers());
