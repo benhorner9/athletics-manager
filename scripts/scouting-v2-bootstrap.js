@@ -45,6 +45,9 @@ async function boot(){
   }
   await runJS(js);
   if(typeof window.AMScoutingV2?.refreshScoutingIntegration==='function')window.AMScoutingV2.refreshScoutingIntegration();
+  /* V3 is presentation-only and intentionally installs after the proven V2 gameplay runtime.
+     If V3 is unavailable or errors, V2 remains the fallback renderer. */
+  if(typeof window.__athleticsScoutingV3?.install==='function')window.__athleticsScoutingV3.install();
   if(typeof render==='function')render();
   console.info('[Athletics Manager] Scouting V2 loaded');
  }catch(err){console.error('[Athletics Manager] Scouting V2 failed to load',err)}
