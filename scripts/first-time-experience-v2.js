@@ -3,7 +3,7 @@
 'use strict';
 if(window.AMFirstTimeExperienceV2)return;
 
-const VERSION='2.0.0';
+const VERSION='2.0.1';
 const STATE_VERSION=2;
 const OPENING_EVENT_ID='opening-meet-v2';
 const OPENING_WEEK=5;
@@ -195,7 +195,7 @@ function phaseCopy(){
  if(phase==='squad')return{eyebrow:'WEEK 1 • ARRIVAL',title:'Meet your programme',body:`${coach.name}: “Start with the athletes you have inherited. You only need to know the key names today.”`,action:'MEET THE SQUAD',route:'squad',required:true};
  if(phase==='athlete')return{eyebrow:'WEEK 1 • YOUR SQUAD',title:`Take a closer look at ${starAthlete()?.name||'one athlete'}`,body:`Open ${starAthlete()?.name||'the athlete'}'s profile, check Event, Form and Fitness, then close the profile to return to Squad. That completes this step.`,action:'VIEW ATHLETE',athlete:starAthlete()?.id,required:true};
  if(phase==='training')return{eyebrow:'WEEK 2 • TRAINING',title:'Make one training decision',body:`${coach.name}: “${rec.reason} I recommend ${rec.focus}.” Training continues automatically after this.`,action:'REVIEW TRAINING',route:'training',required:true};
- if(phase==='scouting')return{eyebrow:'WEEK 3 • SCOUTING',title:'Give the scout one clear assignment',body:`${scout.name}: “Tell me where to look first. I will report back when there is somebody worth your attention.”`,action:'OPEN SCOUTING',route:'scouting',required:true};
+ if(phase==='scouting')return{eyebrow:'WEEK 3 • SCOUTING',title:'Set your first scouting assignment',body:`${scout.name}: “Open Scouting and use any one of the five assignment slots. Choose where you want me to look and confirm the brief.”`,action:'OPEN SCOUTING',route:'scouting',required:true};
  if(phase==='preview')return{eyebrow:'WEEK 3 • FIRST COMPETITION',title:e?.name||'Your first competition is approaching',body:`${e?`Week ${e.week}. `:''}Selection opens before the meeting. You decide who competes — or explicitly choose No Entry.`,action:'VIEW COMPETITION',route:'competition'};
  if(phase==='selection')return{eyebrow:'ACTION REQUIRED • TEAM SELECTION',title:`Choose the team for ${e?.name||'your first competition'}`,body:'Use the coach recommendation, choose the team yourself, or deliberately enter nobody. Nothing is submitted until you confirm it.',action:'OPEN SELECTION',route:'inbox',mail:selectionMail(e)?.id,required:true};
  if(phase==='competition')return{eyebrow:'COMPETITION WEEK',title:e?.name||'Competition day',body:'Start from the schedule. You will deliberately choose which event to watch — the game will not drop you into a random discipline.',action:'OPEN COMPETITION',route:'competition'};
@@ -240,7 +240,60 @@ function decorateNativeScoutFocus(){
  for(const [key,label] of scoutingChoices().slice(1))if(!select.querySelector(`option[value="${key}"]`)){const option=document.createElement('option');option.value=key;option.textContent=label+' • Event group';select.appendChild(option)}
  if(focus&&[...select.options].some(o=>o.value===focus))select.value=focus;
 }
-function decorateScouting(){if(!active()||careerWeek()<3||ensureState().steps.scoutAssignment)return;const root=$('scouting');if(!root)return;markSeen('scouting');root.querySelectorAll('.ftx-scout-card').forEach(el=>el.remove())}
+let scoutingV2Baseline=null;
+const SCOUTING_V2_VOLATILE=/^(?:reports?|reportReviewed|watchlist(?:Ids)?|ui|tab|filter|search|selectedReport|lastViewed|unread)$/i;
+function scoutingV2Comparable(value,depth=0){
+ if(depth>6)return null;
+ if(Array.isArray(value))return value.map(v=>scoutingV2Comparable(v,depth+1));
+ if(value&&typeof value==='object'){
+  const out={};
+  for(const key of Object.keys(value).sort()){
+   if(SCOUTING_V2_VOLATILE.test(key))continue;
+   const v=value[key];if(typeof v==='function')continue;
+   out[key]=scoutingV2Comparable(v,depth+1);
+  }
+  return out;
+ }
+ return value;
+}
+function scoutingV2Signature(){
+ let primary=null;
+ try{primary=typeof scoutingState==='function'?scoutingState():(s?.scouting||null)}catch(_){primary=s?.scouting||null}
+ try{return JSON.stringify(scoutingV2Comparable({scouting:primary,scoutingV2:s?.scoutingV2||null,assignments:s?.scoutAssignments||null,scoutingAssignments:s?.scoutingAssignments||null}))}catch(_){return''}
+}
+function armScoutingV2Assignment(){
+ if(!active()||currentPhase()!=='scouting'||ensureState().steps.scoutAssignment)return;
+ if(scoutingV2Baseline===null)scoutingV2Baseline=scoutingV2Signature();
+}
+function maybeCompleteScoutingV2Assignment(target,source='scouting-v2'){
+ if(!active()||currentPhase()!=='scouting'||ensureState().steps.scoutAssignment)return;
+ const root=$('scouting');if(!root||!target||!root.contains(target))return;
+ const before=scoutingV2Baseline===null?scoutingV2Signature():scoutingV2Baseline;
+ setTimeout(()=>{
+  if(!active()||currentPhase()!=='scouting'||ensureState().steps.scoutAssignment)return;
+  const after=scoutingV2Signature();
+  if(after&&after!==before){
+   scoutingV2Baseline=after;
+   markStep('scoutAssignment');
+   toastSafe('Scouting assignment started');
+   try{window.dispatchEvent(new CustomEvent('am:ftx-step-complete',{detail:{step:'scoutAssignment',source}}))}catch(_){ }
+  }
+ },120);
+}
+function focusScoutingV2Assignment(){
+ const root=$('scouting');if(!root)return;
+ const candidates=[...root.querySelectorAll('h1,h2,h3,strong,button,[role="button"],select,label')];
+ const target=candidates.find(el=>/assignment|assign scout|search brief|scouting brief|search focus|discipline focus/i.test(`${el.textContent||''} ${el.getAttribute?.('aria-label')||''} ${el.id||''} ${el.getAttribute?.('name')||''}`));
+ if(target)try{target.scrollIntoView({block:'center',behavior:'smooth'})}catch(_){ }
+}
+function decorateScouting(){
+ if(!active()||careerWeek()<3||ensureState().steps.scoutAssignment)return;
+ const root=$('scouting');if(!root)return;
+ markSeen('scouting');root.querySelectorAll('.ftx-scout-card').forEach(el=>el.remove());
+ root.dataset.ftxScoutingAuthority=window.AMScoutingV2?'scouting-v2':'scouting-route';
+ try{window.AMScoutingV2?.refreshScoutingIntegration?.()}catch(_){ }
+ armScoutingV2Assignment();
+}
 function competitionWhyHTML(e){
  const st=ensureState(),selected=Object.entries(e?.entries||{}).flatMap(([d,ids])=>(ids||[]).map(id=>({d,a:(s.athletes||[]).find(x=>x.id===id)}))).filter(x=>x.a);
  return `<section class="ftx-competition-context"><div><small>${n(e?.week)===n(s?.game?.week)?'COMPETITION WEEK':'YOUR FIRST COMPETITION'}</small><h2>${esc(e?.name||'Competition')}</h2><p>${n(e?.week)===n(s?.game?.week)?'You are here because this meeting reached its scheduled week. Start from the programme below and choose each event deliberately.':`Week ${e?.week}. Team selection ${e?.decision?'has been submitted':'opens before competition week'}.`}</p></div><div class="ftx-breadcrumb"><span class="done">Announced</span><span class="${e?.decision?'done':''}">Selection</span><span class="${n(e?.week)===n(s?.game?.week)?'on':''}">Competition</span></div>${selected.length?`<div class="ftx-your-athletes"><small>YOUR ATHLETES</small>${selected.map(x=>`<span><b>${esc(x.a.name)}</b> · ${esc(eventText(x.d))}<em>${esc(st.entrySource?.[x.d]||'Selected by you')}</em></span>`).join('')}</div>`:`<div class="ftx-your-athletes empty"><small>YOUR STATUS</small><span>${e?.decision?'No entries were submitted.':'Selection is not final yet.'}</span></div>`}</section>`;
@@ -340,7 +393,7 @@ function weekMessages(){
  const send=(id,senderName,subject,body,type='review',eventId=null,html=null)=>{if((s.emails||[]).some(m=>m.id===id))return;try{const mid=typeof pushMail==='function'?pushMail(s,senderName,subject,body,type,eventId,html,id):null;if(mid)log('tutorial_mail',{id})}catch(_){ }};
  if(cw===1)send('ftx-week1',headCoach().name,'First day: start with the squad','You do not need to learn everything today. Review the athletes you inherited, open one profile, then move the week forward when you are ready.','review',null,`<div class="mail-section"><h3>Start with the squad</h3><p>You do not need to learn everything today. Review the athletes you inherited and open one profile.</p><button class="btn primary" data-ftx-route="squad">MEET THE SQUAD</button></div>`);
  if(cw===2){const r=trainingRecommendation();send('ftx-week2',headCoach().name,'Coach recommendation: one training change',`${r.reason} I recommend ${r.focus}. Training continues automatically each week after you set the focus.`,'review',null,`<div class="mail-section"><h3>${esc(r.athlete?.name||'Training')} — ${esc(r.focus)}</h3><p>${esc(r.reason)}</p><p>Training continues automatically. You only need to intervene when you want to change direction.</p><button class="btn primary" data-ftx-route="training">REVIEW TRAINING</button></div>`)}
- if(cw===3){send('ftx-week3-scout',headScout().name,'Scouting: choose our first focus','The senior squad is only part of the national programme. Give me one area to focus on and I will report back when there is somebody worth your attention.','scouting',null,`<div class="mail-section"><h3>Choose our first scouting focus</h3><p>The senior squad is only part of the programme. Give me one area to focus on; I will report back when somebody is worth your attention.</p><button class="btn primary" data-ftx-route="scouting">OPEN SCOUTING</button></div>`);if(e)send('ftx-week3-comp',headCoach().name,`Your first competition: ${e.name}`,`${e.name} is in Week ${e.week}. Team selection will open before the meeting. No athlete competes unless you select them, accept the coach team or explicitly delegate.`,`competition`,e.id,`<div class="mail-section"><h3>${esc(e.name)}</h3><p>Week ${e.week}. Before the meeting you will choose who competes — or choose No Entry.</p><button class="btn secondary" data-ftx-route="competition">VIEW COMPETITION</button></div>`)}
+ if(cw===3){send('ftx-week3-scout',headScout().name,'Scouting: set your first assignment','The senior squad is only part of the national programme. Open Scouting, use one of the five assignment slots and choose where you want the network to look.','scouting',null,`<div class="mail-section"><h3>Set your first scouting assignment</h3><p>Open Scouting, use any one of the five assignment slots and choose where you want the network to look. Confirming that brief completes this step.</p><button class="btn primary" data-ftx-route="scouting">OPEN SCOUTING</button></div>`);if(e)send('ftx-week3-comp',headCoach().name,`Your first competition: ${e.name}`,`${e.name} is in Week ${e.week}. Team selection will open before the meeting. No athlete competes unless you select them, accept the coach team or explicitly delegate.`,`competition`,e.id,`<div class="mail-section"><h3>${esc(e.name)}</h3><p>Week ${e.week}. Before the meeting you will choose who competes — or choose No Entry.</p><button class="btn secondary" data-ftx-route="competition">VIEW COMPETITION</button></div>`)}
  rewriteSelectionMail();saveSafe();
 }
 
@@ -397,6 +450,7 @@ function installHooks(){
 }
 
 function routeTo(target){
+ if(target==='scouting'){try{window.AMScoutingV2?.refreshScoutingIntegration?.()}catch(_){ }if(typeof view==='function')view('scouting');setTimeout(()=>{armScoutingV2Assignment();focusScoutingV2Assignment()},180);setTimeout(focusScoutingV2Assignment,650);return}
  if(target==='competition'){const e=openingEvent();if(e){try{competitionMode='overview';activeEventDisc=null}catch(_){ }}if(typeof view==='function')view('competition');return}
  if(typeof view==='function')view(target);
 }
@@ -430,8 +484,8 @@ function initialise(){
   const st=ensureState();installHooks();
   if(st&&!st.legacy&&s?.appointment?.contractSigned){st.active=!st.completed;ensureOpeningSchedule();retireLegacyOpeningTasks();weekMessages()}
   document.addEventListener('click',handleClick);
-  document.addEventListener('click',event=>{if(!active()||currentPhase()!=='scouting')return;const btn=event.target.closest?.('#scouting button');if(btn&&/assign|start|confirm|save|focus|scout/i.test(String(btn.textContent||'')))setTimeout(()=>markStep('scoutAssignment'),60)});
-  document.addEventListener('change',event=>{if(!active())return;const el=event.target;if(el?.id==='scoutFocus'&&!ensureState().steps.scoutAssignment){markStep('scoutAssignment');toastSafe('Scouting assignment started')}if(typeof currentView!=='undefined'&&currentView==='training'&&el?.dataset?.focus&&!ensureState().steps.trainingDecision)markStep('trainingDecision')});
+  document.addEventListener('click',event=>{if(!active()||currentPhase()!=='scouting')return;const target=event.target.closest?.('#scouting button,#scouting [role="button"],#scouting label');if(target)maybeCompleteScoutingV2Assignment(target,'scouting-v2-click')});
+  document.addEventListener('change',event=>{if(!active())return;const el=event.target;if(currentPhase()==='scouting'&&$('scouting')?.contains(el))maybeCompleteScoutingV2Assignment(el,'scouting-v2-change');if(typeof currentView!=='undefined'&&currentView==='training'&&el?.dataset?.focus&&!ensureState().steps.trainingDecision)markStep('trainingDecision')});
   document.addEventListener('click',captureAdvance,true);
   const observer=new MutationObserver(()=>scheduleDecorate());observer.observe(document.body,{subtree:true,childList:true});
   const athleteDialog=$('athleteProfile');if(athleteDialog&&!athleteDialog.dataset.ftxCloseBound){athleteDialog.dataset.ftxCloseBound='1';athleteDialog.addEventListener('close',()=>{clearSquadGuidance();scheduleDecorate()})}

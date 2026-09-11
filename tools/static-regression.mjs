@@ -176,6 +176,9 @@ const sourceContracts={
   ['function compactFirstDay()','Reduced-text first-day flow is missing'],
   ['function trainingRecommendation()','Action-led training introduction is missing'],
   ['function weekMessages()','Staff-led opening-month messages are missing'],
+  ['function scoutingV2Signature()','FTUE must observe authoritative Scouting V2 assignment state'],
+  ['function maybeCompleteScoutingV2Assignment','FTUE must complete Week 3 from a real Scouting V2 assignment'],
+  ['window.AMScoutingV2?.refreshScoutingIntegration?.()','FTUE Scouting routing must target the production Scouting V2 integration'],
   ['function captureAdvance(ev)','Guided Advance Week protection is missing'],
   ['setGuidance','Guidance assist level control is missing']
  ],
