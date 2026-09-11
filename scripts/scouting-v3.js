@@ -138,9 +138,7 @@ function install(){
 }
 function debug(){return{installed:typeof drawScouting==='function'&&drawScouting===drawScoutingV3,installedAgainst:installedAgainst?.name||'anonymous',tab:ui.tab,reports:latestReports().length,watchlist:watchRows().length,remaining:assignmentRemaining(),focus:scout()?.focus||'All',v2Available:!!window.AMScoutingV2}}
 
-window.__athleticsScoutingV3={version:3,install,render,state:ui,debug,legacy:()=>fallbackDraw};
-install();
-/* Scouting V2 is loaded asynchronously by Training V2. Re-check briefly so V3 remains the final renderer even if that runtime arrives after this file. */
-let checks=0;const timer=setInterval(()=>{checks++;if(typeof drawScouting==='function'&&drawScouting!==drawScoutingV3)install();if(checks>=40||window.AMScoutingV2&&drawScouting===drawScoutingV3)clearInterval(timer)},250);
-const dialog=$('athleteProfile');if(dialog)dialog.addEventListener('close',()=>{try{if(currentView==='scouting')requestAnimationFrame(drawScoutingV3)}catch(_){}},true);
+window.__athleticsScoutingV3={version:3,install,render,state:ui,debug,legacy:()=>fallbackDraw,compatibilityOnly:true};
+/* Playtest feedback: Scouting V2 multi-assignment UI is the presentation authority again. */
+try{window.AthleticsUI?.registerScreen?.('scouting',{status:'active',replacement:'scouting-v2'})}catch(_){ }
 })();

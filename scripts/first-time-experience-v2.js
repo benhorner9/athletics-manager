@@ -3,7 +3,7 @@
 'use strict';
 if(window.AMFirstTimeExperienceV2)return;
 
-const VERSION='2.0.0';
+const VERSION='2.0.1';
 const STATE_VERSION=2;
 const OPENING_EVENT_ID='opening-meet-v2';
 const OPENING_WEEK=5;
@@ -193,7 +193,7 @@ function requiredPhase(){
 function phaseCopy(){
  const st=ensureState(),phase=currentPhase(),e=openingEvent(),coach=headCoach(),scout=headScout(),rec=trainingRecommendation();
  if(phase==='squad')return{eyebrow:'WEEK 1 • ARRIVAL',title:'Meet your programme',body:`${coach.name}: “Start with the athletes you have inherited. You only need to know the key names today.”`,action:'MEET THE SQUAD',route:'squad',required:true};
- if(phase==='athlete')return{eyebrow:'WEEK 1 • YOUR SQUAD',title:`Take a closer look at ${starAthlete()?.name||'one athlete'}`,body:'Open one athlete profile. Focus on event, ability, form and fitness — the rest can wait.',action:'VIEW ATHLETE',athlete:starAthlete()?.id,required:true};
+ if(phase==='athlete')return{eyebrow:'WEEK 1 • YOUR SQUAD',title:`Take a closer look at ${starAthlete()?.name||'one athlete'}`,body:`Open ${starAthlete()?.name||'the athlete'}'s profile, check Event, Form and Fitness, then close the profile to return to Squad. That completes this step.`,action:'VIEW ATHLETE',athlete:starAthlete()?.id,required:true};
  if(phase==='training')return{eyebrow:'WEEK 2 • TRAINING',title:'Make one training decision',body:`${coach.name}: “${rec.reason} I recommend ${rec.focus}.” Training continues automatically after this.`,action:'REVIEW TRAINING',route:'training',required:true};
  if(phase==='scouting')return{eyebrow:'WEEK 3 • SCOUTING',title:'Give the scout one clear assignment',body:`${scout.name}: “Tell me where to look first. I will report back when there is somebody worth your attention.”`,action:'OPEN SCOUTING',route:'scouting',required:true};
  if(phase==='preview')return{eyebrow:'WEEK 3 • FIRST COMPETITION',title:e?.name||'Your first competition is approaching',body:`${e?`Week ${e.week}. `:''}Selection opens before the meeting. You decide who competes — or explicitly choose No Entry.`,action:'VIEW COMPETITION',route:'competition'};
@@ -218,16 +218,14 @@ function decorateHome(){
   markSeen('home');
  }else card?.remove();
 }
+function clearSquadGuidance(root=$('squad')){if(!root)return;root.querySelectorAll('.ftx-mentor').forEach(el=>el.remove());root.querySelectorAll('.ftx-spotlight').forEach(el=>el.classList.remove('ftx-spotlight'))}
 function decorateSquad(){
- if(!active()||currentPhase()!=='squad'&&currentPhase()!=='athlete')return;
- const root=$('squad');if(!root)return;markSeen('squad');
- if(!ensureState().steps.squadReviewed)markStep('squadReviewed');
- const star=starAthlete();if(!star)return;
- if(!root.querySelector('.ftx-mentor')){
-  root.insertAdjacentHTML('afterbegin',`<section class="ftx-mentor"><div><small>${esc(headCoach().name.toUpperCase())} • HEAD COACH</small><strong>Start with ${esc(star.name)}</strong><p>${esc(eventText(star.disc))} • Ability ${esc(typeof assessmentText==='function'?assessmentText(star,'overall'):String(star.overall))}. Open the profile and focus on form, fitness and the next competition.</p></div><button class="am-button primary" data-ftx-athlete="${esc(star.id)}">VIEW ATHLETE</button></section>`);
- }
- const row=root.querySelector(`[data-ath="${CSS.escape(String(star.id))}"]`)||root.querySelector(`[data-profile="${CSS.escape(String(star.id))}"]`)?.closest('tr,article,button');
- row?.classList.add('ftx-spotlight');
+ const root=$('squad');if(!root)return;const phase=currentPhase();
+ if(!active()||!['squad','athlete'].includes(phase)){clearSquadGuidance(root);return}
+ markSeen('squad');if(!ensureState().steps.squadReviewed)markStep('squadReviewed');
+ const star=starAthlete();if(!star){clearSquadGuidance(root);return}clearSquadGuidance(root);if(currentPhase()!=='athlete')return;
+ root.insertAdjacentHTML('afterbegin',`<section class="ftx-mentor"><div><small>${esc(headCoach().name.toUpperCase())} • HEAD COACH</small><strong>Start with ${esc(star.name)}</strong><p>Open ${esc(star.name)} and check three things: Event, Form and Fitness. Then close the profile and return here — that completes the task.</p></div><button class="am-button primary" data-ftx-athlete="${esc(star.id)}">VIEW ATHLETE</button></section>`);
+ const row=root.querySelector(`[data-ath="${CSS.escape(String(star.id))}"]`)||root.querySelector(`[data-profile="${CSS.escape(String(star.id))}"]`)?.closest('tr,article,button');row?.classList.add('ftx-spotlight');
 }
 function decorateTraining(){
  if(!active()||careerWeek()<2||ensureState().steps.trainingDecision)return;
@@ -242,11 +240,7 @@ function decorateNativeScoutFocus(){
  for(const [key,label] of scoutingChoices().slice(1))if(!select.querySelector(`option[value="${key}"]`)){const option=document.createElement('option');option.value=key;option.textContent=label+' • Event group';select.appendChild(option)}
  if(focus&&[...select.options].some(o=>o.value===focus))select.value=focus;
 }
-function decorateScouting(){
- if(!active()||careerWeek()<3||ensureState().steps.scoutAssignment)return;
- const root=$('scouting');if(!root)return;markSeen('scouting');decorateNativeScoutFocus();if(root.querySelector('.ftx-scout-card'))return;
- root.insertAdjacentHTML('afterbegin',`<section class="ftx-mentor ftx-scout-card"><div><small>${esc(headScout().name.toUpperCase())} • HEAD SCOUT</small><strong>Where should we look first?</strong><p>Pick one starting focus. Event-group assignments are real scouting instructions; the scout will search disciplines inside that group.</p></div><div class="ftx-scout-choices">${scoutingChoices().map(([key,label])=>`<button class="am-button ghost" data-ftx-scout="${esc(key)}">${esc(label)}</button>`).join('')}</div></section>`);
-}
+function decorateScouting(){if(!active()||careerWeek()<3||ensureState().steps.scoutAssignment)return;const root=$('scouting');if(!root)return;markSeen('scouting');root.querySelectorAll('.ftx-scout-card').forEach(el=>el.remove())}
 function competitionWhyHTML(e){
  const st=ensureState(),selected=Object.entries(e?.entries||{}).flatMap(([d,ids])=>(ids||[]).map(id=>({d,a:(s.athletes||[]).find(x=>x.id===id)}))).filter(x=>x.a);
  return `<section class="ftx-competition-context"><div><small>${n(e?.week)===n(s?.game?.week)?'COMPETITION WEEK':'YOUR FIRST COMPETITION'}</small><h2>${esc(e?.name||'Competition')}</h2><p>${n(e?.week)===n(s?.game?.week)?'You are here because this meeting reached its scheduled week. Start from the programme below and choose each event deliberately.':`Week ${e?.week}. Team selection ${e?.decision?'has been submitted':'opens before competition week'}.`}</p></div><div class="ftx-breadcrumb"><span class="done">Announced</span><span class="${e?.decision?'done':''}">Selection</span><span class="${n(e?.week)===n(s?.game?.week)?'on':''}">Competition</span></div>${selected.length?`<div class="ftx-your-athletes"><small>YOUR ATHLETES</small>${selected.map(x=>`<span><b>${esc(x.a.name)}</b> · ${esc(eventText(x.d))}<em>${esc(st.entrySource?.[x.d]||'Selected by you')}</em></span>`).join('')}</div>`:`<div class="ftx-your-athletes empty"><small>YOUR STATUS</small><span>${e?.decision?'No entries were submitted.':'Selection is not final yet.'}</span></div>`}</section>`;
@@ -411,7 +405,7 @@ function handleClick(ev){
  if(b.dataset.ftxGuidance){setGuidance(b.dataset.ftxGuidance);return}
  if(b.dataset.ftxRoute){routeTo(b.dataset.ftxRoute);return}
  if(b.dataset.ftxMail){try{openMail=b.dataset.ftxMail}catch(_){ }routeTo('inbox');return}
- if(b.dataset.ftxAthlete){if(typeof openAthleteProfile==='function')openAthleteProfile(b.dataset.ftxAthlete);return}
+ if(b.dataset.ftxAthlete){if(active()&&currentPhase()==='athlete')markStep('athleteOpened');if(typeof openAthleteProfile==='function')openAthleteProfile(b.dataset.ftxAthlete);return}
  if(b.hasAttribute('data-ftx-advance')){if(typeof advanceWeek==='function')advanceWeek();return}
  if(b.hasAttribute('data-ftx-complete')){const st=ensureState();st.completed=true;st.active=false;saveSafe();decorateCurrent();return}
  if(b.dataset.ftxAcceptTraining){s.trainingFocus=b.dataset.ftxAcceptTraining;markStep('trainingDecision');saveSafe();toastSafe(`Training focus: ${s.trainingFocus}`);try{if(typeof drawTraining==='function')drawTraining()}catch(_){ }scheduleDecorate();return}
@@ -436,9 +430,11 @@ function initialise(){
   const st=ensureState();installHooks();
   if(st&&!st.legacy&&s?.appointment?.contractSigned){st.active=!st.completed;ensureOpeningSchedule();retireLegacyOpeningTasks();weekMessages()}
   document.addEventListener('click',handleClick);
+  document.addEventListener('click',event=>{if(!active()||currentPhase()!=='scouting')return;const btn=event.target.closest?.('#scouting button');if(btn&&/assign|start|confirm|save|focus|scout/i.test(String(btn.textContent||'')))setTimeout(()=>markStep('scoutAssignment'),60)});
   document.addEventListener('change',event=>{if(!active())return;const el=event.target;if(el?.id==='scoutFocus'&&!ensureState().steps.scoutAssignment){markStep('scoutAssignment');toastSafe('Scouting assignment started')}if(typeof currentView!=='undefined'&&currentView==='training'&&el?.dataset?.focus&&!ensureState().steps.trainingDecision)markStep('trainingDecision')});
   document.addEventListener('click',captureAdvance,true);
   const observer=new MutationObserver(()=>scheduleDecorate());observer.observe(document.body,{subtree:true,childList:true});
+  const athleteDialog=$('athleteProfile');if(athleteDialog&&!athleteDialog.dataset.ftxCloseBound){athleteDialog.dataset.ftxCloseBound='1';athleteDialog.addEventListener('close',()=>{clearSquadGuidance();scheduleDecorate()})}
   window.addEventListener('pageshow',scheduleDecorate);window.addEventListener('orientationchange',scheduleDecorate);
   scheduleDecorate();
  }catch(err){console.error('First-Time Experience V2 failed to initialise',err)}

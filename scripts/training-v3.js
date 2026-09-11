@@ -60,17 +60,11 @@ function enhanceActiveSection(shell,tabs){
  }
 }
 function enhanceTraining(){
- trainingQueued=false;const root=byId('training');if(!root)return;const shell=root.querySelector('.tr2-shell');
- /* If Training V2 has not loaded, leave the legacy screen fully usable as fallback. */
- if(!shell)return;
- root.classList.add('training-v3');root.dataset.amUiScreen='training-v3';shell.classList.add('tr3-authoritative');
- const team=squad(),q=attention(),major=nextMajor(),signature=[week(),team.length,q.length,avg(team,'fatigue'),team.filter(a=>a.injury>0).length,major?.id||'',major?.week||'',focus()].join('|');
- let frame=root.querySelector(':scope > .tr3-frame');
- if(!frame){frame=document.createElement('div');frame.className='tr3-frame';root.insertBefore(frame,shell)}
- if(frame.dataset.signature!==signature){frame.dataset.signature=signature;frame.innerHTML=headerHTML(team,q,major);bindHeader(frame)}
- const tabs=shell.querySelector('.tr2-tabs');if(tabs)reorderTabs(tabs);
- addAthleteLinks(shell);enhanceActiveSection(shell,tabs);
- try{window.AthleticsUI?.registerScreen?.('training',{status:'candidate',replacement:'training-v3',critical:true})}catch(_){ }
+ trainingQueued=false;const root=byId('training');if(!root)return;const shell=root.querySelector('.tr2-shell');if(!shell)return;
+ root.classList.add('training-v3');root.dataset.amUiScreen='training-v3';shell.classList.add('tr3-authoritative');shell.dataset.amUiScreen='training-v3';
+ root.querySelectorAll(':scope > .tr3-frame').forEach(el=>el.remove());const shells=[...root.querySelectorAll(':scope > .tr2-shell')];shells.slice(1).forEach(el=>el.remove());
+ const tabs=shell.querySelector('.tr2-tabs');if(tabs)reorderTabs(tabs);addAthleteLinks(shell);enhanceActiveSection(shell,tabs);
+ try{window.AthleticsUI?.registerScreen?.('training',{status:'active',replacement:'training-v2 + training-v3-enhancements',critical:true})}catch(_){ }
 }
 function scheduleTraining(){if(trainingQueued)return;trainingQueued=true;requestAnimationFrame(enhanceTraining)}
 
