@@ -1,0 +1,25 @@
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Local logs and temporary output
+*.log
+*.tmp
+*.temp
+coverage/
+dist/
+
+# Local dependency installs
+node_modules/
+
+# Local environment / credentials
+.env
+.env.*
+!.env.example
+
+# IDE metadata
+.vscode/
+.idea/
