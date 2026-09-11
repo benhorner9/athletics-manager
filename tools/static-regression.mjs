@@ -59,6 +59,7 @@ const requiredScripts=[
  'scripts/world-season-v2.js',
  'scripts/manager-career-v1.js',
  'scripts/first-time-experience-v2.js',
+ 'scripts/keyboard-shortcuts-v1.js',
  'scripts/release-baseline.js',
  'scripts/integration-regression-v1.js',
  'scripts/ui-cutover-v1.js'
@@ -168,6 +169,13 @@ const sourceContracts={
   ['function philosophy()','Manager philosophy derivation is missing'],
   ['function federationConfidence()','Federation confidence reasoning is missing'],
   ['window.openManagerProfile=openManagerProfileV1','My Profile must own the canonical manager profile opener']
+ ],
+ 'scripts/keyboard-shortcuts-v1.js':[
+  ["event.code!=='Space'",'Space shortcut key contract is missing'],
+  ["document.getElementById('advanceTop')",'Space shortcut must target the canonical Advance Week button'],
+  ["document.querySelector('dialog[open]')",'Space shortcut must not fire through open dialogs'],
+  ['isInteractiveTarget(event.target)','Space shortcut must not fire while typing or using interactive controls'],
+  ['button.click()','Space shortcut must use the canonical Advance Week click path']
  ],
  'scripts/first-time-experience-v2.js':[
   ['window.AMFirstTimeExperienceV2','First-Time Experience V2 public service is missing'],
