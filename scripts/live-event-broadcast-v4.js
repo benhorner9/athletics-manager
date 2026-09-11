@@ -61,6 +61,45 @@ function performanceMoment(rows){let best=null;for(const r of rows){const code=b
 function officialMomentSpeech(e,d,rows){const m=performanceMoment(rows);if(m)return`${m.row.name} — ${achievementText(m.code).toLowerCase()} with ${fmt(d,m.row.perf)}.`;const winner=rows.find(x=>!x.status);if(!winner)return'';return`${winner.name} is confirmed as ${championTitle(e).toLowerCase()} in the ${label(d)}.`}
 function nextDiscipline(e,ds,current){const idx=Math.max(0,ds.indexOf(current));return ds.slice(idx+1).concat(ds.slice(0,idx)).find(x=>!Array.isArray(e.results?.[x]))||null}
 
+/* ---------- V4.6 presentation performance + QA ---------- */
+function clockNow(){try{return performance.now()}catch(_){return Date.now()}}
+function presentationHz(){
+ const width=Number(window.innerWidth||1280),coarse=!!window.matchMedia?.('(pointer:coarse)')?.matches,reduced=!!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+ if(reduced)return 30;
+ if(width<=520)return 30;
+ if(coarse)return width>=1000?45:40;
+ if(width<=1180)return 45;
+ return 60
+}
+function qaSnapshot(c){
+ const issues=[];
+ if(!c)return{ok:true,issues,family:null,phase:null,targetFps:presentationHz()};
+ if(c.kind==='track'){
+  const state=c.state?.a||[],n=dist(c.d),ids=state.map(x=>String(x.r?.id));
+  if(new Set(ids).size!==ids.length)issues.push('duplicate-track-athlete');
+  if(state.some(x=>!Number.isFinite(Number(x.m))||Number(x.m)<-.01||Number(x.m)>n+.01))issues.push('track-position-out-of-range');
+  const lanes=c.rr.map(x=>Number(x.lane)).filter(Number.isFinite);
+  if(n<=800&&new Set(lanes).size!==lanes.length)issues.push('duplicate-lane');
+  const visualLeader=state.find(x=>!x.status),boardLeader=trackBoardRows(c,c.state).find(x=>x.leader);
+  if(visualLeader&&boardLeader&&String(visualLeader.r.id)!==String(boardLeader.id))issues.push('leader-board-mismatch');
+  if(c.camera&&(!c.camera.every(Number.isFinite)||c.camera[2]<=0||c.camera[3]<=0||c.camera[0]<0||c.camera[1]<0||c.camera[0]+c.camera[2]>770||c.camera[1]+c.camera[3]>465))issues.push('camera-out-of-bounds');
+ }else{
+  if(c.i<0||c.i>c.seq.length)issues.push('field-attempt-index-out-of-range');
+  if(c.state?.size!==c.rr.length)issues.push('field-state-athlete-count-mismatch');
+  const ids=c.rr.map(x=>String(x.id));
+  if(new Set(ids).size!==ids.length)issues.push('duplicate-field-athlete');
+  const q=c.seq[c.i];
+  if(q&&!q.r)issues.push('field-attempt-missing-athlete');
+ }
+ return{ok:issues.length===0,issues,family:c.kind,disc:c.d,phase:eventPhase(c),targetFps:presentationHz(),paintCount:c.paintCount||0,lastPaintMs:Number((c.lastPaintMs||0).toFixed?.(2)??0)}
+}
+function refreshQa(c,force=false){const now=clockNow();if(!force&&c.qaStamp&&now-c.qaStamp<500)return;c.qaStamp=now;c.qa=qaSnapshot(c)}
+function paintDue(c,force=false){
+ const now=clockNow(),phase=eventPhase(c),hz=presentationHz(),interval=1000/hz;
+ if(force||!c.lastPaintAt||c.paintPhase!==phase||now-c.lastPaintAt>=interval){c.lastPaintAt=now;c.paintPhase=phase;c.targetFps=hz;c.paintCount=(c.paintCount||0)+1;return true}
+ return false
+}
+
 function pending(e,d){e.liveV3??={};if(Array.isArray(e.liveV3[d]))return clone(e.liveV3[d]);const r=simulateDiscipline(e,d);e.liveV3[d]=clone(r);saveNow();return r}
 function commit(e,d,r){if(!Array.isArray(e.results?.[d]))commitDisciplineResults(e,d,r);if(e.liveV3)delete e.liveV3[d];saveNow();const ds=(e.disc||[]).filter(x=>x!=='ALL');if(ds.length&&ds.every(x=>Array.isArray(e.results?.[x])))finaliseEvent(e,false)}
 
@@ -269,7 +308,17 @@ function finalBoard(d,r){return`<div class="v3board lv4-board"><header><div><sma
 
 /* ---------- Main screen ---------- */
 function wire(c){if(!c)return;const root=$('liveEventVisual');root?.querySelector('[data-pause]')?.addEventListener('click',()=>{c.paused=!c.paused;c.visibilityPaused=false;c.last=null;render(c,true)});root?.querySelectorAll('[data-speed]').forEach(b=>b.addEventListener('click',()=>{c.speed=b.dataset.speed==='broadcast'?'broadcast':Number(b.dataset.speed);c.last=null;render(c,true)}))}
-function render(c,forceBoard=false){if(!c||live!==c)return;const v=$('liveEventVisual');if(v)v.innerHTML=liveVisual(c);updateBoard(c,forceBoard);wire(c);requestAnimationFrame(()=>{try{window.__athleticsShotPutAthlete?.sync?.()}catch(_){}})}
+function render(c,force=false){
+ if(!c||live!==c)return;
+ updateBoard(c,force);
+ refreshQa(c,force);
+ if(!paintDue(c,force))return;
+ const began=clockNow(),v=$('liveEventVisual');
+ if(v){v.innerHTML=liveVisual(c);v.dataset.lv4Hz=String(c.targetFps||presentationHz())}
+ wire(c);
+ c.lastPaintMs=Math.max(0,clockNow()-began);
+ requestAnimationFrame(()=>{try{window.__athleticsShotPutAthlete?.sync?.()}catch(_){}})
+}
 function draw(e,can,ds){try{const d=activeEventDisc||ds[0],r=Array.isArray(e.results?.[d])?e.results[d]:null,c=live&&String(live.e.id)===String(e.id)&&live.d===d?live:null,done=ds.filter(x=>Array.isArray(e.results?.[x])).length,field=!r&&!c?safeField(e,d):[],$comp=$('competition');if(!$comp)return previous.draw(e,can,ds);$comp.innerHTML=`<div class="v3event lv4event lv4-${presentationTier(e)}"><header class="v3head lv4-head"><button id="v3back" aria-label="Back to programme">‹</button><div><small>${E(e.level||e.kind||'Competition')} · ${E(e.location||'')}</small><strong>${E(e.name)}</strong></div><div class="v3eventname"><small>${r?'OFFICIAL':c?'BROADCAST LIVE':'EVENT READY'}</small><h1>${E(label(d))}</h1></div><div class="lv4-meeting-progress"><small>MEETING</small><strong>${done}/${ds.length}</strong></div></header><main class="v3grid lv4-grid"><section><div id="liveEventVisual">${r?finalVisual(e,d,r):c?liveVisual(c):startListVisual(e,d,field)}</div><div id="commentary">${commentaryHTML(c,e,d)}</div></section><aside id="liveScoreboard">${r?finalBoard(d,r):c?scoreboardShell(c.kind==='track'?'LIVE STANDINGS':'FIELD STANDINGS',eventPhase(c)):readyBoard(e,d,field)}</aside></main><footer class="v3foot lv4-foot"><span>${(e.entries?.[d]||[]).map(athlete).filter(Boolean).map(a=>E(a.name)).join(' · ')||'No programme athlete entered'}</span><div>${!r&&can?`<button id="v4skip" class="btn ghost">${c?'SKIP TO RESULT':'INSTANT RESULT'}</button>`:''}<button id="v3start" class="btn primary" ${r||!can||disciplineRunning?'disabled':''}>${r?'RESULT CONFIRMED':c?'IN PROGRESS':'START EVENT'}</button><button id="v3day" class="btn ghost">${e.completed?'COMPLETE EVENT':'EVENT DAY'}</button></div></footer></div>`;
  $('v3back').onclick=()=>{if(disciplineRunning)return toast('Finish or skip the live event first');competitionMode='overview';drawCompetition()};
  const start=$('v3start');
@@ -315,7 +364,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&live&&!liv
 window.addEventListener('orientationchange',()=>{if(live)setTimeout(()=>render(live,true),120)});
 window.addEventListener('resize',()=>{if(live)render(live,true)},{passive:true});
 
-const api={version:'4.5.0',get active(){return live},get previous(){return previous},diagnostics(){const root=$('liveEventVisual');return{loaded:true,renderer:'Broadcast V4.5 Championship',disc:typeof activeEventDisc!=='undefined'?activeEventDisc:null,active:!!live,mode:live?.speed||null,phase:live?eventPhase(live):null,legacyOvalPresent:!!root?.querySelector('ellipse')}}};
+const api={version:'4.6.0',get active(){return live},get previous(){return previous},qa(){return qaSnapshot(live)},diagnostics(){const root=$('liveEventVisual'),qa=qaSnapshot(live);return{loaded:true,renderer:'Broadcast V4.6 Optimised',disc:typeof activeEventDisc!=='undefined'?activeEventDisc:null,active:!!live,mode:live?.speed||null,phase:live?eventPhase(live):null,targetFps:presentationHz(),paintCount:live?.paintCount||0,lastPaintMs:live?.lastPaintMs||0,qa,legacyOvalPresent:!!root?.querySelector('ellipse')}}};
 window.AMLiveBroadcastV4=api;
 /* Keep the historic public handle alive so existing Shot Put and diagnostics integrations continue to resolve the authoritative active event. */
 window.AMLiveEventV3=api;

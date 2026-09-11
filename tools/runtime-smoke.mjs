@@ -101,7 +101,7 @@ try{
  const w=dom.window;
  const requiredGlobals=[
   'AthleticsUI','__athleticsInboxDecisionCore','__athleticsHomeV2','__athleticsInboxV3','__athleticsSquadAthleteV2',
-  '__athleticsCalendarV2','__athleticsCompetitionJourneyV2','__athleticsScoutingV3','__athleticsStaffFinanceV2','__athleticsWorldSeasonV2','__athleticsRegression'
+  '__athleticsCalendarV2','__athleticsCompetitionJourneyV2','__athleticsScoutingV3','__athleticsStaffFinanceV2','__athleticsWorldSeasonV2','__athleticsRegression','AMLiveBroadcastV4'
  ];
  for(const key of requiredGlobals)if(!w[key])fail(`Required runtime global missing after page load: ${key}`);
 
@@ -116,6 +116,14 @@ try{
    if(snapshot?.duplicateIds?.length)fail(`Runtime duplicate DOM ids: ${snapshot.duplicateIds.map(x=>`${x.id}×${x.count}`).join(', ')}`);
    if(snapshot?.activeViews?.length!==1)fail(`Regression snapshot has ${snapshot?.activeViews?.length||0} active views.`);
   }catch(err){fail(`Regression snapshot threw: ${err?.stack||err}`)}
+ }
+ if(w.AMLiveBroadcastV4){
+  try{
+   const diag=w.AMLiveBroadcastV4.diagnostics();
+   if(!diag||diag.loaded!==true||diag.renderer!=='Broadcast V4.6 Optimised')fail('Broadcast V4.6 diagnostics are not authoritative.');
+   const qa=w.AMLiveBroadcastV4.qa();
+   if(!qa||qa.ok!==true||!Array.isArray(qa.issues))fail('Broadcast V4.6 QA snapshot is invalid while idle.');
+  }catch(err){fail(`Broadcast V4.6 diagnostics threw: ${err?.stack||err}`)}
  }
  console.log('[smoke] runtime globals and snapshot checked');
 

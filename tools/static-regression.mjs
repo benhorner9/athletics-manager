@@ -148,7 +148,11 @@ const sourceContracts={
   ['function distanceCameraTarget(c,state)','Broadcast distance camera director is missing'],
   ['function distanceMoment(c)','Broadcast lap/bell/breakaway timeline is missing'],
   ['function distanceLeadComment(c,state)','Broadcast distance commentary is missing'],
-  ["document.addEventListener('visibilitychange'",'Broadcast background-tab pause safeguard is missing']
+  ["document.addEventListener('visibilitychange'",'Broadcast background-tab pause safeguard is missing'],
+  ['function presentationHz()','Broadcast adaptive presentation budget is missing'],
+  ['function qaSnapshot(c)','Broadcast visual/simulation QA snapshot is missing'],
+  ['function paintDue(c,force=false)','Broadcast render throttling is missing'],
+  ["version:'4.6.0'",'Broadcast V4.6 version contract is missing']
  ],
  'scripts/inbox-decision-core-v1.js':[
   ['getProgressionBlockers:blockers','Inbox decision core must remain the progression-blocker authority'],
