@@ -125,7 +125,7 @@ function bindProfile(dialog,a,own,squad){
  dialog.querySelector('#profileClose')?.addEventListener('click',closeAthleteProfile);
  dialog.querySelectorAll('[data-apv2-tab]').forEach(b=>b.onclick=()=>{ui.profileTab=b.dataset.apv2Tab;profileTab=ui.profileTab;renderProfile();requestAnimationFrame(()=>dialog.querySelector(`[data-apv2-tab="${ui.profileTab}"]`)?.focus({preventScroll:true}))});
  dialog.querySelector('#apv2Training')?.addEventListener('change',e=>{if(!own||!squad||a.retired)return;a.training=e.target.value;safe(()=>save(),null);safe(()=>toast('Training load updated'),null);renderProfile()});
- dialog.querySelector('#profileSquadAction')?.addEventListener('click',()=>{if(!own||a.retired)return;const wasSquad=a.inSquad!==false;try{wasSquad?dropFromSquad(a.id):callUpToSquad(a.id)}catch(err){console.error('[Athletics Manager] squad action recovered',err);return}safe(()=>renderView(currentView),null);renderProfile()});
+ dialog.querySelector('#profileSquadAction')?.addEventListener('click',()=>{if(!own||a.retired)return;const wasSquad=a.inSquad!==false;try{if(wasSquad){dropFromSquad(a.id);safe(()=>renderView(currentView),null);renderProfile();return}callUpToSquad(a.id);return}catch(err){console.error('[Athletics Manager] squad action recovered',err);return}});
  dialog.querySelectorAll('[data-apv2-rival]').forEach(b=>b.onclick=()=>{ui.profileTab='overview';profileId=b.dataset.apv2Rival;renderProfile()});
 }
 function drawAthleteProfileV2(){try{renderProfile()}catch(err){console.error('[Athletics Manager] Athlete Profile V2 recovered to legacy',err);dialogReset();legacyDrawAthleteProfile()}}
