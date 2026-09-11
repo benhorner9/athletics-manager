@@ -33,6 +33,7 @@ const systems=Object.freeze({
  worldNews:system('scripts/world-season-v2.js',{label:'World News'}),
  managerProfile:system('scripts/manager-career-v1.js',{label:'Manager Career / My Profile'}),
  firstTimeExperience:system('scripts/first-time-experience-v2.js',{label:'First-Time Player Experience'}),
+ language:system('scripts/language-system-v1.js',{label:'Text, Language & Narrative Systems',baseLanguage:'en-GB',rule:'gameplay owns facts; language owns presentation'}),
  alphaAccess:system('scripts/alpha-menu-gate.js',{label:'Alpha Access / Main Menu'}),
  sprintEvents:system('scripts/sprint-expansion.js',{label:'Sprint Event Expansion'}),
  enduranceEvents:system('scripts/endurance-expansion.js',{label:'Endurance Event Expansion'})
