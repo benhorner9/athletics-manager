@@ -1,0 +1,30 @@
+/* Athletics Manager — My Profile sidebar docking */
+@media (min-width:761px){
+ #managementProfile.am-manager-profile-dialog{
+  position:fixed;
+  inset:0 0 0 var(--am-rail,220px);
+  width:calc(100vw - var(--am-rail,220px));
+  max-width:none;
+  height:100dvh;
+  max-height:none;
+  margin:0;
+  padding:0;
+  border:0;
+  border-left:1px solid rgba(148,163,184,.16);
+  border-radius:0;
+  box-shadow:-18px 0 48px rgba(0,0,0,.2);
+  overflow:hidden;
+  z-index:80;
+ }
+ #managementProfile.am-manager-profile-dialog::backdrop{display:none;background:transparent;backdrop-filter:none}
+}
+
+@media (max-width:760px){
+ #managementProfile.am-manager-profile-dialog{
+  position:fixed;
+  inset:0;
+  width:100vw;
+  height:100dvh;
+  margin:0;
+ }
+}
