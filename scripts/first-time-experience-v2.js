@@ -3,7 +3,7 @@
 'use strict';
 if(window.AMFirstTimeExperienceV2)return;
 
-const VERSION='2.0.1';
+const VERSION='2.0.0';
 const STATE_VERSION=2;
 const OPENING_EVENT_ID='opening-meet-v2';
 const OPENING_WEEK=5;

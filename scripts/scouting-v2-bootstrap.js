@@ -20,12 +20,14 @@ async function payload(paths){
 
 function runJS(code){
  return new Promise((resolve,reject)=>{
-  const url=URL.createObjectURL(new Blob([code],{type:'text/javascript'}));
-  const script=document.createElement('script');
-  script.src=url;script.async=false;script.dataset.scoutingV2='runtime';
-  script.onload=()=>{URL.revokeObjectURL(url);resolve()};
-  script.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('Scouting V2 runtime failed'))};
-  document.head.appendChild(script);
+  const script=document.createElement('script');script.async=false;script.dataset.scoutingV2='runtime';
+  if(typeof URL?.createObjectURL==='function'){
+   const url=URL.createObjectURL(new Blob([code],{type:'text/javascript'}));script.src=url;
+   script.onload=()=>{try{URL.revokeObjectURL(url)}catch(_){}resolve()};
+   script.onerror=()=>{try{URL.revokeObjectURL(url)}catch(_){}reject(new Error('Scouting V2 runtime failed'))};
+   document.head.appendChild(script);return;
+  }
+  try{script.textContent=code;document.head.appendChild(script);resolve()}catch(err){reject(err)}
  });
 }
 

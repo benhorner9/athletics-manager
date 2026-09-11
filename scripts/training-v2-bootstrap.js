@@ -19,10 +19,13 @@ async function unpack(path){return decode(await text(path))}
 async function unpackJoined(paths){return decode((await Promise.all(paths.map(text))).join(''))}
 async function run(code,label){
  await new Promise((resolve,reject)=>{
-  const url=URL.createObjectURL(new Blob([code],{type:'text/javascript'})),script=document.createElement('script');
-  script.src=url;script.async=false;script.dataset.trainingV2=label;
-  script.onload=()=>{URL.revokeObjectURL(url);resolve()};script.onerror=err=>{URL.revokeObjectURL(url);reject(err)};
-  document.head.appendChild(script);
+  const script=document.createElement('script');script.async=false;script.dataset.trainingV2=label;
+  if(typeof URL?.createObjectURL==='function'){
+   const url=URL.createObjectURL(new Blob([code],{type:'text/javascript'}));script.src=url;
+   script.onload=()=>{try{URL.revokeObjectURL(url)}catch(_){}resolve()};script.onerror=err=>{try{URL.revokeObjectURL(url)}catch(_){}reject(err)};
+   document.head.appendChild(script);return;
+  }
+  try{script.textContent=code;document.head.appendChild(script);resolve()}catch(err){reject(err)}
  });
 }
 async function loadScoutingV2(){
