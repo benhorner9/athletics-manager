@@ -186,6 +186,7 @@ const sourceContracts={
  'scripts/ui-cutover-v1.js':[
   ['am-ui-cutover','Production cutover body marker is missing'],
   ['errorBoundary','Production cutover recovery boundary is missing'],
+  ['root.matches?.(def.selector)','Production cutover must recognise route-root production markers'],
   ["generation:GENERATION",'Production cutover generation contract is missing']
  ]
 };

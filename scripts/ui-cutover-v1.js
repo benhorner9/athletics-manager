@@ -7,7 +7,7 @@ if(window.__amUICutoverV1)return;window.__amUICutoverV1=1;
 
 const $=id=>document.getElementById(id);
 const GENERATION='production';
-const BUILD='2026.09.11-cutover01';
+const BUILD='2026.09.11-cutover02';
 const ROUTES={
  home:{selector:'.home-v2,[data-am-ui-screen="home-v2"]',delay:650},
  inbox:{selector:'.am-inbox-v3,[data-am-ui-screen="inbox-v3"]',delay:650},
@@ -43,7 +43,7 @@ function currentRoute(){try{return typeof currentView==='string'?currentView:'ho
 function startupOpen(){const el=$('startup');return !!el&&!el.classList.contains('hidden')}
 function candidate(route=currentRoute()){
  const root=$(route),def=ROUTES[route];if(!root||!def)return false;
- try{return !!root.querySelector(def.selector)}catch(_){return false}
+ try{return !!(root.matches?.(def.selector)||root.querySelector(def.selector))}catch(_){return false}
 }
 function errorBoundary(route,reason='The production interface did not finish loading.'){
  const root=$(route);if(!root)return false;
