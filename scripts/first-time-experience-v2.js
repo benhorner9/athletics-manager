@@ -3,7 +3,7 @@
 'use strict';
 if(window.AMFirstTimeExperienceV2)return;
 
-const VERSION='2.0.1';
+const VERSION='2.0.2';
 const STATE_VERSION=2;
 const OPENING_EVENT_ID='opening-meet-v2';
 const OPENING_WEEK=5;
@@ -261,7 +261,22 @@ function scoutingV2Signature(){
  try{primary=typeof scoutingState==='function'?scoutingState():(s?.scouting||null)}catch(_){primary=s?.scouting||null}
  try{return JSON.stringify(scoutingV2Comparable({scouting:primary,scoutingV2:s?.scoutingV2||null,assignments:s?.scoutAssignments||null,scoutingAssignments:s?.scoutingAssignments||null}))}catch(_){return''}
 }
+function scoutingV2HasAssignment(){
+ try{
+  const org=s?.scoutingV2?.nations?.[nation()];
+  return Array.isArray(org?.assignments)&&org.assignments.some(a=>a&&a.status==='active');
+ }catch(_){return false}
+}
+function syncScoutingV2Assignment(source='scouting-v2-state'){
+ const st=ensureState();
+ if(!st||!active()||st.steps.scoutAssignment||currentPhase()!=='scouting'||!scoutingV2HasAssignment())return false;
+ markStep('scoutAssignment');
+ toastSafe('Scouting assignment started');
+ try{window.dispatchEvent(new CustomEvent('am:ftx-step-complete',{detail:{step:'scoutAssignment',source}}))}catch(_){ }
+ return true;
+}
 function armScoutingV2Assignment(){
+ if(syncScoutingV2Assignment('scouting-v2-existing'))return;
  if(!active()||currentPhase()!=='scouting'||ensureState().steps.scoutAssignment)return;
  if(scoutingV2Baseline===null)scoutingV2Baseline=scoutingV2Signature();
 }
@@ -270,6 +285,7 @@ function maybeCompleteScoutingV2Assignment(target,source='scouting-v2'){
  const root=$('scouting');if(!root||!target||!root.contains(target))return;
  const before=scoutingV2Baseline===null?scoutingV2Signature():scoutingV2Baseline;
  setTimeout(()=>{
+  if(syncScoutingV2Assignment(source))return;
   if(!active()||currentPhase()!=='scouting'||ensureState().steps.scoutAssignment)return;
   const after=scoutingV2Signature();
   if(after&&after!==before){
@@ -400,7 +416,7 @@ function weekMessages(){
 function decorateCurrent(){
  try{
   const st=ensureState();if(!st)return;
-  if(active()){ensureOpeningSchedule();retireLegacyOpeningTasks();weekMessages()}
+  if(active()){ensureOpeningSchedule();retireLegacyOpeningTasks();weekMessages();syncScoutingV2Assignment('scouting-v2-saved-state')}
   const cv=typeof currentView!=='undefined'?currentView:null;
   if(cv==='home')decorateHome();
   else if(cv==='squad')decorateSquad();

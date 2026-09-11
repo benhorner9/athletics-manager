@@ -177,6 +177,8 @@ const sourceContracts={
   ['function trainingRecommendation()','Action-led training introduction is missing'],
   ['function weekMessages()','Staff-led opening-month messages are missing'],
   ['function scoutingV2Signature()','FTUE must observe authoritative Scouting V2 assignment state'],
+  ['function scoutingV2HasAssignment()','FTUE must read the production Scouting V2 active-assignment authority'],
+  ['function syncScoutingV2Assignment','FTUE must reconcile a saved or newly-created Scouting V2 assignment'],
   ['function maybeCompleteScoutingV2Assignment','FTUE must complete Week 3 from a real Scouting V2 assignment'],
   ['window.AMScoutingV2?.refreshScoutingIntegration?.()','FTUE Scouting routing must target the production Scouting V2 integration'],
   ['function captureAdvance(ev)','Guided Advance Week protection is missing'],

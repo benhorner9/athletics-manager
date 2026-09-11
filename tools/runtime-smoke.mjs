@@ -137,7 +137,7 @@ try{
  if(w.AMFirstTimeExperienceV2){
   try{
    const ftx=w.AMFirstTimeExperienceV2.snapshot();
-   if(!ftx||ftx.version!=='2.0.1'||ftx.stateVersion!==2)fail('First-Time Experience V2 snapshot is invalid.');
+   if(!ftx||ftx.version!=='2.0.2'||ftx.stateVersion!==2)fail('First-Time Experience V2 snapshot is invalid.');
    if(!['recommended','minimal','off'].includes(ftx.guidance))fail('First-Time Experience V2 guidance state is invalid.');
    if(!ftx.steps||!ftx.seen)fail('First-Time Experience V2 state model is incomplete.');
   }catch(err){fail(`First-Time Experience V2 diagnostics threw: ${err?.stack||err}`)}
