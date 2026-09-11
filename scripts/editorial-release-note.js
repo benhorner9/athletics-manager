@@ -35,3 +35,20 @@ if(document.readyState==='complete')loadInboxVoices();
 else window.addEventListener('load',loadInboxVoices,{once:true});
 })();
 /* ===== End Inbox Character Voice Loader ===== */
+
+
+/* ===== Gavin Potts Commentary Release Note ===== */
+(function(){
+'use strict';
+if(window.__amGavinPottsReleaseNote)return;window.__amGavinPottsReleaseNote=1;
+const update={timestamp:'2026-09-11T19:22:00+01:00',date:'11 September 2026',title:'Gavin Potts Commentary Pass',items:[
+ 'Gavin now prioritises lead changes, decisive attempts, eliminations, programme athletes and major results instead of narrating every routine action.',
+ 'Sprint checkpoint calls now vary by event while staying tied to the actual live order; unsupported claims about athletes closing or fading have been removed.',
+ 'Repeated commentary is controlled semantically, so the same sentence shape is less likely to recur with a different athlete name or number.',
+ 'Routine field attempts can now pass without commentary, giving important throws, jumps and final attempts more room to land.',
+ 'Record and championship calls scale with the achievement, with restrained PB/SB language and stronger national, championship and world-record moments.'
+]};
+function add(){if(typeof window.addDevelopmentUpdate==='function'){window.addDevelopmentUpdate(update);if(typeof renderMenu==='function')try{renderMenu()}catch(_){};return}setTimeout(add,50)}
+add();
+})();
+/* ===== End Gavin Potts Commentary Release Note ===== */

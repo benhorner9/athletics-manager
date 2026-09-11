@@ -23,7 +23,7 @@ const systems=Object.freeze({
  competition:system('scripts/competition-journey-v2.js',{label:'Competition Journey'}),
  selection:system('scripts/selection-centre-v2.js',{label:'Selection Centre',logic:'scripts/selection-decision-v3.js'}),
  eventFlow:system('scripts/event-flow-v3.js',{label:'Event Flow'}),
- liveEvents:system('scripts/live-event-broadcast-v4.js',{label:'Live Events',simulation:'scripts/live-event-engine-v3.js'}),
+ liveEvents:system('scripts/live-event-broadcast-v4.js',{label:'Live Events',simulation:'scripts/live-event-engine-v3.js',commentary:'Gavin Potts · priority-led broadcast language'}),
  eventAI:system('scripts/event-ai-realism.js',{label:'Event AI',display:'scripts/event-ai-display.js'}),
  staff:system('scripts/staff-finance-v2.js',{label:'Staff'}),
  finance:system('scripts/staff-finance-v2.js',{label:'Finance'}),
