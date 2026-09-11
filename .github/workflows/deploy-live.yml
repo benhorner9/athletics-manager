@@ -22,13 +22,17 @@ jobs:
       - name: Check out latest game
         uses: actions/checkout@v4
 
-      - name: Validate Live Event engine
-        run: node --check scripts/live-event-engine-v3.js
+      - name: Validate Live Event engines
+        run: |
+          node --check scripts/live-event-engine-v3.js
+          node --check scripts/live-event-broadcast-v4.js
 
       - name: Verify legacy renderers are not active
         run: |
           ! grep -Eq 'event-2d|track-race-core|track-live-scoreboard|field-dot-playback|field-scoreboard-authority|scoreboard-instance-ownership|live-event-engine-v2' game.html
           ! grep -q '<ellipse' scripts/live-event-engine-v3.js
+          grep -q 'scripts/live-event-broadcast-v4.js' game.html
+          grep -q 'styles/live-event-broadcast-v4.css' game.html
 
       - name: Deploy game to hosting
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
