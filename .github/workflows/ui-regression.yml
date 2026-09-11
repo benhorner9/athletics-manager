@@ -1,5 +1,6 @@
 name: UI Regression Gate
 
+# Live Event Broadcast V4.1 sprint phase is validated by this gate.
 on:
   push:
     branches: [main]
