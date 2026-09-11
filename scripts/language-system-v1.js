@@ -131,7 +131,7 @@ function dedupeSentences(text){
  return out.join(' ')
 }
 function cleanProse(value,context='general'){
- let text=str(value);if(!text)return text;
+ const original=normaliseWhitespace(str(value));let text=original;if(!text)return text;
  for(const [re,to] of FILLER_RULES)text=text.replace(re,to);
  for(const [re,to] of ROLE_RULES[context]||[])text=text.replace(re,to);
  text=text
@@ -141,7 +141,9 @@ function cleanProse(value,context='general'){
   .replace(/\bdue to the fact that\b/gi,'because');
  text=dedupeSentences(normaliseWhitespace(text));
  if(context==='medical'||context==='finance'||context==='federation')text=text.replace(/!{2,}/g,'!').replace(/!\s*$/,'');
- return sentenceCaseStart(normaliseWhitespace(text))
+ text=normaliseWhitespace(text);
+ if(text===original)return original;
+ return /^[a-z]/.test(text)?sentenceCaseStart(text):text
 }
 function cleanSubject(value){return normaliseWhitespace(str(value).replace(/^\s*(?:important\s+)?update\s*[:\-–—]\s*/i,'').replace(/^\s*new information\s*[:\-–—]\s*/i,''))||str(value).trim()}
 function t(id,vars={}){let out=STRINGS[id]??id;for(const [k,v] of Object.entries(vars))out=out.replace(new RegExp(`\\{${k}\\}`,'g'),str(v));return out}
