@@ -1,3 +1,4 @@
+// Manager Career V1 is part of the production runtime smoke contract.
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
