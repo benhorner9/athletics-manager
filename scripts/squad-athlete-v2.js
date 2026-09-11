@@ -64,7 +64,7 @@ function statSummary(base,mode){
 function metricBar(value,inverse=false){const n=Math.max(0,Math.min(100,Number(value)||0)),tone=inverse?(n>=60?'bad':n>=40?'warn':''):(n<65?'bad':n<80?'warn':'');return `<div class="sav2-bar ${tone}" style="--value:${n}%"><i></i><b>${n}</b></div>`}
 function row(a){const h=healthTone(a);return `<tr tabindex="0" data-sav2-athlete="${esc(a.id)}" aria-label="Open ${esc(a.name)} profile">
  <td><div class="sav2-person"><span class="sav2-face">${portrait(a)}</span><span><strong title="${esc(a.name)}">${esc(a.name)}</strong><small>${esc(a.tier||'Athlete')} · Age ${Number(a.age)||'—'}</small></span></div></td>
- <td>${esc(disc(a))}</td><td class="num"><span class="sav2-score">${esc(ability(a))}</span></td><td class="num"><span class="sav2-dev">${devHTML(a)}</span></td><td><span class="sav2-score">${esc(perf(a,a.pb))}</span></td>
+ <td>${esc(disc(a))}</td><td><span class="sav2-score">${esc(ability(a))}</span></td><td class="num"><span class="sav2-dev">${devHTML(a)}</span></td><td><span class="sav2-score">${esc(perf(a,a.pb))}</span></td>
  <td>${metricBar(a.fitness)}</td><td>${metricBar(a.form)}</td><td>${metricBar(a.fatigue,true)}</td><td><span class="sav2-state ${h}">${esc(healthLabel(a))}</span></td></tr>`}
 function sortHead(key,label,st){return `<th><button class="${st.sort===key?'on':''}" data-sav2-sort="${key}">${label}${st.sort===key?(st.dir>0?' ↑':' ↓'):''}</button></th>`}
 function renderSquad(){
