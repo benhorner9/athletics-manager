@@ -25,7 +25,7 @@ if(window.__amInboxCharacterVoiceLoader)return;window.__amInboxCharacterVoiceLoa
 function loadInboxVoices(){
  if(window.__amInboxCharacterVoicesV1||document.querySelector('script[data-am-inbox-voices]'))return;
  const script=document.createElement('script');
- script.src='scripts/inbox-character-voices-v1.js?v=20260911-inboxvoice1';
+ script.src='scripts/inbox-character-voices-v1.js?v=20260911-inboxvoice11';
  script.async=false;
  script.dataset.amInboxVoices='1';
  script.onload=()=>{try{if(typeof renderMenu==='function')renderMenu()}catch(_){}};
