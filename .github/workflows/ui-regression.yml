@@ -1,6 +1,6 @@
 name: UI Regression Gate
 
-# Live Event Broadcast V4.6 optimisation and QA safeguards are validated by this gate.
+# Production UI, Live Event Broadcast V4.6 and Manager Career / My Profile V1 safeguards are validated by this gate.
 on:
   push:
     branches: [main]
