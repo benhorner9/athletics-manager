@@ -40,9 +40,9 @@ static=replace_once(static,
     " 'scripts/world-season-v2.js',\n 'scripts/integration-regression-v1.js',",
     " 'scripts/world-season-v2.js',\n 'scripts/manager-career-v1.js',\n 'scripts/integration-regression-v1.js',",
     'required manager runtime')
-static=replace_once(static,
-    "before('scripts/staff-finance-v2.js','scripts/world-season-v2.js');\nfor(const script",
-    "before('scripts/staff-finance-v2.js','scripts/world-season-v2.js');\nbefore('scripts/world-season-v2.js','scripts/manager-career-v1.js');\nbefore('scripts/manager-career-v1.js','scripts/integration-regression-v1.js');\nfor(const script",
+static=inject_after(static,
+    "before('scripts/staff-finance-v2.js','scripts/world-season-v2.js');",
+    "before('scripts/world-season-v2.js','scripts/manager-career-v1.js');\nbefore('scripts/manager-career-v1.js','scripts/integration-regression-v1.js');",
     'manager runtime order')
 static=replace_once(static,
     " 'styles/competition-journey-v2.css','styles/live-event-broadcast-v4.css','styles/training-v3.css','styles/scouting-v3.css','styles/staff-finance-v2.css','styles/world-season-v2.css',\n 'styles/event-flow-stability.css'",
