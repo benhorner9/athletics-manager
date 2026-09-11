@@ -19,3 +19,28 @@
 @media(max-width:1050px){.sav2-summary{grid-template-columns:repeat(3,1fr)}.sav2-summary>div:nth-child(n+4){display:none}.sav2-toolbar{grid-template-columns:minmax(180px,1fr) repeat(2,minmax(110px,.6fr)) auto}.sav2-toolbar select:nth-of-type(3){display:none}.apv2-grid{grid-template-columns:1fr}.apv2-rating{min-width:220px}.apv2-metrics{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:700px){.sav2{gap:9px;min-height:auto}.sav2-head{align-items:flex-start}.sav2-head p{display:none}.sav2-head-actions{display:none}.sav2-tabs{width:100%}.sav2-tabs button{flex:1}.sav2-summary{grid-template-columns:repeat(3,1fr)}.sav2-summary>div{padding:9px}.sav2-toolbar{grid-template-columns:1fr 1fr}.sav2-toolbar input{grid-column:1/-1}.sav2-toolbar select:nth-of-type(2),.sav2-toolbar select:nth-of-type(3){display:none}.sav2-toolbar button{width:100%}.sav2-table{min-width:0}.sav2-table thead{display:none}.sav2-table tbody,.sav2-table tr,.sav2-table td{display:block}.sav2-table tbody{padding:7px}.sav2-table tbody tr{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:6px 9px;padding:9px;border:1px solid #1d394c;border-radius:10px;margin-bottom:6px;background:#091a27}.sav2-table td{height:auto;padding:0;border:0}.sav2-table td:nth-child(1){grid-column:1/4}.sav2-table td:nth-child(2){grid-column:1/2;color:#7892a4}.sav2-table td:nth-child(3){grid-column:2/3;text-align:right}.sav2-table td:nth-child(4){grid-column:3/4;text-align:right}.sav2-table td:nth-child(5){grid-column:1/2;font-weight:900}.sav2-table td:nth-child(6),.sav2-table td:nth-child(7),.sav2-table td:nth-child(8){display:none}.sav2-table td:nth-child(9){grid-column:2/4;grid-row:3;text-align:right}.sav2-person{grid-template-columns:44px minmax(0,1fr)}.sav2-face{width:44px;height:44px}#athleteProfile.apv2-dialog{width:100vw;height:100dvh;border:0;border-radius:0}.apv2-shell{grid-template-rows:auto auto auto minmax(0,1fr)}.apv2-top{padding:max(9px,env(safe-area-inset-top)) 10px 8px}.apv2-top span{display:none}.apv2-hero{grid-template-columns:72px minmax(0,1fr);gap:11px;padding:10px}.apv2-photo{width:72px;height:72px;border-radius:12px}.apv2-identity h1{font-size:24px}.apv2-rating{grid-column:1/3;min-width:0;grid-template-columns:repeat(4,1fr)}.apv2-rating>div{padding:7px}.apv2-rating strong{font-size:13px}.apv2-tabs{padding:5px 7px}.apv2-tabs button{min-height:40px;padding:0 10px}.apv2-body{padding:8px;padding-bottom:max(16px,env(safe-area-inset-bottom))}.apv2-metrics{grid-template-columns:repeat(2,1fr)}.apv2-readiness-row{grid-template-columns:88px minmax(70px,1fr) 34px}.apv2-list>div,.apv2-list>button{grid-template-columns:58px minmax(0,1fr)}.apv2-list em{grid-column:2}.apv2-card-head{min-height:38px}}
 @media(prefers-reduced-motion:reduce){.sav2-table tbody tr{transition:none}}
+
+/* Squad + National Pool alignment authority — 2026-09-11 */
+@media(min-width:701px){
+ .sav2-table{table-layout:fixed}
+ .sav2-table th,.sav2-table td{box-sizing:border-box}
+ .sav2-table th:nth-child(1),.sav2-table td:nth-child(1){width:18%}
+ .sav2-table th:nth-child(2),.sav2-table td:nth-child(2){width:13%}
+ .sav2-table th:nth-child(3),.sav2-table td:nth-child(3){width:9%;text-align:center}
+ .sav2-table th:nth-child(4),.sav2-table td:nth-child(4){width:7%;text-align:center}
+ .sav2-table th:nth-child(5),.sav2-table td:nth-child(5){width:10%}
+ .sav2-table th:nth-child(6),.sav2-table td:nth-child(6),
+ .sav2-table th:nth-child(7),.sav2-table td:nth-child(7),
+ .sav2-table th:nth-child(8),.sav2-table td:nth-child(8){width:11%}
+ .sav2-table th:nth-child(9),.sav2-table td:nth-child(9){width:10%;text-align:center}
+ .sav2-table th:nth-child(3) button,.sav2-table th:nth-child(4) button,
+ .sav2-table th:nth-child(6) button,.sav2-table th:nth-child(7) button,
+ .sav2-table th:nth-child(8) button,.sav2-table th:nth-child(9) button{width:100%;text-align:center}
+ .sav2-table td:nth-child(2),.sav2-table td:nth-child(5){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .sav2-table td:nth-child(4) .sav2-dev{display:inline-flex;align-items:center;justify-content:center;min-width:100%}
+ .sav2-table td:nth-child(9) .sav2-state{justify-content:center;min-width:74px;box-sizing:border-box}
+ .sav2-summary>div{min-height:58px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center}
+ .sav2-toolbar>*{min-width:0;box-sizing:border-box}
+ .sav2-toolbar input,.sav2-toolbar select,.sav2-toolbar button{height:38px;min-height:38px;box-sizing:border-box}
+}
+
