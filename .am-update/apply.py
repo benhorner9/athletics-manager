@@ -1,0 +1,116 @@
+from pathlib import Path
+import re
+
+ROOT = Path('.')
+live_path = ROOT / 'scripts/live-event-broadcast-v4.js'
+release_path = ROOT / 'scripts/release-baseline.js'
+note_path = ROOT / 'scripts/editorial-release-note.js'
+
+live = live_path.read_text(encoding='utf-8')
+
+
+def sub_once(pattern, replacement, text, label):
+    out, count = re.subn(pattern, replacement, text, count=1, flags=re.S)
+    if count != 1:
+        raise SystemExit(f'Expected one {label} replacement, found {count}')
+    return out
+
+# Scale the final call to the achievement instead of treating every milestone the same.
+live = sub_once(
+    r"function officialMomentSpeech\(e,d,rows\)\{.*?\}\nfunction nextDiscipline",
+    """function officialMomentSpeech(e,d,rows){const m=performanceMoment(rows);if(m){const name=m.row.name,value=fmt(d,m.row.perf);if(m.code==='WR')return`${name} has done it — ${value}. World record.`;if(m.code==='NR')return`${name} gets it — ${value}, a new national record.`;if(m.code==='CR')return`${name} sets a championship record with ${value}.`;if(m.code==='PB')return`${name} finishes with a personal best of ${value}.`;if(m.code==='SB')return`${name} finishes with a season best of ${value}.`}const winner=rows.find(x=>!x.status);if(!winner)return'';return`${winner.name} is confirmed as ${championTitle(e).toLowerCase()} in the ${label(d)}.`}\nfunction nextDiscipline""",
+    live,
+    'official moment speech'
+)
+
+# Add semantic repetition control and deterministic context-aware variant selection.
+live = sub_once(
+    r"function normaliseSpeech\(text\)\{.*?\}\nfunction queueSpeech\(c,text,priority=30,big=false\)\{.*?\}\nfunction flushSpeech\(c,force=false\)\{.*?\}\nfunction commentaryHTML",
+    """function normaliseSpeech(text){return String(text||'').replace(/^Gavin Potts\\s*[—:-]\\s*/i,'').trim()}\nfunction speechVariant(c,key,variants){if(!Array.isArray(variants)||!variants.length)return'';return variants[hash(`${c?.key||c?.e?.id||'event'}|gavin|${key}`)%variants.length]}\nfunction speechFingerprint(c,text){let out=normaliseSpeech(text).toLowerCase();for(const r of c?.rr||[]){const name=String(r?.name||'').toLowerCase().trim();if(name)out=out.split(name).join('{athlete}')}return out.replace(/\\b\\d+(?:\\.\\d+)?\\s*(?:metres?|meters?|m|seconds?|s)?\\b/g,'{n}').replace(/[^a-z{} ]+/g,' ').replace(/\\s+/g,' ').trim()}\nfunction queueSpeech(c,text,priority=30,big=false,semanticKey=''){if(!c||!text)return;const clean=normaliseSpeech(text),key=semanticKey||speechFingerprint(c,clean),recent=(c.comments||[]).slice(-6);if(recent.some(x=>x.key===key)||c.commentQueue.some(x=>x.key===key)||c.comments.some(x=>x.text===clean)||c.commentQueue.some(x=>x.text===clean))return;c.commentQueue.push({text:clean,key,priority,big,queuedAt:performance.now()});c.commentQueue.sort((a,b)=>b.priority-a.priority||a.queuedAt-b.queuedAt);if(c.commentQueue.length>4)c.commentQueue.length=4}\nfunction flushSpeech(c,force=false){if(!c?.commentQueue?.length)return;const now=performance.now(),delay=c.speed===4?360:c.speed===2?470:620;if(!force&&now-c.lastSpeechAt<delay)return;const item=c.commentQueue.shift();c.lastSpeechAt=now;c.comments.push({...item,time:c.kind==='track'?`${c.state?.clock?.toFixed?.(1)||'0.0'}s`:`${Math.min(c.i+1,c.seq.length)}/${c.seq.length}`});if(c.comments.length>28)c.comments.splice(0,c.comments.length-28);c.e.commentary??={};c.e.commentary[c.d]=c.comments.map(x=>x.text);renderCommentary(c)}\nfunction commentaryHTML""",
+    live,
+    'commentary queue'
+)
+
+# Replace fixed checkpoint commentary with event-seeded semantic variants. Claims stay factual to the live order.
+live = sub_once(
+    r"function trackMomentText\(c,m,top\)\{.*?\}\nfunction distanceMoment",
+    """function trackMomentText(c,m,top){const n=dist(c.d),a=top[0]?.r.name||'The leader',b=top[1]?.r.name||'the chasing pack',pick=(key,lines)=>speechVariant(c,`${n}-${key}`,lines);if(n===100){if(m<=20)return pick('20',[`${a} has the early edge.`,`${a} is quickest through twenty.`,`Early advantage to ${a}.`]);if(m<=40)return pick('40',[`${a} leads through forty metres.`,`${a} holds the advantage at forty.`,`Forty metres — ${a} in front.`]);if(m<=60)return pick('60',[`${a} has the advantage at sixty.`,`${a} still leads at sixty metres.`,`Sixty metres and ${a} is in front.`]);if(m<=80)return pick('80',[`${a} leads with twenty metres left.`,`Twenty to go and ${a} is in front.`,`${a} has the advantage into the final twenty.`]);return`${a} reaches the line first.`}if(n===200){if(m<=50)return pick('50',[`${a} has the edge on the bend.`,`${a} is in front through fifty.`,`Early advantage to ${a} on the bend.`]);if(m<=100)return pick('100',[`Halfway and ${a} has the advantage.`,`${a} leads at halfway as the stagger unwinds.`,`At halfway, ${a} is in front.`]);if(m<=150)return pick('150',[`${a} comes off the bend in front.`,`${a} leads into the home straight.`,`Into the straight with ${a} ahead.`]);return`${a} reaches the line first.`}if(n===400){if(m<=100)return pick('100',[`${a} leads through the opening bend.`,`${a} has the advantage at one hundred.`,`One hundred gone — ${a} in front.`]);if(m<=200)return pick('200',[`Down the back straight, ${a} has the advantage.`,`${a} leads at halfway.`,`Halfway and ${a} is in front.`]);if(m<=300)return pick('300',[`${a} leads into the final bend.`,`${a} has the advantage with one hundred to run.`,`One hundred left and ${a} is in front.`]);return`${a} reaches the line first.`}return m>=n?`${a} reaches the line first.`:pick(`split-${Math.round(m)}`,[`At ${Math.round(m)} metres, ${a} leads from ${b}.`,`${a} heads ${b} through ${Math.round(m)} metres.`,`${Math.round(m)} metres gone — ${a} leads.`])}\nfunction distanceMoment""",
+    live,
+    'track moment variants'
+)
+
+# Do not add an extra finish line from the checkpoint system; the finish state owns that moment.
+live = sub_once(
+    r"function trackMoment\(c\)\{.*?\}\nfunction leadChangeReady",
+    """function trackMoment(c){const n=dist(c.d),lead=c.state?.lead?.m||0,cp=checkpoints(n);distanceMoment(c);while(c.next<cp.length&&lead>=cp[c.next]-1){const m=cp[c.next++],top=c.state.a.filter(x=>!x.status).slice(0,2),late=m>=n*.72;c.split={m,first:top[0]?.r.name||'Leader',second:top[1]?.r.name||''};c.splitTTL=1.15;if(m<n){if(n>=800){if(m>=n*.72)queueSpeech(c,speechVariant(c,`distance-late-${m}`,[`${top[0]?.r.name||'The leader'} has the advantage as the race moves into its decisive phase.`,`${top[0]?.r.name||'The leader'} still leads with the decisive move approaching.`,`The advantage remains with ${top[0]?.r.name||'the leader'} as the race tightens.`]),66,false)}else queueSpeech(c,trackMomentText(c,m,top),late?76:42,late);if(late)c.focusUntil=performance.now()+1100}}}\nfunction leadChangeReady""",
+    live,
+    'track moment priority'
+)
+
+# Less scripted start language and no duplicate winner call before the official result screen.
+live = live.replace(
+    "queueSpeech(c,`${c.rr.length} athletes are away in the ${label(c.d)}.`,80,true)",
+    "queueSpeech(c,speechVariant(c,'track-start',[`${label(c.d)} is underway.`,`Away in the ${label(c.d)}.`,`They are away in the ${label(c.d)}.`]),80,true,'track-start')"
+)
+live = live.replace(
+    "else{c.settle=.72;queueSpeech(c,`${c.state.a[0]?.r.name||'The winner'} takes the ${label(c.d)}.`,95,true);flushSpeech(c,true)}",
+    "else{c.settle=.72}"
+)
+live = live.replace(
+    "queueSpeech(c,`${c.state.a[0]?.r.name||'The leader'} hits the line first — order provisional.`,88,true)",
+    "queueSpeech(c,speechVariant(c,'finish-provisional',[`${c.state.a[0]?.r.name||'The leader'} hits the line first — order provisional.`,`${c.state.a[0]?.r.name||'The leader'} gets there first. The order is provisional.`,`Across the line with ${c.state.a[0]?.r.name||'the leader'} first — provisional.`]),88,true,'finish-provisional')"
+)
+live = live.replace(
+    "queueSpeech(c,n>=800?distanceLeadComment(c,c.state):`${c.state.lead.r.name} moves into the lead.`,78,late)",
+    "queueSpeech(c,n>=800?distanceLeadComment(c,c.state):speechVariant(c,`lead-${c.state.lead.r.id}`,[`${c.state.lead.r.name} moves into the lead.`,`${c.state.lead.r.name} hits the front.`,`It's ${c.state.lead.r.name} now.`]),78,late,`lead-${c.state.lead.r.id}`)"
+)
+
+# Field commentary now prioritises lead changes, position changes, final attempts and the player's athletes.
+old_field = """if(isHeight(c.d)){const hjText=q.o==='O'?(q.a===3?`${q.r.name} gets it on the third attempt at ${fmt(c.d,q.H)} and stays alive.`:`${q.r.name} clears ${fmt(c.d,q.H)}.`):q.o==='X'?(q.a===3?`${q.r.name} misses at ${fmt(c.d,q.H)} and is out of the competition.`:`${q.r.name} misses at ${fmt(c.d,q.H)}.`):`${q.r.name} passes at ${fmt(c.d,q.H)}.`;queueSpeech(c,hjText,q.o==='O'?q.a===3?88:75:q.a===3?78:45,q.o==='O'||q.a===3)}else{const noun=fieldAttemptNoun(c),mark=q.f?'':fmt(c.d,q.m),text=q.f?`No mark for ${q.r.name}.`:c.lastTookLead?`${q.r.name} takes the lead with ${mark}.`:info.final?`${q.r.name} finishes with ${mark} on the final ${noun}.`:`${q.r.name} records ${mark} on attempt ${q.a}.`;queueSpeech(c,text,q.f?45:c.lastTookLead?92:info.final?80:72,!q.f)}flushSpeech(c,true);"""
+new_field = """if(isHeight(c.d)){const ours=q.r.nation===myNation(),worth=q.o==='O'||q.a===3||ours;if(worth){const hjText=q.o==='O'?(q.a===3?`${q.r.name} gets it on the third attempt at ${fmt(c.d,q.H)} and stays alive.`:`${q.r.name} clears ${fmt(c.d,q.H)}.`):q.o==='X'?(q.a===3?`${q.r.name} misses at ${fmt(c.d,q.H)} and is out of the competition.`:`${q.r.name} misses at ${fmt(c.d,q.H)}.`):`${q.r.name} passes at ${fmt(c.d,q.H)}.`;queueSpeech(c,hjText,q.o==='O'?q.a===3?88:75:q.a===3?78:45,q.o==='O'||q.a===3,`height-${q.r.id}-${q.H}-${q.a}`)}}else{const noun=fieldAttemptNoun(c),mark=q.f?'':fmt(c.d,q.m),ours=q.r.nation===myNation(),moved=String(c.lastPositionChangeId)===String(q.r.id)&&performance.now()-c.lastPositionChangeAt<160,important=c.lastTookLead||info.final||ours||moved;if(important){const text=q.f?`No mark for ${q.r.name}.`:c.lastTookLead?`${q.r.name} takes the lead with ${mark}.`:info.final?`${q.r.name} finishes with ${mark} on the final ${noun}.`:moved?`${q.r.name} improves to ${mark} and moves up the order.`:`${q.r.name} records ${mark}.`;queueSpeech(c,text,q.f?45:c.lastTookLead?92:info.final?80:moved?76:62,!q.f,`field-${q.r.id}-${q.a}`)}}flushSpeech(c,true);"""
+if old_field not in live:
+    raise SystemExit('Expected field commentary block was not found')
+live = live.replace(old_field, new_field, 1)
+
+# Expose commentary revision without changing the validated V4.6 renderer identity.
+live = live.replace(
+    "const api={version:'4.6.0',get active(){return live},",
+    "const api={version:'4.6.0',commentaryVersion:'1.0',commentator:'Gavin Potts',get active(){return live},",
+    1
+)
+
+live_path.write_text(live, encoding='utf-8')
+
+release = release_path.read_text(encoding='utf-8')
+old = "liveEvents:system('scripts/live-event-broadcast-v4.js',{label:'Live Events',simulation:'scripts/live-event-engine-v3.js'}),"
+new = "liveEvents:system('scripts/live-event-broadcast-v4.js',{label:'Live Events',simulation:'scripts/live-event-engine-v3.js',commentary:'Gavin Potts · priority-led broadcast language'}),"
+if old not in release:
+    raise SystemExit('Release baseline liveEvents entry not found')
+release_path.write_text(release.replace(old, new, 1), encoding='utf-8')
+
+note = note_path.read_text(encoding='utf-8')
+addition = r'''
+
+/* ===== Gavin Potts Commentary Release Note ===== */
+(function(){
+'use strict';
+if(window.__amGavinPottsReleaseNote)return;window.__amGavinPottsReleaseNote=1;
+const update={
+ timestamp:'2026-09-11T19:22:00+01:00',
+ date:'11 September 2026',
+ title:'Gavin Potts Commentary Pass',
+ items:[
+  'Gavin now prioritises lead changes, decisive attempts, eliminations, programme athletes and major results instead of narrating every routine action.',
+  'Sprint checkpoint calls now vary by event while staying tied to the actual live order; unsupported claims about athletes closing or fading have been removed.',
+  'Repeated commentary is controlled semantically, so the same sentence shape is less likely to recur with a different athlete name or number.',
+  'Routine field attempts can now pass without commentary, giving important throws, jumps and final attempts more room to land.',
+  'Record and championship calls scale with the achievement, with restrained PB/SB language and stronger national, championship and world-record moments.'
+ ]
+};
+function add(){if(typeof window.addDevelopmentUpdate==='function'){window.addDevelopmentUpdate(update);if(typeof renderMenu==='function')try{renderMenu()}catch(_){};return}setTimeout(add,50)}
+add();
+})();
+/* ===== End Gavin Potts Commentary Release Note ===== */
+'''
+if 'window.__amGavinPottsReleaseNote' not in note:
+    note_path.write_text(note.rstrip() + addition + '\n', encoding='utf-8')
