@@ -1,553 +1,552 @@
-/* Athletics Manager — Manager Career & My Profile V1
-   Authoritative career presentation built from existing gameplay systems.
-   Historical snapshots are persisted; the profile never fabricates unavailable legacy data. */
 (function(){
 'use strict';
 
-const VERSION='1.0.0';
-const MODEL_VERSION=1;
-const PROFILE_TABS=['overview','career','achievements','statistics','reputation','philosophy'];
+const VERSION=1;
+const MANAGER_ID='player-manager-v1';
+const MAX_EVENTS=2500;
 const REPUTATION_TIERS=[
- {min:0,name:'Unknown'},
- {min:18,name:'Emerging'},
- {min:30,name:'National'},
- {min:43,name:'Established'},
- {min:56,name:'Continental'},
- {min:68,name:'Elite'},
- {min:82,name:'World Class'},
- {min:94,name:'Legendary'}
+ [94,'Legendary'],[82,'World Class'],[68,'Elite'],[54,'Continental'],[40,'Established'],[26,'National'],[14,'Emerging'],[0,'Unknown']
 ];
-
 let activeTab='overview';
 let statsScope='career';
-let profileReturn=null;
-let syncing=false;
+let seasonFocus=null;
+let timelinePage=0;
+let restoreScroll=0;
+let migrating=false;
+let synchronising=false;
 
-const safe=(fn,fallback=null)=>{try{return fn()}catch(_){return fallback}};
-const esc=value=>safe(()=>profileEscape(String(value??'')),String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])));
-const nowSeason=()=>Number(s?.game?.season)||0;
-const nowWeek=()=>Number(s?.game?.week)||1;
-const currentNation=()=>safe(()=>managedNation(),s?.managedNation||'GREAT BRITAIN');
-const nationLabel=n=>safe(()=>nationName(n),n||'National Programme');
-const nationFlag=n=>safe(()=>flag(n),'');
-const formatMoney=v=>safe(()=>money(Number(v)||0),'£'+Math.round(Number(v)||0).toLocaleString());
-const discName=d=>safe(()=>discLabel(d),d||'Event');
-const fmtPerformance=(d,v)=>safe(()=>fmtPerf(d,Number(v)),Number(v).toFixed(2));
-const resultKey=r=>`${r.season}:${r.week}:${r.event}:${r.disc}`;
-const rowAthleteId=r=>r.id||r.athleteId||null;
-const resultNation=r=>r.rows?.find(Boolean)?.nation||null;
+const byId=id=>document.getElementById(id);
+const esc=value=>typeof profileEscape==='function'?profileEscape(String(value??'')):String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+const safeNumber=value=>Number.isFinite(Number(value))?Number(value):0;
+const uniq=items=>[...new Set(items)];
+const clampValue=(value,min,max)=>Math.max(min,Math.min(max,value));
+const nowSeason=()=>safeNumber(s?.game?.season)||2027;
+const nowWeek=()=>safeNumber(s?.game?.week)||1;
+const resultKey=(season,event,week,disc)=>`${season}:${event}:${week}:${disc}`;
+const hash=value=>{let h=2166136261;for(const ch of String(value||'')){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}return (h>>>0).toString(36)};
+const medalName=place=>place===1?'Gold':place===2?'Silver':'Bronze';
+const recordCodes=row=>(row.achievements||[]).filter(code=>['WR','CR','NR'].includes(code));
+const isWorldEvent=name=>/world/i.test(String(name||''));
+const isContinentalEvent=name=>/europe|continental|commonwealth|pan american|asian|african/i.test(String(name||''));
+const isSummitEvent=name=>/summit/i.test(String(name||''));
+const isMajorEventRecord=record=>!!(record.olympic||isWorldEvent(record.event)||isContinentalEvent(record.event));
+const currentNation=()=>typeof managedNation==='function'?managedNation():(s?.managedNation||'GREAT BRITAIN');
+const nationLabel=n=>typeof nationName==='function'?nationName(n):String(n||'National Programme');
+const nationFlag=n=>typeof flag==='function'?flag(n):'';
+const disciplineLabel=d=>typeof discLabel==='function'?discLabel(d):String(d||'Event');
+const performanceText=(d,v)=>typeof fmtPerf==='function'&&Number.isFinite(Number(v))?fmtPerf(d,Number(v)):String(v??'—');
+const moneyText=v=>typeof money==='function'?money(safeNumber(v)):`£${safeNumber(v).toLocaleString('en-GB')}`;
+const career=()=>typeof careerState==='function'?careerState():(s.career||{});
+const management=()=>typeof managementState==='function'?managementState():(s.management??={});
+const careerYear=()=>safeNumber(career().careerYear)||1;
+const currentTenure=()=>{const list=career().tenures||[];return [...list].reverse().find(t=>!t.endSeason)||list.at(-1)||null};
+const currentRank=()=>{
+ const points=s?.nationPoints||{};
+ if(!Object.values(points).some(v=>safeNumber(v)>0))return null;
+ try{const rows=typeof nationRanks==='function'?nationRanks():Object.entries(points).sort((a,b)=>safeNumber(b[1])-safeNumber(a[1]));const idx=rows.findIndex(row=>row[0]===currentNation());return idx>=0?idx+1:null}catch(_){return null}
+};
+const athleteById=id=>(s?.athletes||[]).find(a=>a.id===id)||null;
+const assessmentMidSafe=a=>{try{return typeof assessmentMid==='function'?Math.round(assessmentMid(a,'overall')):Math.round(safeNumber(a?.overall))}catch(_){return Math.round(safeNumber(a?.overall))}};
+const assessmentTextSafe=a=>{try{return typeof assessmentText==='function'?assessmentText(a,'overall'):String(assessmentMidSafe(a))}catch(_){return String(assessmentMidSafe(a))}};
 
-function model(){
- const m=managementState();
- if(!m.careerProfile||Number(m.careerProfile.version)!==MODEL_VERSION){
-  const prior=m.careerProfile||{};
-  m.careerProfile={
-   version:MODEL_VERSION,
-   managerId:prior.managerId||'player-manager',
-   events:Array.isArray(prior.events)?prior.events:[],
-   milestones:prior.milestones&&typeof prior.milestones==='object'?prior.milestones:{},
-   snapshots:Array.isArray(prior.snapshots)?prior.snapshots:[],
-   arrivals:prior.arrivals&&typeof prior.arrivals==='object'?prior.arrivals:{},
-   reputation:prior.reputation&&typeof prior.reputation==='object'?prior.reputation:{current:0,peak:0,history:[]},
-   decisions:prior.decisions&&typeof prior.decisions==='object'?prior.decisions:{callups:0,youthCallups:0,longAgreements:0,shortAgreements:0,poolReturns:0,scoutedCallups:0,staffAppointments:0,facilityUpgrades:0},
-   migration:{createdSeason:nowSeason(),createdWeek:nowWeek(),legacyBackfill:true}
-  };
- }
- const cp=m.careerProfile;
- cp.events??=[];cp.milestones??={};cp.snapshots??=[];cp.arrivals??={};cp.reputation??={current:0,peak:0,history:[]};cp.reputation.history??=[];
- cp.decisions??={callups:0,youthCallups:0,longAgreements:0,shortAgreements:0,poolReturns:0,scoutedCallups:0,staffAppointments:0,facilityUpgrades:0};
- cp.migration??={createdSeason:nowSeason(),createdWeek:nowWeek(),legacyBackfill:true};
- return cp;
-}
-
-function rawResults(){
- const values=safe(()=>importManagerResults(),[])||[];
- return [...values].filter(x=>x&&Array.isArray(x.rows)).sort((a,b)=>(a.season-b.season)||(a.week-b.week)||String(a.event).localeCompare(String(b.event)));
-}
-
-function flattenRows(results=rawResults()){
- const out=[];
- for(const res of results){
-  for(const row of res.rows||[])out.push({...row,_result:res,_season:res.season,_week:res.week,_event:res.event,_disc:res.disc,_nation:row.nation||resultNation(res)});
- }
- return out;
-}
-
-function eventGroup(d){
- const code=String(d||'').toUpperCase();
- if(/SP|DT|HT|JT|THROW/.test(code))return 'Throws';
- if(/HJ|LJ|TJ|PV|JUMP/.test(code))return 'Jumps';
- if(/800|1500|3000|5000|10000|XC|DIST/.test(code))return 'Distance';
- return 'Sprints';
-}
-
-function isWorldLevel(res){return !res.national&&!res.olympic&&/world|global/i.test(String(res.event||''));}
-function isMajorResult(res){return !!(res.olympic||isWorldLevel(res));}
-function medalsForRows(rows){return {g:rows.filter(x=>x.place===1).length,s:rows.filter(x=>x.place===2).length,b:rows.filter(x=>x.place===3).length};}
-function medalTotal(m){return (m?.g||0)+(m?.s||0)+(m?.b||0)}
-
-function stats(scope=statsScope){
- const results=rawResults();
- const career=careerState();
- let scoped=results;
- if(scope==='job')scoped=results.filter(r=>resultNation(r)===currentNation());
- if(scope==='season')scoped=results.filter(r=>Number(r.season)===nowSeason()&&resultNation(r)===currentNation());
- const rows=flattenRows(scoped);
- const wins=rows.filter(r=>r.place===1);
- const podiums=rows.filter(r=>r.place<=3);
- const finals=rows.filter(r=>r.place<=8);
- const olympicRows=rows.filter(r=>r._result.olympic);
- const worldRows=rows.filter(r=>isWorldLevel(r._result));
- const majorRows=rows.filter(r=>isMajorResult(r._result));
- const nationalRows=rows.filter(r=>r._result.national);
- const records=rows.filter(r=>(r.achievements||[]).some(a=>a==='WR'||a==='NR'||a==='CR'));
- const wr=rows.filter(r=>(r.achievements||[]).includes('WR'));
- const nr=rows.filter(r=>(r.achievements||[]).includes('NR'));
- const athletes=new Set(rows.map(r=>rowAthleteId(r)||r.name).filter(Boolean));
- const comps=new Set(scoped.map(r=>`${r.season}:${r.week}:${r.event}`));
- const discoveries=(s?.athletes||[]).filter(a=>a?.source==='Scouted'&&career.nationsManaged?.includes(a.nation));
- const developed=(s?.athletes||[]).filter(a=>career.nationsManaged?.includes(a.nation)&&Number(a?.story?.development||0)>=5);
- const debuts=(s?.athletes||[]).filter(a=>career.nationsManaged?.includes(a.nation)&&(a?.story?.memories||[]).some(m=>/debut/i.test(`${m.type||''} ${m.text||''}`)));
- const seasons=scope==='career'?Math.max(1,Number(career.careerYear)||1):scope==='job'?currentTenureYears():1;
- const byGroup={Sprints:{entries:0,wins:0,podiums:0},Distance:{entries:0,wins:0,podiums:0},Jumps:{entries:0,wins:0,podiums:0},Throws:{entries:0,wins:0,podiums:0}};
- const byGender={Men:{entries:0,wins:0,podiums:0},Women:{entries:0,wins:0,podiums:0}};
- for(const r of rows){
-  const group=eventGroup(r._disc),gender=String(r._disc||'').startsWith('W')?'Women':'Men';
-  byGroup[group].entries++;byGender[gender].entries++;
-  if(r.place===1){byGroup[group].wins++;byGender[gender].wins++}
-  if(r.place<=3){byGroup[group].podiums++;byGender[gender].podiums++}
- }
- const olympicMedals=medalsForRows(olympicRows.filter(r=>r.place<=3));
- const worldMedals=medalsForRows(worldRows.filter(r=>r.place<=3));
- const majorMedals=medalsForRows(majorRows.filter(r=>r.place<=3));
+function makeStore(){
  return {
-  scope,seasons,results:scoped,rows,competitions:comps.size,entries:rows.length,wins:wins.length,podiums:podiums.length,finals:finals.length,
-  winPct:rows.length?Math.round(wins.length/rows.length*100):0,podiumPct:rows.length?Math.round(podiums.length/rows.length*100):0,
-  olympicMedals,worldMedals,majorMedals,olympicGolds:olympicMedals.g,worldGolds:worldMedals.g,nationalTitles:nationalRows.filter(r=>r.place===1).length,
-  records:records.length,worldRecords:wr.length,nationalRecords:nr.length,athletesManaged:athletes.size,athletesDeveloped:developed.length,athletesDiscovered:discoveries.length,debuts:debuts.length,
-  byGroup,byGender,careerYears:Number(career.careerYear)||1,nationsManaged:(career.nationsManaged||[]).length
+  version:VERSION,
+  managerId:MANAGER_ID,
+  createdSeason:nowSeason(),
+  createdWeek:nowWeek(),
+  events:[],
+  eventIds:{},
+  milestones:{},
+  reputation:{score:14,current:'Emerging',peakScore:14,peak:'Emerging',history:[]},
+  contracts:[],
+  arrivalSnapshots:{},
+  seasons:{},
+  discoveries:{},
+  migration:{version:0,completed:false,notes:[]}
  };
 }
 
-function reputationFor(st=stats('career')){
- const cp=model();
- const completed=careerState().completedCycles||[];
- const strongCycles=completed.filter(x=>Number(x.score)>=62).length;
- const careerBase=12+
-  Math.min(24,st.wins*.72)+
-  Math.min(18,st.podiums*.26)+
-  Math.min(18,st.olympicMedals.g*5+st.olympicMedals.s*3+st.olympicMedals.b*2)+
-  Math.min(12,st.worldMedals.g*3+st.worldMedals.s*2+st.worldMedals.b)+
-  Math.min(12,st.worldRecords*4+st.nationalRecords*.7)+
-  Math.min(7,strongCycles*2)+
-  Math.min(5,Math.max(0,st.careerYears-1)*.22);
- const recent=(careerState().seasonHistory||[]).slice(-2);
- let penalty=0;
- if(recent.length===2){
-  const avg=recent.reduce((t,x)=>t+(Number(x.rank)||10),0)/recent.length;
-  if(avg>=10)penalty=8;else if(avg>=7)penalty=4;
- }
- const current=Math.max(0,Math.min(100,Math.round(careerBase-penalty)));
- const peak=Math.max(Number(cp.reputation.peak)||0,current);
- cp.reputation.current=current;cp.reputation.peak=peak;
- const tier=tierFor(current),peakTier=tierFor(peak);
- const last=cp.reputation.history.at(-1);
- if(!last||last.tier!==tier.name){cp.reputation.history.push({season:nowSeason(),week:nowWeek(),score:current,tier:tier.name});cp.reputation.history=cp.reputation.history.slice(-40)}
- return {score:current,tier:tier.name,peakScore:peak,peakTier:peakTier.name,next:nextTier(current)};
-}
-function tierFor(score){let tier=REPUTATION_TIERS[0];for(const x of REPUTATION_TIERS)if(score>=x.min)tier=x;return tier}
-function nextTier(score){return REPUTATION_TIERS.find(x=>x.min>score)||null}
-
-function currentTenure(){const list=careerState().tenures||[];return list.at(-1)||{nation:currentNation(),startSeason:nowSeason(),startCareerYear:careerState().careerYear||1};}
-function currentTenureYears(){const t=currentTenure();return Math.max(1,(Number(careerState().careerYear)||1)-(Number(t.startCareerYear)||1)+1);}
-function currentContract(){
- const c=careerState(),start=nowSeason()-Math.max(0,(Number(s?.game?.cycleYear)||1)-1),end=start+3;
- let status='Secure';
- if(c.pendingReview)status='Under Review';
- else if(Number(s?.game?.cycleYear)===4&&nowWeek()>=40)status='Expiring Soon';
- return {start,end,status,yearsRemaining:Math.max(0,end-nowSeason()),cycle:Number(c.cycleNumber)||1};
+function normaliseStore(mc){
+ mc.version=VERSION;mc.managerId??=MANAGER_ID;mc.createdSeason??=nowSeason();mc.createdWeek??=nowWeek();
+ mc.events=Array.isArray(mc.events)?mc.events:[];mc.eventIds=mc.eventIds&&typeof mc.eventIds==='object'?mc.eventIds:{};
+ mc.milestones=mc.milestones&&typeof mc.milestones==='object'?mc.milestones:{};
+ mc.reputation=mc.reputation&&typeof mc.reputation==='object'?mc.reputation:{};
+ mc.reputation.score=safeNumber(mc.reputation.score)||14;mc.reputation.current??='Emerging';mc.reputation.peakScore=safeNumber(mc.reputation.peakScore)||mc.reputation.score;mc.reputation.peak??=mc.reputation.current;mc.reputation.history=Array.isArray(mc.reputation.history)?mc.reputation.history:[];
+ mc.contracts=Array.isArray(mc.contracts)?mc.contracts:[];mc.arrivalSnapshots=mc.arrivalSnapshots&&typeof mc.arrivalSnapshots==='object'?mc.arrivalSnapshots:{};
+ mc.seasons=mc.seasons&&typeof mc.seasons==='object'?mc.seasons:{};mc.discoveries=mc.discoveries&&typeof mc.discoveries==='object'?mc.discoveries:{};
+ mc.migration=mc.migration&&typeof mc.migration==='object'?mc.migration:{version:0,completed:false,notes:[]};mc.migration.notes=Array.isArray(mc.migration.notes)?mc.migration.notes:[];
+ return mc;
 }
 
-function federationState(){
- const b=safe(()=>immersionState().board,null)||{};
- const ranks=safe(()=>nationRanks(),[])||[];
- const rank=Math.max(1,ranks.findIndex(x=>x[0]===currentNation())+1||1);
- const targetRank=Number(b.targetRank)||4;
- const prospects=Array.isArray(b.prospects)?b.prospects.length:0;
- const targetProspects=Math.max(1,Number(b.targetProspects)||2);
- const current=stats('season');
- let score=50;
- score+=rank<=targetRank?18:Math.max(-18,(targetRank-rank)*5);
- score+=prospects>=targetProspects?12:Math.round((prospects/targetProspects)*12)-5;
- score+=Math.min(16,current.podiums*2+current.wins);
- if(Number(s?.game?.week)>=42&&rank>targetRank+3)score-=10;
- score=Math.max(0,Math.min(100,score));
- const label=score>=86?'Excellent':score>=72?'Very Good':score>=60?'Good':score>=47?'Stable':score>=30?'Under Pressure':'Critical';
- const positives=[],concerns=[];
- if(rank<=targetRank)positives.push(`Nation ranking target is being met at #${rank}.`);else concerns.push(`The programme is #${rank}; the federation target is top ${targetRank}.`);
- if(prospects>=targetProspects)positives.push(`${prospects} young athletes have received international opportunities against a target of ${targetProspects}.`);else concerns.push(`Youth opportunity progress is ${prospects}/${targetProspects}.`);
- if(current.podiums>=3)positives.push(`${current.podiums} podium performances have been recorded this season.`);
- else if(nowWeek()>26&&current.podiums===0)concerns.push('No podium performances have been recorded this season yet.');
- const week=nowWeek();
- const objectives=[
-  {id:'rank',name:'Nation ranking',value:`#${rank} / Top ${targetRank}`,status:rank<=targetRank?'Completed':rank<=targetRank+2?'On Track':week<36?'At Risk':'Failed'},
-  {id:'pathway',name:'Young athlete opportunities',value:`${prospects} / ${targetProspects}`,status:prospects>=targetProspects?'Completed':week<40?'On Track':'At Risk'}
- ];
- return {score,label,rank,targetRank,prospects,targetProspects,positives,concerns,objectives,priority:b.priority||safe(()=>nationalIdentityBlueprint().board.priority,'Deliver competitive progress across the programme.')};
+function rawStore(){
+ const m=management();
+ if(!m.managerCareerV1)m.managerCareerV1=makeStore();
+ return normaliseStore(m.managerCareerV1);
 }
 
-function assessmentAverage(list){
- if(!list?.length)return null;
- const vals=list.map(a=>safe(()=>assessmentMid(a,'overall'),null)).filter(Number.isFinite);
- if(!vals.length)return null;
- return Math.round(vals.reduce((t,v)=>t+v,0)/vals.length);
-}
-
-function captureArrivalSnapshot(nation=currentNation(),force=false){
- const cp=model();if(cp.arrivals[nation]&&!force)return cp.arrivals[nation];
- const c=careerState(),t=(c.tenures||[]).filter(x=>x.nation===nation).at(-1);
- const currentStart=t&&Number(t.startCareerYear)===Number(c.careerYear);
- if(!force&&!currentStart&&Number(c.careerYear)>1)return null;
- const athletes=(s?.athletes||[]).filter(a=>!a.retired&&a.nation===nation&&a.inSquad!==false);
- const ranks=safe(()=>nationRanks(),[])||[];
- const rank=Math.max(1,ranks.findIndex(x=>x[0]===nation)+1||1);
- cp.arrivals[nation]={nation,season:nowSeason(),careerYear:Number(c.careerYear)||1,rank,squadSize:athletes.length,squadAssessment:assessmentAverage(athletes),eliteAthletes:athletes.filter(a=>a.tier==='Elite').length,budget:Number(s?.funding)||0,facilities:safe(()=>({sprint:facilityLevel('sprint'),field:facilityLevel('field'),recovery:facilityLevel('recovery')}),null),captured:true};
- return cp.arrivals[nation];
-}
-
-function currentProgrammeSnapshot(){
- const athletes=safe(()=>managedTeam(),[])||[],fed=federationState();
- return {nation:currentNation(),season:nowSeason(),rank:fed.rank,squadSize:athletes.length,squadAssessment:assessmentAverage(athletes),eliteAthletes:athletes.filter(a=>a.tier==='Elite').length,budget:Number(s?.funding)||0,facilities:safe(()=>({sprint:facilityLevel('sprint'),field:facilityLevel('field'),recovery:facilityLevel('recovery')}),null)};
-}
-
-function captureSeasonSnapshot(summary){
- if(!summary)return null;
- const cp=model(),existing=cp.snapshots.find(x=>x.season===summary.season&&x.nation===summary.nation);if(existing)return existing;
- const results=rawResults().filter(r=>Number(r.season)===Number(summary.season)&&resultNation(r)===summary.nation);
- const rows=flattenRows(results),squad=(s?.athletes||[]).filter(a=>!a.retired&&a.nation===summary.nation&&a.inSquad!==false);
- const snap={
-  season:summary.season,careerYear:summary.careerYear,cycleNumber:summary.cycleNumber,cycleYear:summary.cycleYear,nation:summary.nation,rank:summary.rank,bonus:summary.bonus||0,records:summary.records||0,
-  wins:rows.filter(r=>r.place===1).length,podiums:rows.filter(r=>r.place<=3).length,entries:rows.length,
-  olympicMedals:medalsForRows(rows.filter(r=>r._result.olympic&&r.place<=3)),worldMedals:medalsForRows(rows.filter(r=>isWorldLevel(r._result)&&r.place<=3)),
-  squad:{size:squad.length,assessment:assessmentAverage(squad),elite:squad.filter(a=>a.tier==='Elite').length,athletes:squad.map(a=>({id:a.id,name:a.name,age:a.age,disc:a.disc,pb:a.pb,tier:a.tier,assessment:safe(()=>assessmentText(a,'overall'),null)}))},
-  budget:Number(s?.funding)||0,federation:federationState().label,partial:false
- };
- cp.snapshots.push(snap);cp.snapshots.sort((a,b)=>a.season-b.season);return snap;
-}
-
-function backfillSeasonSnapshots(){
- const cp=model(),history=careerState().seasonHistory||[];
- for(const h of history){if(cp.snapshots.some(x=>x.season===h.season&&x.nation===h.nation))continue;const results=rawResults().filter(r=>Number(r.season)===Number(h.season)&&resultNation(r)===h.nation),rows=flattenRows(results);cp.snapshots.push({season:h.season,careerYear:h.careerYear,cycleNumber:h.cycleNumber,cycleYear:h.cycleYear,nation:h.nation,rank:h.rank,bonus:h.bonus||0,records:h.records||0,wins:rows.filter(r=>r.place===1).length,podiums:rows.filter(r=>r.place<=3).length,entries:rows.length,olympicMedals:medalsForRows(rows.filter(r=>r._result.olympic&&r.place<=3)),worldMedals:medalsForRows(rows.filter(r=>isWorldLevel(r._result)&&r.place<=3)),squad:null,budget:null,federation:null,partial:true})}
- cp.snapshots.sort((a,b)=>a.season-b.season);
-}
-
-function upsertEvent(event){
- if(!event?.id)return false;const cp=model();if(cp.events.some(x=>x.id===event.id))return false;
- cp.events.push({...event,season:Number(event.season)||nowSeason(),week:Number(event.week)||1});
- cp.events.sort((a,b)=>(a.season-b.season)||(a.week-b.week));
- if(cp.events.length>1200)cp.events=cp.events.slice(-1200);
+function addEvent(mc,id,type,title,detail='',data={},when={}){
+ if(!id||mc.eventIds[id])return false;
+ const item={id,type,title,detail,season:safeNumber(when.season)||nowSeason(),week:safeNumber(when.week)||nowWeek(),nation:when.nation||data.nation||currentNation(),data};
+ mc.eventIds[id]=1;mc.events.push(item);
+ if(mc.events.length>MAX_EVENTS){const remove=mc.events.splice(0,mc.events.length-MAX_EVENTS);remove.forEach(x=>delete mc.eventIds[x.id])}
  return true;
 }
 
-function syncAppointments(){
- const c=careerState();
- for(const [i,t] of (c.tenures||[]).entries())upsertEvent({id:`job:${i}:${t.nation}:${t.startSeason}`,type:'appointment',season:t.startSeason,week:1,nation:t.nation,title:`Appointed ${nationLabel(t.nation)} Performance Director`,detail:`Career Year ${t.startCareerYear||1} began with ${nationLabel(t.nation)}.`});
- for(const x of c.completedCycles||[])upsertEvent({id:`review:${x.cycle}:${x.nation}:${x.endSeason}`,type:'review',season:x.endSeason,week:52,nation:x.nation,title:`Olympic Cycle ${x.cycle} review — ${x.verdict||'Completed'}`,detail:`Board score ${x.score}/100 · Olympic medals ${(x.medals?.g||0)}G ${(x.medals?.s||0)}S ${(x.medals?.b||0)}B · best nation rank #${x.bestRank||'—'}.`});
+function managerResults(){
+ try{if(typeof importManagerResults==='function')importManagerResults()}catch(_){ }
+ const records=management().results||{};
+ const rows=[];
+ for(const [key,record] of Object.entries(records)){
+  if(!record||!Array.isArray(record.rows))continue;
+  record.rows.forEach((row,index)=>rows.push({
+   ...row,
+   resultKey:key,
+   season:safeNumber(record.season)||nowSeason(),
+   week:safeNumber(record.week)||1,
+   event:record.event||'Competition',
+   disc:record.disc,
+   national:!!record.national,
+   olympic:!!record.olympic,
+   place:safeNumber(row.place)||index+1,
+   nation:row.nation||currentNation()
+  }));
+ }
+ return rows.sort((a,b)=>a.season-b.season||a.week-b.week||String(a.event).localeCompare(String(b.event))||a.place-b.place);
 }
 
-function syncResults(){
- for(const res of rawResults()){
-  for(const row of res.rows||[]){
-   const ach=row.achievements||[],ath=row.name||'Athlete',id=rowAthleteId(row)||ath.replace(/\W+/g,'-');
-   if(res.olympic&&row.place<=3)upsertEvent({id:`olympic:${resultKey(res)}:${id}:${row.place}`,type:'medal',season:res.season,week:res.week,nation:row.nation,athleteId:rowAthleteId(row),title:`Olympic ${row.place===1?'gold':row.place===2?'silver':'bronze'} — ${ath}`,detail:`${discName(res.disc)} · ${fmtPerformance(res.disc,row.perf)} · ${res.event}.`});
-   if(row.place===1&&(res.national||isMajorResult(res)))upsertEvent({id:`title:${resultKey(res)}:${id}`,type:'title',season:res.season,week:res.week,nation:row.nation,athleteId:rowAthleteId(row),title:`${ath} wins ${discName(res.disc)}`,detail:`${res.event} · ${fmtPerformance(res.disc,row.perf)}.`});
-   for(const code of ach.filter(x=>['WR','NR','CR'].includes(x)))upsertEvent({id:`record:${code}:${resultKey(res)}:${id}`,type:'record',season:res.season,week:res.week,nation:row.nation,athleteId:rowAthleteId(row),title:`${code} — ${ath}`,detail:`${discName(res.disc)} · ${fmtPerformance(res.disc,row.perf)} at ${res.event}.`,code});
-  }
+function disciplineGroup(code){
+ const label=disciplineLabel(code).toLowerCase();
+ if(/800|1500|3000|5000|10000|distance|steeple/.test(label))return 'Distance';
+ if(/high jump|long jump|triple jump|pole vault|jump/.test(label)||/HJ|LJ|TJ|PV/.test(String(code||'')))return 'Jumps';
+ if(/shot|discus|hammer|javelin|throw/.test(label)||/SP|DT|HT|JT/.test(String(code||'')))return 'Throws';
+ return 'Sprints';
+}
+
+function currentJobStart(){return safeNumber(currentTenure()?.startSeason)||Math.max(2027,nowSeason()-Math.max(0,(safeNumber(s?.game?.cycleYear)||1)-1))}
+function filterRows(scope='career'){
+ const rows=managerResults();
+ if(scope==='season')return rows.filter(row=>row.season===nowSeason()&&row.nation===currentNation());
+ if(scope==='job')return rows.filter(row=>row.nation===currentNation()&&row.season>=currentJobStart());
+ return rows;
+}
+
+function discoveryIds(mc=rawStore()){
+ const ids=new Set(Object.keys(mc.discoveries||{}));
+ for(const report of s?.scouting?.reports||[])if(report?.athleteId)ids.add(report.athleteId);
+ return ids;
+}
+
+function developmentSummary(mc=rawStore()){
+ const earliest=new Map();
+ const seed=(id,overall,season)=>{if(!id||!Number.isFinite(Number(overall)))return;const old=earliest.get(id);if(!old||safeNumber(season)<old.season)earliest.set(id,{overall:Number(overall),season:safeNumber(season)||nowSeason()})};
+ for(const snap of Object.values(mc.arrivalSnapshots||{}))for(const a of snap?.squad||[])seed(a.id,a.internalOverall,snap.season);
+ for(const snap of Object.values(mc.seasons||{}))for(const a of snap?.squad||[])seed(a.id,a.internalOverall,snap.season);
+ for(const item of Object.values(mc.discoveries||{}))seed(item.athleteId,item.initialOverall,item.season);
+ const developed=[],elite=[];
+ for(const [id,base] of earliest){const a=athleteById(id);if(!a)continue;const gain=safeNumber(a.overall)-base.overall;if(gain>=5)developed.push(id);if(base.overall<90&&safeNumber(a.overall)>=90)elite.push(id)}
+ return {tracked:earliest.size,developed:developed.length,elite:elite.length,ids:developed};
+}
+
+function careerStats(scope='career'){
+ const mc=rawStore(),rows=filterRows(scope),eventKeys=uniq(rows.map(r=>r.resultKey)),wins=rows.filter(r=>r.place===1),podiums=rows.filter(r=>r.place<=3);
+ const olympic=rows.filter(r=>r.olympic&&r.place<=3),world=rows.filter(r=>!r.olympic&&isWorldEvent(r.event)&&r.place<=3),continental=rows.filter(r=>!r.olympic&&!isWorldEvent(r.event)&&isContinentalEvent(r.event)&&r.place<=3);
+ const medals={g:olympic.filter(r=>r.place===1).length,s:olympic.filter(r=>r.place===2).length,b:olympic.filter(r=>r.place===3).length};
+ const majorMedals=olympic.length+world.length+continental.length;
+ const recordRows=rows.filter(r=>recordCodes(r).length),recordCount=recordRows.reduce((total,row)=>total+recordCodes(row).length,0);
+ const uniqueAthletes=new Set(rows.map(r=>r.id||r.name));
+ if(scope!=='career'||rows.length===0){for(const a of (typeof managedTeam==='function'?managedTeam():[]))uniqueAthletes.add(a.id)}
+ const discoveries=discoveryIds(mc),scoutedUsed=new Set(rows.filter(r=>discoveries.has(r.id)).map(r=>r.id));
+ const development=developmentSummary(mc);
+ const groups={Sprints:0,Distance:0,Jumps:0,Throws:0};rows.forEach(r=>groups[disciplineGroup(r.disc)]++);
+ const gender={Men:rows.filter(r=>String(r.disc||'').startsWith('M')).length,Women:rows.filter(r=>String(r.disc||'').startsWith('W')).length};
+ const firstSeason=Math.min(...rows.map(r=>r.season).concat([nowSeason()]));
+ const years=scope==='career'?careerYear():scope==='job'?Math.max(1,nowSeason()-currentJobStart()+1):1;
+ return {
+  scope,rows,years,competitions:eventKeys.length,entries:rows.length,wins:wins.length,podiums:podiums.length,
+  olympicMedals:olympic.length,olympicGolds:medals.g,medals,worldMedals:world.length,continentalMedals:continental.length,majorMedals,
+  nationalTitles:wins.filter(r=>r.national).length,records:recordCount,worldRecords:recordRows.reduce((n,r)=>n+recordCodes(r).filter(x=>x==='WR').length,0),nationalRecords:recordRows.reduce((n,r)=>n+recordCodes(r).filter(x=>x==='NR').length,0),championshipRecords:recordRows.reduce((n,r)=>n+recordCodes(r).filter(x=>x==='CR').length,0),
+  athletesManaged:uniqueAthletes.size,athletesDiscovered:scope==='career'?discoveries.size:scoutedUsed.size,athletesDeveloped:scope==='career'?development.developed:0,worldClassDeveloped:scope==='career'?development.elite:0,
+  groups,gender,firstSeason
+ };
+}
+
+function boardData(){
+ let b=null;try{b=typeof immersionState==='function'?immersionState().board:null}catch(_){ }
+ const blueprint=(()=>{try{return typeof nationalIdentityBlueprint==='function'?nationalIdentityBlueprint():null}catch(_){return null}})();
+ return {
+  targetRank:safeNumber(b?.targetRank)||safeNumber(blueprint?.board?.rank)||4,
+  prospects:Array.isArray(b?.prospects)?b.prospects:[],
+  targetProspects:safeNumber(b?.targetProspects)||safeNumber(blueprint?.board?.prospects)||2,
+  priority:b?.priority||blueprint?.board?.priority||'Build a stronger national programme.'
+ };
+}
+
+function federationConfidence(){
+ const board=boardData(),rank=currentRank(),prospectRatio=board.targetProspects?board.prospects.length/board.targetProspects:1;
+ let score=50,reasonsGood=[],reasonsConcern=[];
+ if(rank!==null){if(rank<=board.targetRank){score+=18;reasonsGood.push(`The programme is currently #${rank}, inside the federation's top-${board.targetRank} ranking target.`)}else{const gap=rank-board.targetRank;score-=Math.min(22,6+gap*4);reasonsConcern.push(`The programme is currently #${rank}, outside the federation's top-${board.targetRank} ranking target.`)}}
+ else reasonsGood.push('The current season ranking is still forming; the federation is judging the programme on delivery rather than an empty early-season table.');
+ if(prospectRatio>=1){score+=14;reasonsGood.push(`${board.prospects.length}/${board.targetProspects} pathway opportunities have been delivered this season.`)}else if(prospectRatio>=.5){score+=3;reasonsConcern.push(`Pathway delivery is ${board.prospects.length}/${board.targetProspects}; more opportunities are expected before the season closes.`)}else{score-=10;reasonsConcern.push(`Pathway delivery is only ${board.prospects.length}/${board.targetProspects} against the current target.`)}
+ const latest=[...(career().completedCycles||[])].at(-1);if(latest){if(latest.renewed){score+=8;reasonsGood.push(`The most recent Olympic-cycle review was ${String(latest.verdict||'positive').toLowerCase()} and earned a renewal.`)}else{score-=12;reasonsConcern.push(`The most recent Olympic-cycle review fell below the renewal line.`)}}
+ score=clampValue(score,0,100);
+ const label=score>=78?'Excellent':score>=64?'Very Good':score>=50?'Good':score>=38?'Stable':score>=24?'Under Pressure':'Critical';
+ return {score,label,reasonsGood,reasonsConcern,board,rank};
+}
+
+function objectiveState(){
+ const f=federationConfidence(),b=f.board,cycleYear=safeNumber(s?.game?.cycleYear)||1;
+ const rankStatus=f.rank===null?'Future':f.rank<=b.targetRank?'Completed':f.rank<=b.targetRank+2?'On Track':'At Risk';
+ const pathwayStatus=b.prospects.length>=b.targetProspects?'Completed':b.prospects.length>=Math.max(1,Math.ceil(b.targetProspects/2))?'On Track':'At Risk';
+ const cycleStatus=cycleYear<4?'Future':f.score>=50?'On Track':'At Risk';
+ return [
+  {name:`Finish inside national ranking top ${b.targetRank}`,status:rankStatus,detail:f.rank===null?'Ranking progress will appear once the season produces ranking points.':`Current national programme position: #${f.rank}.`},
+  {name:`Create ${b.targetProspects} pathway opportunities`,status:pathwayStatus,detail:`${b.prospects.length}/${b.targetProspects} young-athlete opportunities recorded this season.`},
+  {name:'Deliver the Olympic-cycle review',status:cycleStatus,detail:cycleYear<4?`Year ${cycleYear}/4. The formal federation review arrives after the Olympic season.`:`Current programme indicators point to a ${f.label.toLowerCase()} federation position.`}
+ ];
+}
+
+function currentContract(){
+ const c=career(),pending=c.pendingReview,tenure=currentTenure(),cycleYear=safeNumber(s?.game?.cycleYear)||1;
+ const start=Math.max(safeNumber(tenure?.startSeason)||nowSeason()-cycleYear+1,nowSeason()-cycleYear+1),end=start+3;
+ let status='Secure';
+ if(pending)status=pending.renewed?'Renewal Offered':'Leaving';
+ else if(cycleYear===4&&nowWeek()>=40)status='Expiring Soon';
+ return {start,end,status,yearsInRole:Math.max(1,nowSeason()-(safeNumber(tenure?.startSeason)||start)+1),appointed:safeNumber(tenure?.startSeason)||start,careerStartYear:safeNumber(tenure?.startCareerYear)||1};
+}
+
+function tierForScore(score){return (REPUTATION_TIERS.find(([min])=>score>=min)||REPUTATION_TIERS.at(-1))[1]}
+function reputationScore(stats=careerStats('career')){
+ const bestRank=Math.min(...(career().seasonHistory||[]).map(x=>safeNumber(x.rank)||99).concat([99]));
+ const recent=[...(career().seasonHistory||[])].slice(-2);let recentAdj=0;if(recent.length){const avg=recent.reduce((n,x)=>n+(safeNumber(x.rank)||10),0)/recent.length;recentAdj=avg<=2?5:avg<=4?3:avg>=9?-4:avg>=7?-2:0}
+ return clampValue(14+Math.min(24,stats.wins*.55)+Math.min(20,stats.majorMedals*2.6)+Math.min(16,stats.records*1.8)+Math.min(10,stats.athletesDeveloped*1.3)+Math.min(8,stats.years*.35)+(bestRank===1?8:bestRank<=3?4:0)+recentAdj,0,100);
+}
+
+function syncReputation(mc){
+ const stats=careerStats('career'),score=reputationScore(stats),tier=tierForScore(score),old=mc.reputation.current;
+ mc.reputation.score=+score.toFixed(1);mc.reputation.current=tier;
+ if(score>safeNumber(mc.reputation.peakScore)){mc.reputation.peakScore=+score.toFixed(1);mc.reputation.peak=tier}
+ if(!mc.reputation.history.length){mc.reputation.history.push({season:nowSeason(),week:nowWeek(),tier,score:+score.toFixed(1),baseline:true});mc.reputation.peak=tier;mc.reputation.peakScore=Math.max(score,safeNumber(mc.reputation.peakScore));}
+ else if(old&&old!==tier){mc.reputation.history.push({season:nowSeason(),week:nowWeek(),tier,score:+score.toFixed(1)});addEvent(mc,`reputation:${tier}:${nowSeason()}:${nowWeek()}`,'reputation',`Reputation reached ${tier}`,`Career results moved your standing from ${old} to ${tier}.`,{from:old,to:tier})}
+ return mc.reputation;
+}
+
+function snapshotSquad(){
+ const team=typeof managedTeam==='function'?managedTeam():[];
+ return team.map(a=>({id:a.id,name:a.name,age:a.age,disc:a.disc,tier:a.tier,pb:a.pb,ability:assessmentMidSafe(a),abilityText:assessmentTextSafe(a),internalOverall:safeNumber(a.overall)}));
+}
+function squadSummary(){const team=typeof managedTeam==='function'?managedTeam():[],strength=team.length?Math.round(team.reduce((n,a)=>n+assessmentMidSafe(a),0)/team.length):0;return {size:team.length,strength,elite:team.filter(a=>a.tier==='Elite'||safeNumber(a.overall)>=90).length}}
+function facilityAverage(){const levels=s?.facilityLevels||{};const vals=Object.values(levels).map(safeNumber).filter(Boolean);return vals.length?+(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1):safeNumber(s?.facilities)||1}
+
+function arrivalKey(nation=currentNation(),start=currentJobStart()){return `${start}:${nation}`}
+function captureArrival(mc,nation=currentNation(),force=false){
+ const start=safeNumber(currentTenure()?.startSeason)||currentJobStart(),key=arrivalKey(nation,start);if(mc.arrivalSnapshots[key])return mc.arrivalSnapshots[key];
+ const reliable=force||(careerYear()===1&&nowWeek()<=1&&start===nowSeason());
+ if(!reliable){mc.arrivalSnapshots[key]={available:false,nation,startSeason:start,reason:'Arrival baseline was not recorded in this earlier career data.'};return mc.arrivalSnapshots[key]}
+ const sq=squadSummary(),rank=currentRank();mc.arrivalSnapshots[key]={available:true,nation,startSeason:start,season:nowSeason(),week:nowWeek(),rank,squadSize:sq.size,squadStrength:sq.strength,eliteCount:sq.elite,funding:safeNumber(s?.funding),facilityAverage:facilityAverage(),squad:snapshotSquad()};
+ addEvent(mc,`arrival:${key}`,'appointment',`Took charge of ${nationLabel(nation)}`,`Programme baseline captured for the start of this role.`,{nation,startSeason:start},{season:start,week:1,nation});return mc.arrivalSnapshots[key]
+}
+
+function buildSeasonSnapshot(summary){
+ const stats=careerStats('season'),sq=squadSummary(),f=federationConfidence(),rows=filterRows('season'),athletes=athletePerformanceAggregate(rows),top=athletes[0]||null;
+ return {
+  available:true,season:nowSeason(),careerYear:careerYear(),cycleNumber:safeNumber(career().cycleNumber)||1,cycleYear:safeNumber(s?.game?.cycleYear)||1,nation:currentNation(),rank:safeNumber(summary?.rank)||f.rank,
+  federation:f.label,federationScore:f.score,records:stats.records,wins:stats.wins,podiums:stats.podiums,majorMedals:stats.majorMedals,olympicMedals:stats.olympicMedals,
+  funding:safeNumber(s?.funding),annualSpend:safeNumber(s?.annualSpend),facilityAverage:facilityAverage(),squadSize:sq.size,squadStrength:sq.strength,eliteCount:sq.elite,squad:snapshotSquad(),topAthlete:top?{id:top.id,name:top.name,wins:top.wins,podiums:top.podiums,score:top.score}:null,
+  resultKeys:uniq(rows.map(r=>r.resultKey)),snapshotAtWeek:nowWeek()
+ };
+}
+
+function syncSeasonHistory(mc){
+ for(const summary of career().seasonHistory||[]){const key=String(summary.season);if(mc.seasons[key])continue;mc.seasons[key]={available:false,season:safeNumber(summary.season),careerYear:safeNumber(summary.careerYear),cycleNumber:safeNumber(summary.cycleNumber),cycleYear:safeNumber(summary.cycleYear),nation:summary.nation,rank:safeNumber(summary.rank)||null,records:safeNumber(summary.records),youngInternationals:safeNumber(summary.youngInternationals),targetProspects:safeNumber(summary.targetProspects),bonus:safeNumber(summary.bonus),reason:'This season predates full manager snapshots. Only reliable archived fields are shown.'}}
+}
+
+function syncDiscoveries(mc){
+ for(const report of s?.scouting?.reports||[]){if(!report?.athleteId)continue;const a=athleteById(report.athleteId),id=report.athleteId;if(!mc.discoveries[id])mc.discoveries[id]={athleteId:id,name:a?.name||'Archived prospect',season:safeNumber(report.season)||a?.discoveredSeason||nowSeason(),week:safeNumber(report.week)||a?.discoveredWeek||1,reason:report.reason||'Scouting report',age:a?.discoveredAge??null,initialOverall:null,initialPB:null,nation:a?.nation||currentNation(),migrated:true};const d=mc.discoveries[id];addEvent(mc,`discovery:${id}:${d.season}:${d.week}`,'scouting',`Discovered ${d.name}`,`${disciplineLabel(a?.disc)} prospect added through the national scouting network.`,{athleteId:id},{season:d.season,week:d.week,nation:d.nation})}
+}
+
+function recordFreshDiscoveries(mc,athletes,reason){
+ for(const a of athletes||[]){if(!a?.id)continue;mc.discoveries[a.id]={athleteId:a.id,name:a.name,season:a.discoveredSeason||nowSeason(),week:a.discoveredWeek||nowWeek(),reason:reason||'Scouting report',age:a.discoveredAge??a.age,initialOverall:safeNumber(a.overall),initialPB:safeNumber(a.pb),nation:a.nation||currentNation(),migrated:false};const d=mc.discoveries[a.id];addEvent(mc,`discovery:${a.id}:${d.season}:${d.week}`,'scouting',`Discovered ${a.name}`,`${disciplineLabel(a.disc)} prospect identified by the national scouting network.`,{athleteId:a.id},{season:d.season,week:d.week,nation:d.nation})}
+}
+
+function syncContracts(mc){
+ const seen=new Set(mc.contracts.map(c=>c.id));
+ for(const tenure of career().tenures||[]){const nation=tenure.nation||currentNation(),start=safeNumber(tenure.startSeason)||nowSeason(),id=`appointment:${nation}:${start}`;if(!seen.has(id)){mc.contracts.push({id,type:'Appointment',nation,startSeason:start,endSeason:tenure.endSeason||null,status:tenure.endSeason?'Completed':'Current',outcome:tenure.endSeason?'Role ended':'In role'});seen.add(id)}addEvent(mc,`job:${nation}:${start}`,'appointment',`Appointed ${nationLabel(nation)} Performance Director`,`Management tenure began in ${start}.`,{nation},{season:start,week:1,nation})}
+ for(const review of career().completedCycles||[]){const id=`cycle:${review.cycle}:${review.nation}`;if(!seen.has(id)){mc.contracts.push({id,type:'Olympic Cycle',nation:review.nation,startSeason:review.startSeason,endSeason:review.endSeason,status:review.renewed?'Completed · Renewal offered':'Completed · Not renewed',outcome:review.acceptedNation&&review.acceptedNation!==review.nation?`Moved to ${nationLabel(review.acceptedNation)}`:review.renewed?'Renewed':'Contract completed'});seen.add(id)}addEvent(mc,`review:${review.cycle}:${review.nation}`,'review',`${nationLabel(review.nation)} Olympic-cycle review`,`${review.verdict||'Federation review'} · Board score ${safeNumber(review.score)} · ${safeNumber(review.medals?.g)}G ${safeNumber(review.medals?.s)}S ${safeNumber(review.medals?.b)}B.`,{review},{season:review.endSeason,week:52,nation:review.nation})}
+ mc.contracts.sort((a,b)=>safeNumber(a.startSeason)-safeNumber(b.startSeason));
+}
+
+function syncFacilityEvents(mc){for(const item of s?.facilityHistory||[]){const id=`facility:${item.key}:${item.level}:${item.season}:${item.week}`;addEvent(mc,id,'programme',`${String(item.key||'Programme')} facility reached Level ${safeNumber(item.level)}`,`Investment ${moneyText(item.cost)}.`,{facility:item.key,level:item.level},{season:item.season,week:item.week})}}
+function syncRetirements(mc){const connected=new Set(managerResults().map(r=>r.id));for(const a of s?.athletes||[]){if(!a.retired||!a.retirement||!connected.has(a.id))continue;addEvent(mc,`retirement:${a.id}:${a.retirement.season}:${a.retirement.week}`,'athlete',`${a.name} retired`,`A managed athlete closed their career after ${a.retirement.reason||'retirement'}.`,{athleteId:a.id},{season:a.retirement.season,week:a.retirement.week,nation:a.nation})}}
+
+function syncMajorResults(mc){
+ const records=management().results||{};
+ for(const [key,record] of Object.entries(records)){
+  if(!record||!Array.isArray(record.rows))continue;
+  record.rows.forEach((row,index)=>{
+   const place=safeNumber(row.place)||index+1,athlete=row.name||athleteById(row.id)?.name||'Athlete',when={season:record.season,week:record.week,nation:row.nation};
+   if(record.olympic&&place<=3)addEvent(mc,`olympic-medal:${key}:${row.id||athlete}:${place}`,'medal',`Olympic ${medalName(place)} · ${athlete}`,`${disciplineLabel(record.disc)} at ${record.event}.`,{athleteId:row.id,event:record.event,disc:record.disc,place,perf:row.perf,olympic:true},when);
+   else if((isWorldEvent(record.event)||isContinentalEvent(record.event))&&place<=3)addEvent(mc,`major-medal:${key}:${row.id||athlete}:${place}`,'medal',`${medalName(place)} · ${athlete}`,`${record.event} · ${disciplineLabel(record.disc)}.`,{athleteId:row.id,event:record.event,disc:record.disc,place,perf:row.perf},when);
+   else if(record.national&&place===1)addEvent(mc,`national-title:${key}:${row.id||athlete}`,'title',`National title · ${athlete}`,`${record.event} · ${disciplineLabel(record.disc)}.`,{athleteId:row.id,event:record.event,disc:record.disc,place,perf:row.perf},when);
+   for(const code of recordCodes(row))addEvent(mc,`record:${key}:${row.id||athlete}:${code}`,'record',`${code} · ${athlete}`,`${record.event} · ${disciplineLabel(record.disc)} · ${performanceText(record.disc,row.perf)}.`,{athleteId:row.id,event:record.event,disc:record.disc,code,perf:row.perf},when);
+  });
  }
 }
 
-function syncScoutingAndRetirements(){
- const careerNations=new Set(careerState().nationsManaged||[currentNation()]);
- for(const report of s?.scouting?.reports||[]){
-  const a=(s?.athletes||[]).find(x=>x.id===report.athleteId);if(!a||!careerNations.has(a.nation))continue;
-  upsertEvent({id:`scout:${report.athleteId}:${report.season}:${report.week}`,type:'discovery',season:report.season,week:report.week,nation:a.nation,athleteId:a.id,title:`Discovered ${a.name}`,detail:`${discName(a.disc)} prospect identified by the national scouting network${Number.isFinite(a.discoveredAge)?` at age ${a.discoveredAge}`:''}.`});
- }
- for(const a of s?.athletes||[]){
-  if(!a?.retired||!a.retirement||!careerNations.has(a.nation))continue;
-  upsertEvent({id:`retire:${a.id}:${a.retirement.season}:${a.retirement.week}`,type:'retirement',season:a.retirement.season,week:a.retirement.week,nation:a.nation,athleteId:a.id,title:`${a.name} retires`,detail:`${discName(a.disc)} · ${a.retirement.reason||'Career completed'}.`});
- }
+function sortedRows(){return managerResults().sort((a,b)=>a.season-b.season||a.week-b.week||a.place-b.place)}
+function nth(items,n){return items.length>=n?items[n-1]:null}
+function addMilestone(mc,id,title,detail,source){if(mc.milestones[id])return;mc.milestones[id]={id,title,detail,season:source?.season||nowSeason(),week:source?.week||nowWeek(),athleteId:source?.id||source?.athleteId||null};addEvent(mc,`milestone:${id}`,'milestone',title,detail,{milestoneId:id,athleteId:source?.id||source?.athleteId||null},{season:source?.season,week:source?.week,nation:source?.nation})}
+function syncMilestones(mc){
+ const rows=sortedRows(),wins=rows.filter(r=>r.place===1),podiums=rows.filter(r=>r.place<=3),olympicMedals=rows.filter(r=>r.olympic&&r.place<=3),olympicGolds=rows.filter(r=>r.olympic&&r.place===1),recordRows=rows.filter(r=>recordCodes(r).length),wrRows=rows.filter(r=>recordCodes(r).includes('WR'));
+ const definitions=[
+  ['first-win','First event win','The first recorded event victory of your management career.',nth(wins,1)],
+  ['10-wins','10 event wins','Your programme reached 10 recorded event victories.',nth(wins,10)],
+  ['50-wins','50 event wins','Your programme reached 50 recorded event victories.',nth(wins,50)],
+  ['100-wins','100 event wins','Your programme reached 100 recorded event victories.',nth(wins,100)],
+  ['first-podium','First podium','The first recorded podium of your management career.',nth(podiums,1)],
+  ['first-olympic-medal','First Olympic medal','Your programme won its first Olympic medal under your management.',nth(olympicMedals,1)],
+  ['first-olympic-gold','First Olympic gold','Your programme won its first Olympic title under your management.',nth(olympicGolds,1)],
+  ['first-record','First record','The first national, championship or world record recorded under your management.',nth(recordRows,1)],
+  ['first-world-record','First world record','The first world record achieved under your management.',nth(wrRows,1)]
+ ];
+ for(const [id,title,detail,source] of definitions)if(source)addMilestone(mc,id,title,detail,source);
+ const firstDiscovery=Object.values(mc.discoveries||{}).sort((a,b)=>a.season-b.season||a.week-b.week)[0];if(firstDiscovery)addMilestone(mc,'first-discovery','First scouting discovery',`${firstDiscovery.name} became the first prospect logged by your scouting network.`,{season:firstDiscovery.season,week:firstDiscovery.week,athleteId:firstDiscovery.athleteId,nation:firstDiscovery.nation});
+ for(const years of [5,10,20,30,40])if(careerYear()>=years){const start=safeNumber(career().tenures?.[0]?.startSeason)||2027;addMilestone(mc,`${years}-seasons`,`${years} seasons in management`,`Your management career reached ${years} seasons.`,{season:start+years-1,week:52,nation:career().tenures?.[0]?.nation})}
+ const no1=(career().seasonHistory||[]).find(x=>safeNumber(x.rank)===1);if(no1)addMilestone(mc,'first-world-number-one','Programme reaches #1',`${nationLabel(no1.nation)} finished ${no1.season} at the top of the national programme standings.`,{season:no1.season,week:52,nation:no1.nation});
 }
 
-function syncFacilities(){
- const histories=[];
- if(Array.isArray(s?.facilityHistory))histories.push(...s.facilityHistory.map(x=>({...x,nation:currentNation()})));
- for(const [nation,asset] of Object.entries(careerState().nationAssets||{}))for(const h of asset?.facilityHistory||[])histories.push({...h,nation});
- for(const h of histories){
-  const key=h.key||'programme',label=key==='sprint'?'Sprint Centre':key==='field'?'Jumps & Throws Centre':key==='recovery'?'Recovery Suite':'Performance Facility';
-  upsertEvent({id:`facility:${h.nation}:${h.season}:${h.week}:${key}:${h.level}`,type:'facility',season:h.season,week:h.week,nation:h.nation,title:`${label} reaches Level ${h.level}`,detail:`Programme investment ${formatMoney(h.cost||0)}.`});
- }
-}
-
-function thresholdDate(rows,predicate,count){let n=0;for(const row of rows){if(predicate(row)&&++n>=count)return {season:row._season,week:row._week,row}}return null}
-function addMilestone(id,title,date,detail){const cp=model();if(cp.milestones[id])return cp.milestones[id];cp.milestones[id]={id,title,season:date?.season||nowSeason(),week:date?.week||nowWeek(),detail};return cp.milestones[id]}
-function syncMilestones(){
- const rows=flattenRows(rawResults()).sort((a,b)=>(a._season-b._season)||(a._week-b._week)),st=stats('career');
- const firstWin=thresholdDate(rows,r=>r.place===1,1);if(firstWin)addMilestone('first-win','First event win',firstWin,`${firstWin.row.name} won ${discName(firstWin.row._disc)} at ${firstWin.row._event}.`);
- for(const target of [10,50,100,250,500]){const hit=thresholdDate(rows,r=>r.place===1,target);if(hit)addMilestone(`wins-${target}`,`${target} event wins`,hit,`Career event win number ${target} was recorded.`)}
- const firstOlympic=thresholdDate(rows,r=>r._result.olympic&&r.place<=3,1);if(firstOlympic)addMilestone('first-olympic-medal','First Olympic medal',firstOlympic,`${firstOlympic.row.name} earned an Olympic medal in ${discName(firstOlympic.row._disc)}.`);
- const firstOlympicGold=thresholdDate(rows,r=>r._result.olympic&&r.place===1,1);if(firstOlympicGold)addMilestone('first-olympic-gold','First Olympic gold',firstOlympicGold,`${firstOlympicGold.row.name} became an Olympic champion in ${discName(firstOlympicGold.row._disc)}.`);
- const firstWR=thresholdDate(rows,r=>(r.achievements||[]).includes('WR'),1);if(firstWR)addMilestone('first-wr','First world record',firstWR,`${firstWR.row.name} set a world record in ${discName(firstWR.row._disc)}.`);
- const firstNR=thresholdDate(rows,r=>(r.achievements||[]).includes('NR'),1);if(firstNR)addMilestone('first-nr','First national record',firstNR,`${firstNR.row.name} set a national record in ${discName(firstNR.row._disc)}.`);
- const firstDiscovery=[...model().events].find(e=>e.type==='discovery');if(firstDiscovery)addMilestone('first-discovery','First scouting discovery',firstDiscovery,firstDiscovery.title.replace(/^Discovered /,'')+' entered the national pathway.');
- for(const years of [10,20,30,40])if(st.careerYears>=years)addMilestone(`years-${years}`,`${years} seasons in management`,{season:2026+years,week:1},`Reached ${years} seasons as a Performance Director.`);
- const topSnapshot=model().snapshots.find(x=>Number(x.rank)===1);if(topSnapshot)addMilestone('world-rank-1','Programme reaches world #1',{season:topSnapshot.season,week:52},`${nationLabel(topSnapshot.nation)} finished the season ranked #1.`);
-}
-
-function reconcileDecisionBackfill(){
- const cp=model();if(cp.migration.decisionBackfill)return;
- const careerNations=new Set(careerState().nationsManaged||[currentNation()]);
- let callups=0,poolReturns=0,scouted=0;
- for(const a of s?.athletes||[]){if(!careerNations.has(a.nation))continue;for(const mem of a?.story?.memories||[]){if(mem.type==='Call-up'||/^Call-up$/i.test(mem.type||'')){callups++;if(a.source==='Scouted')scouted++}if(mem.type==='Squad decision'||/National Pool/i.test(mem.text||''))poolReturns++}}
- cp.decisions.callups=Math.max(cp.decisions.callups||0,callups);cp.decisions.scoutedCallups=Math.max(cp.decisions.scoutedCallups||0,scouted);cp.decisions.poolReturns=Math.max(cp.decisions.poolReturns||0,poolReturns);cp.migration.decisionBackfill=true;
-}
-
-function syncCareerData({persist=false}={}){
- if(syncing||!s)return model();syncing=true;
+function migrate(mc){
+ if(migrating||safeNumber(mc.migration.version)>=VERSION)return mc;migrating=true;
  try{
-  model();backfillSeasonSnapshots();syncAppointments();syncResults();syncScoutingAndRetirements();syncFacilities();reconcileDecisionBackfill();
-  if(Number(careerState().careerYear)===1&&!model().arrivals[currentNation()])captureArrivalSnapshot(currentNation(),true);
-  syncMilestones();reputationFor(stats('career'));
-  if(persist)safe(()=>save());
-  return model();
- }finally{syncing=false}
+  try{if(typeof importManagerResults==='function')importManagerResults()}catch(_){ }
+  syncContracts(mc);syncSeasonHistory(mc);syncDiscoveries(mc);syncFacilityEvents(mc);syncRetirements(mc);syncMajorResults(mc);
+  captureArrival(mc,currentNation(),false);
+  mc.migration.version=VERSION;mc.migration.completed=true;mc.migration.completedSeason=nowSeason();mc.migration.completedWeek=nowWeek();mc.migration.notes=['Existing saves were backfilled only from reliable career, result, scouting, facility and contract data.','Historical fields that were never stored remain explicitly unavailable rather than being invented.'];
+  syncMilestones(mc);syncReputation(mc);
+ }finally{migrating=false}
+ return mc;
 }
 
-function greatestAthletes(){
+function careerStore(){const mc=rawStore();if(safeNumber(mc.migration.version)<VERSION)migrate(mc);return mc}
+function syncAll(options={}){
+ if(synchronising)return rawStore();synchronising=true;try{const mc=careerStore();syncContracts(mc);syncSeasonHistory(mc);syncDiscoveries(mc);syncFacilityEvents(mc);syncRetirements(mc);syncMajorResults(mc);if(options.captureArrival)captureArrival(mc,currentNation(),true);syncMilestones(mc);syncReputation(mc);return mc}finally{synchronising=false}
+}
+function persist(){try{if(typeof save==='function')save()}catch(err){console.warn('Manager Career V1 save failed',err)}}
+
+function athletePerformanceAggregate(rows=managerResults()){
  const map=new Map();
- for(const row of flattenRows(rawResults())){
-  const id=rowAthleteId(row)||row.name,key=String(id);if(!map.has(key))map.set(key,{id:rowAthleteId(row),name:row.name,nation:row.nation,wins:0,podiums:0,olympicMedals:0,majorMedals:0,records:0,score:0});
-  const a=map.get(key);if(row.place===1)a.wins++;if(row.place<=3)a.podiums++;if(row._result.olympic&&row.place<=3)a.olympicMedals++;if(isMajorResult(row._result)&&row.place<=3)a.majorMedals++;a.records+=(row.achievements||[]).filter(x=>['WR','NR','CR'].includes(x)).length;a.score=a.wins*3+a.podiums+a.olympicMedals*6+a.majorMedals*3+a.records*5;
- }
- return [...map.values()].sort((a,b)=>b.score-a.score||b.olympicMedals-a.olympicMedals||a.name.localeCompare(b.name));
+ for(const row of rows){const key=row.id||row.name;if(!key)continue;const item=map.get(key)||{id:row.id||null,name:row.name||athleteById(row.id)?.name||'Athlete',starts:0,wins:0,podiums:0,olympicMedals:0,majorMedals:0,records:0,score:0,lastSeason:0};item.starts++;if(row.place===1)item.wins++;if(row.place<=3)item.podiums++;if(row.olympic&&row.place<=3)item.olympicMedals++;if(isMajorEventRecord(row)&&row.place<=3)item.majorMedals++;item.records+=recordCodes(row).length;item.lastSeason=Math.max(item.lastSeason,row.season);item.score=item.olympicMedals*18+item.majorMedals*9+item.wins*4+item.podiums+item.records*6+item.starts*.2;map.set(key,item)}
+ return [...map.values()].sort((a,b)=>b.score-a.score||b.olympicMedals-a.olympicMedals||b.wins-a.wins||a.name.localeCompare(b.name));
 }
-
-function greatestDiscovery(){
- const scouted=new Set((s?.athletes||[]).filter(a=>a.source==='Scouted'&&(careerState().nationsManaged||[]).includes(a.nation)).map(a=>a.id));
- const list=greatestAthletes().filter(x=>x.id&&scouted.has(x.id));return list[0]||null;
-}
+function greatestDiscovery(mc=careerStore()){const ids=discoveryIds(mc),ranked=athletePerformanceAggregate().filter(x=>ids.has(x.id));return ranked[0]||null}
+function greatestAthletes(limit=6){return athletePerformanceAggregate().slice(0,limit)}
 
 function philosophy(){
- const cp=model(),st=stats('career'),current=currentProgrammeSnapshot(),traits=[];
- const discovery=greatestDiscovery();
- const youth=cp.decisions.youthCallups||0,callups=cp.decisions.callups||0,long=cp.decisions.longAgreements||0,short=cp.decisions.shortAgreements||0;
- if(st.athletesDeveloped>=3||youth>=5)traits.push({name:'Talent Developer',why:`${st.athletesDeveloped} athletes have reached the tracked development threshold${youth?` and ${youth} recorded call-ups were made at age 21 or younger`:''}.`,score:st.athletesDeveloped*3+youth});
- if(discovery&&discovery.podiums>=1)traits.push({name:'Talent Identifier',why:`Scouted athlete ${discovery.name} has produced ${discovery.podiums} podium${discovery.podiums===1?'':'s'} under your management.`,score:10+discovery.score});
- if(st.olympicMedals.g+st.worldMedals.g>=3||st.worldRecords>=1)traits.push({name:'Performance Specialist',why:`Your programme has ${st.olympicMedals.g+st.worldMedals.g} Olympic/world gold performances and ${st.worldRecords} world record${st.worldRecords===1?'':'s'}.`,score:st.olympicMedals.g*5+st.worldMedals.g*3+st.worldRecords*6});
- if(long>=Math.max(2,short+1))traits.push({name:'Long-Term Planner',why:`You have chosen ${long} long national-squad agreements compared with ${short} short assessment terms.`,score:long*2});
- if((cp.decisions.poolReturns||0)>=8&&callups>0)traits.push({name:'Ruthless Selector',why:`You have made ${cp.decisions.poolReturns} recorded returns to the National Pool while continuing to refresh the senior squad.`,score:cp.decisions.poolReturns});
- const arrival=cp.arrivals[currentNation()];if(arrival&&Number.isFinite(arrival.rank)&&current.rank<arrival.rank)traits.push({name:'Programme Builder',why:`${nationLabel(currentNation())} has moved from #${arrival.rank} at your recorded arrival snapshot to #${current.rank}.`,score:(arrival.rank-current.rank)*5});
- traits.sort((a,b)=>b.score-a.score);
- if(!traits.length)return {primary:{name:'Still Forming',why:'Your management identity will become clearer as selections, athlete development, scouting and championship results accumulate.'},secondary:null};
- return {primary:traits[0],secondary:traits[1]||null};
+ const mc=careerStore(),stats=careerStats('career'),discoveries=discoveryIds(mc),athletes=s?.athletes||[];
+ let callups=0,drops=0,youngCallups=0;
+ for(const a of athletes){for(const memory of a.story?.memories||[]){if(memory.type==='Call-up'){callups++;const ageAt=Math.max(15,safeNumber(a.age)-(nowSeason()-safeNumber(memory.season)));if(ageAt<=21)youngCallups++}if(memory.type==='Squad decision'&&/pool|moved/i.test(String(memory.text||'')))drops++}}
+ const scoutedCallups=athletes.filter(a=>discoveries.has(a.id)&&(a.inSquad!==false||(a.story?.memories||[]).some(m=>m.type==='Call-up'))).length;
+ const camps=athletes.reduce((n,a)=>n+(a.campHistory||[]).filter(c=>c.outcome==='Completed').length,0),facilities=(s?.facilityHistory||[]).length;
+ const styles=[
+  {name:'Talent Developer',score:youngCallups*3+scoutedCallups*3+stats.athletesDeveloped*4,detail:`${youngCallups} young call-up${youngCallups===1?'':'s'}, ${scoutedCallups} scouted prospect${scoutedCallups===1?'':'s'} promoted and ${stats.athletesDeveloped} confirmed development success${stats.athletesDeveloped===1?'':'es'}.`},
+  {name:'Performance Specialist',score:stats.majorMedals*4+stats.records*3+stats.wins*.6,detail:`${stats.majorMedals} major medal${stats.majorMedals===1?'':'s'}, ${stats.records} record${stats.records===1?'':'s'} and ${stats.wins} event win${stats.wins===1?'':'s'} shape the performance profile.`},
+  {name:'Squad Builder',score:callups*2+stats.athletesManaged*.8,detail:`${callups} recorded squad call-up${callups===1?'':'s'} and ${stats.athletesManaged} athletes used in competition show how widely you have built the programme.`},
+  {name:'Long-Term Planner',score:camps*1.5+facilities*3+careerYear()*.7,detail:`${camps} completed camp${camps===1?'':'s'}, ${facilities} facility investment${facilities===1?'':'s'} and ${careerYear()} season${careerYear()===1?'':'s'} of career planning drive this tendency.`},
+  {name:'Ruthless Selector',score:drops*3,detail:`${drops} recorded squad move${drops===1?'':'s'} back to the National Pool show a willingness to change personnel.`}
+ ].sort((a,b)=>b.score-a.score);
+ if(styles[0].score<3)return {primary:{name:'Still Taking Shape',detail:'There is not enough career evidence yet to assign a strong management identity.'},secondary:null,metrics:{callups,drops,youngCallups,scoutedCallups,camps,facilities}};
+ return {primary:styles[0],secondary:styles[1].score>=3?styles[1]:null,metrics:{callups,drops,youngCallups,scoutedCallups,camps,facilities}};
 }
 
-function legacyTier(){
- const st=stats('career'),score=Math.min(100,Math.round(st.olympicMedals.g*7+st.worldMedals.g*4+st.worldRecords*6+st.nationalRecords*.6+st.wins*.22+Math.max(0,st.careerYears-5)*.5));
- return {score,label:score>=90?'Legendary':score>=72?'Historic':score>=50?'Elite':score>=28?'Successful':'Developing'};
+function careerBiography(){
+ const stats=careerStats('career'),c=career(),first=c.tenures?.[0],name=management().name||'Performance Director',parts=[`${name} began this management career with ${nationLabel(first?.nation||currentNation())} in ${safeNumber(first?.startSeason)||2027}.`];
+ if(stats.wins)parts.push(`Across ${stats.years} season${stats.years===1?'':'s'}, the programme has recorded ${stats.wins} event win${stats.wins===1?'':'s'} and ${stats.podiums} podium${stats.podiums===1?'':'s'}.`);else parts.push(`The career is in its opening stage, with the first major results still ahead.`);
+ if(stats.olympicMedals)parts.push(`${stats.olympicMedals} Olympic medal${stats.olympicMedals===1?' has':'s have'} been won under this management.`);
+ if(stats.records)parts.push(`${stats.records} national, championship or world record achievement${stats.records===1?' has':'s have'} been logged.`);
+ if((c.nationsManaged||[]).length>1)parts.push(`The career has now included ${(c.nationsManaged||[]).length} national programmes.`);
+ return parts.join(' ');
 }
 
-function careerBio(){
- const st=stats('career'),c=careerState(),first=(c.tenures||[])[0],current=currentNation();
- let text=`${managementState().name||'The Performance Director'} began their management career with ${nationLabel(first?.nation||current)} in ${first?.startSeason||nowSeason()}.`;
- if(st.olympicMedals.g)text+=` The career has produced ${st.olympicMedals.g} Olympic gold medal${st.olympicMedals.g===1?'':'s'}.`;
- else if(st.olympicMedals.g+st.olympicMedals.s+st.olympicMedals.b)text+=` The career has already produced ${medalTotal(st.olympicMedals)} Olympic medal${medalTotal(st.olympicMedals)===1?'':'s'}.`;
- if(st.worldRecords)text+=` Athletes under the programme have set ${st.worldRecords} world record${st.worldRecords===1?'':'s'}.`;
- if((c.nationsManaged||[]).length>1)text+=` The career has included appointments with ${(c.nationsManaged||[]).map(n=>nationLabel(n)).join(' and ')}.`;
- return text;
+function legacyStatus(){const stats=careerStats('career'),score=stats.olympicGolds*8+stats.majorMedals*3+stats.records*2+stats.wins*.25+stats.athletesDeveloped+careerYear()*.4;return score>=80?'Legendary':score>=52?'Historic':score>=30?'Elite':score>=14?'Successful':'Developing'}
+
+function programmeImpact(){
+ const mc=careerStore(),key=arrivalKey(),base=mc.arrivalSnapshots[key],sq=squadSummary(),current={rank:currentRank(),squadSize:sq.size,squadStrength:sq.strength,eliteCount:sq.elite,funding:safeNumber(s?.funding),facilityAverage:facilityAverage()};
+ if(!base?.available)return {available:false,reason:base?.reason||'No reliable arrival snapshot is available for this role.',current};
+ return {available:true,base,current};
 }
 
-function contractHistory(){
- const c=careerState(),rows=[];
- for(const x of c.completedCycles||[])rows.push({start:x.startSeason,end:x.endSeason,nation:x.nation,status:x.renewed?'Renewal offered':'Cycle completed',verdict:x.verdict,score:x.score});
- const cur=currentContract();rows.push({start:cur.start,end:cur.end,nation:currentNation(),status:cur.status,current:true});return rows.sort((a,b)=>b.start-a.start);
+function olympicHistory(){
+ const map=new Map();for(const row of managerResults().filter(r=>r.olympic)){const key=`${row.season}:${row.event}`,x=map.get(key)||{season:row.season,event:row.event,g:0,s:0,b:0,total:0,rows:[]};if(row.place<=3){x.total++;if(row.place===1)x.g++;else if(row.place===2)x.s++;else x.b++}x.rows.push(row);map.set(key,x)}return [...map.values()].sort((a,b)=>b.season-a.season)
+}
+function honours(){return managerResults().filter(r=>r.place===1&&(r.olympic||isWorldEvent(r.event)||isContinentalEvent(r.event)||r.national||isSummitEvent(r.event))).sort((a,b)=>b.season-a.season||b.week-a.week)}
+function recordMoments(){return managerResults().filter(r=>recordCodes(r).length).sort((a,b)=>b.season-a.season||b.week-a.week)}
+function firsts(){const rows=sortedRows(),mc=careerStore(),firstDiscovery=Object.values(mc.discoveries).sort((a,b)=>a.season-b.season||a.week-b.week)[0];return [
+ ['First event win',rows.find(r=>r.place===1)],['First podium',rows.find(r=>r.place<=3)],['First Olympic medal',rows.find(r=>r.olympic&&r.place<=3)],['First Olympic gold',rows.find(r=>r.olympic&&r.place===1)],['First world record',rows.find(r=>recordCodes(r).includes('WR'))],['First scouting discovery',firstDiscovery?{season:firstDiscovery.season,week:firstDiscovery.week,name:firstDiscovery.name,id:firstDiscovery.athleteId}:null]
+ ].filter(([,x])=>x)}
+
+function managerRecords(){
+ const rows=managerResults(),bySeason=new Map();for(const r of rows){const x=bySeason.get(r.season)||{season:r.season,wins:0,podiums:0,majorMedals:0,records:0};if(r.place===1)x.wins++;if(r.place<=3)x.podiums++;if(isMajorEventRecord(r)&&r.place<=3)x.majorMedals++;x.records+=recordCodes(r).length;bySeason.set(r.season,x)}
+ const values=[...bySeason.values()];const best=(key)=>[...values].sort((a,b)=>b[key]-a[key]||b.season-a.season)[0]||null;
+ return {wins:best('wins'),podiums:best('podiums'),majorMedals:best('majorMedals'),records:best('records')};
 }
 
-function jobHistory(){
- const c=careerState(),results=rawResults();
- return (c.tenures||[]).map((t,i)=>{
-  const end=t.endSeason||nowSeason(),jobResults=results.filter(r=>resultNation(r)===t.nation&&r.season>=t.startSeason&&r.season<=end),rows=flattenRows(jobResults),olympic=rows.filter(r=>r._result.olympic&&r.place<=3),bestRank=Math.min(...model().snapshots.filter(x=>x.nation===t.nation&&Number.isFinite(Number(x.rank))).map(x=>Number(x.rank)),999);
-  return {nation:t.nation,start:t.startSeason,end:t.endSeason||null,seasons:Math.max(1,end-t.startSeason+1),wins:rows.filter(r=>r.place===1).length,olympic:medalsForRows(olympic),bestRank:bestRank===999?null:bestRank,current:i===(c.tenures||[]).length-1&&!t.endSeason};
- }).reverse();
-}
-
-function seasonArchive(){return [...model().snapshots].sort((a,b)=>b.season-a.season)}
-function milestones(){return Object.values(model().milestones||{}).sort((a,b)=>(b.season-a.season)||(b.week-a.week));}
-function timeline(){
- const events=[...model().events,...milestones().map(m=>({...m,type:'milestone',id:'milestone:'+m.id,title:m.title,detail:m.detail}))];
- const seen=new Set();return events.sort((a,b)=>(b.season-a.season)||(b.week-a.week)).filter(e=>{const k=`${e.type}:${e.title}:${e.season}:${e.week}`;if(seen.has(k))return false;seen.add(k);return true});
-}
-
-function athleteButton(a){
- if(!a)return '';const athlete=(s?.athletes||[]).find(x=>x.id===a.id);return athlete?`<button class="mp-link" data-mp-athlete="${esc(a.id)}">${esc(a.name)}</button>`:esc(a.name);
-}
-
-function medalStrip(m){return `<div class="mp-medals"><div class="gold"><i>G</i><strong>${m.g||0}</strong></div><div class="silver"><i>S</i><strong>${m.s||0}</strong></div><div class="bronze"><i>B</i><strong>${m.b||0}</strong></div></div>`}
-function statusClass(status){return /completed|excellent|very good|secure|on track/i.test(status)?'good':/risk|pressure|expir/i.test(status)?'warn':/failed|critical|leaving/i.test(status)?'bad':''}
-function empty(title,body){return `<div class="mp-empty"><strong>${esc(title)}</strong><span>${esc(body)}</span></div>`}
+function statBox(label,value,note=''){return `<div class="am-mgr-stat"><small>${esc(label)}</small><strong>${esc(value)}</strong>${note?`<span>${esc(note)}</span>`:''}</div>`}
+function statusClass(status){return /complete|excellent|very good|secure|world class|legendary|historic|elite/i.test(status)?'good':/risk|pressure|critical|leaving|failed/i.test(status)?'bad':/expiring|review|future|stable/i.test(status)?'warn':''}
+function tabButton(id,label){return `<button type="button" role="tab" aria-selected="${activeTab===id?'true':'false'}" class="${activeTab===id?'on':''}" data-manager-tab="${id}">${label}</button>`}
+function athleteButton(id,name,sub=''){return id&&athleteById(id)?`<button type="button" class="am-mgr-entity" data-manager-athlete="${esc(id)}"><strong>${esc(name)}</strong>${sub?`<span>${esc(sub)}</span>`:''}</button>`:`<div class="am-mgr-entity static"><strong>${esc(name||'Archived athlete')}</strong>${sub?`<span>${esc(sub)}</span>`:''}</div>`}
+function emptyState(title,copy){return `<div class="am-mgr-empty"><strong>${esc(title)}</strong><p>${esc(copy)}</p></div>`}
 
 function heroHTML(){
- const m=managementState(),rep=reputationFor(stats('career')),contract=currentContract(),c=careerState(),name=m.name||'Performance Director',initials=name.split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase()||'PD';
- return `<section class="mp-hero">
-  <div class="mp-avatar" aria-label="Manager initials ${esc(initials)}"><span>${esc(initials)}</span><b>${nationFlag(currentNation())}</b></div>
-  <div class="mp-identity"><div class="mp-kicker">${nationFlag(currentNation())} ${esc(nationLabel(currentNation()))} · PERFORMANCE DIRECTOR</div><h1 id="managementName">${esc(name)}</h1><p>${esc(careerBio())}</p><div class="mp-identity-meta"><span>${esc(rep.tier)} reputation</span><span>Career Year ${c.careerYear}</span><span>Olympic Cycle ${c.cycleNumber}</span></div></div>
-  <div class="mp-job-badge"><small>CURRENT APPOINTMENT</small><strong>${contract.start}–${contract.end}</strong><span class="${statusClass(contract.status)}">${esc(contract.status)}</span><em>${currentTenureYears()} season${currentTenureYears()===1?'':'s'} in role</em></div>
- </section>`;
+ const mc=careerStore(),stats=careerStats('career'),contract=currentContract(),rep=mc.reputation,confidence=federationConfidence(),name=management().name||'Performance Director',initials=name.split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase()||'PD';
+ return `<section class="am-mgr-hero">
+  <div class="am-mgr-avatar" aria-label="Manager initials ${esc(initials)}"><span>${esc(initials)}</span><b>${esc(nationFlag(currentNation()))}</b></div>
+  <div class="am-mgr-identity"><div class="am-mgr-kicker">MY PROFILE · CAREER YEAR ${careerYear()}</div><h1 id="managementName">${esc(name)}</h1><p>${esc(nationLabel(currentNation()))} · Performance Director</p><div class="am-mgr-badges"><span class="am-mgr-badge nation">${esc(nationFlag(currentNation()))} ${esc(nationLabel(currentNation()))}</span><span class="am-mgr-badge">${esc(rep.current)} Reputation</span><span class="am-mgr-badge ${statusClass(contract.status)}">${esc(contract.status)}</span><span class="am-mgr-badge ${statusClass(confidence.label)}">Federation ${esc(confidence.label)}</span></div></div>
+  <div class="am-mgr-contract"><small>CURRENT CONTRACT</small><strong>${contract.start}–${contract.end}</strong><span>${contract.yearsInRole} season${contract.yearsInRole===1?'':'s'} in this role</span><em>${esc(contract.status)}</em></div>
+ </section>
+ <div class="am-mgr-stat-strip">
+  ${statBox('Years Managed',stats.years)}${statBox('Olympic Golds',stats.olympicGolds)}${statBox('Major Medals',stats.majorMedals)}${statBox('Event Wins',stats.wins)}${statBox('Records',stats.records)}${statBox('Athletes Developed',stats.athletesDeveloped,developmentSummary(mc).tracked?'confirmed from saved baselines':'tracking begins with saved baselines')}
+ </div>`;
 }
 
-function headlineStatsHTML(){const st=stats('career');return `<div class="mp-stat-strip">${[
- ['Years Managed',st.careerYears],['Olympic Golds',st.olympicGolds],['Major Medals',medalTotal(st.majorMedals)],['Event Wins',st.wins],['Records',st.records],['Athletes Developed',st.athletesDeveloped]
- ].map(([k,v])=>`<div><small>${k}</small><strong>${v}</strong></div>`).join('')}</div>`}
-
-function jobCardHTML(){
- const contract=currentContract(),fed=federationState(),t=currentTenure();
- return `<section class="mp-card mp-current-job"><div class="mp-card-head"><div><small>CURRENT CAREER</small><h2>Current Job</h2></div><span class="mp-chip ${statusClass(contract.status)}">${esc(contract.status)}</span></div><div class="mp-job-grid">
-  <div><small>Nation</small><strong>${nationFlag(currentNation())} ${esc(nationLabel(currentNation()))}</strong></div><div><small>Role</small><strong>Performance Director</strong></div><div><small>Appointed</small><strong>${t.startSeason}</strong></div><div><small>Contract</small><strong>${contract.start}–${contract.end}</strong></div><div><small>Federation confidence</small><strong>${esc(fed.label)}</strong></div><div><small>Nation rank</small><strong>#${fed.rank}</strong></div>
- </div><div class="mp-name-edit"><label>Manager name<input id="mpManagerName" maxlength="60" value="${esc(managementState().name||'Performance Director')}"></label><button class="am-button secondary compact" id="mpSaveName">SAVE NAME</button></div></section>`;
+function currentJobHTML(){
+ const contract=currentContract(),confidence=federationConfidence(),review=[...(career().completedCycles||[])].at(-1),reasons=[...confidence.reasonsGood.slice(0,2),...confidence.reasonsConcern.slice(0,2)];
+ return `<section class="am-mgr-card am-mgr-job"><div class="am-mgr-card-head"><div><small>CURRENT JOB</small><h2>${esc(nationFlag(currentNation()))} ${esc(nationLabel(currentNation()))}</h2></div><span class="am-mgr-state ${statusClass(confidence.label)}">${esc(confidence.label)}</span></div><div class="am-mgr-job-grid">${statBox('Appointed',contract.appointed)}${statBox('Contract',`${contract.start}–${contract.end}`)}${statBox('Years in Role',contract.yearsInRole)}${statBox('Job Security',contract.status)}</div><div class="am-mgr-explain"><strong>Why the federation feels this way</strong>${reasons.map((x,i)=>`<p class="${i<confidence.reasonsGood.slice(0,2).length?'positive':'concern'}">${esc(x)}</p>`).join('')}${!reasons.length?'<p>No formal performance evidence has been recorded yet.</p>':''}</div>${review?`<div class="am-mgr-review-note"><small>Most recent Olympic-cycle review</small><strong>${esc(review.verdict||'Review complete')}</strong><span>${review.endSeason} · Board score ${safeNumber(review.score)}</span></div>`:'<div class="am-mgr-review-note"><small>Formal review</small><strong>First Olympic-cycle review ahead</strong><span>Contract review follows the Olympic season.</span></div>'}</section>`;
 }
 
-function objectivesHTML(){
- const fed=federationState();return `<section class="mp-card"><div class="mp-card-head"><div><small>FEDERATION</small><h2>Confidence & Objectives</h2></div><span class="mp-chip ${statusClass(fed.label)}">${esc(fed.label)}</span></div><div class="mp-objectives">${fed.objectives.map(o=>`<div><span><strong>${esc(o.name)}</strong><small>${esc(o.value)}</small></span><b class="${statusClass(o.status)}">${esc(o.status)}</b></div>`).join('')}</div><div class="mp-priority"><small>Federation priority</small><p>${esc(fed.priority)}</p></div>${fed.positives.length?`<div class="mp-reasons good"><small>What is going well</small>${fed.positives.slice(0,3).map(x=>`<p>${esc(x)}</p>`).join('')}</div>`:''}${fed.concerns.length?`<div class="mp-reasons warn"><small>Current concerns</small>${fed.concerns.slice(0,3).map(x=>`<p>${esc(x)}</p>`).join('')}</div>`:''}</section>`;
-}
+function objectivesHTML(){const items=objectiveState();return `<section class="am-mgr-card"><div class="am-mgr-card-head"><div><small>FEDERATION EXPECTATIONS</small><h2>Current objectives</h2></div><span>${safeNumber(s?.game?.season)}</span></div><div class="am-mgr-objectives">${items.map(x=>`<article><span class="am-mgr-state ${statusClass(x.status)}">${esc(x.status)}</span><div><strong>${esc(x.name)}</strong><p>${esc(x.detail)}</p></div></article>`).join('')}</div></section>`}
 
 function highlightsHTML(){
- const st=stats('career'),great=greatestAthletes()[0],discovery=greatestDiscovery(),legacy=legacyTier(),items=[];
- if(st.olympicGolds)items.push({k:'Olympic record',v:`${st.olympicGolds} gold · ${medalTotal(st.olympicMedals)} medals`});
- if(st.worldRecords)items.push({k:'World records',v:String(st.worldRecords)});
- if(great)items.push({k:'Greatest athlete',v:athleteButton(great),html:true});
- if(discovery)items.push({k:'Greatest discovery',v:athleteButton(discovery),html:true});
- if(!items.length)items.push({k:'Career building',v:'Your first major career highlight is still ahead.'});
- return `<section class="mp-card"><div class="mp-card-head"><div><small>CAREER</small><h2>Highlights</h2></div><span class="mp-chip">${esc(legacy.label)} legacy</span></div><div class="mp-highlight-list">${items.slice(0,5).map(x=>`<div><small>${esc(x.k)}</small><strong>${x.html?x.v:esc(x.v)}</strong></div>`).join('')}</div></section>`;
+ const mc=careerStore(),events=[...mc.events].sort((a,b)=>b.season-a.season||b.week-a.week),major=events.filter(e=>['medal','record','milestone','appointment','review'].includes(e.type)).slice(0,6);
+ return `<section class="am-mgr-card"><div class="am-mgr-card-head"><div><small>CAREER HIGHLIGHTS</small><h2>The story so far</h2></div><span>${legacyStatus()} Legacy</span></div>${major.length?`<div class="am-mgr-highlight-list">${major.map(e=>`<article><time>${e.season} · W${e.week}</time><strong>${esc(e.title)}</strong><p>${esc(e.detail)}</p></article>`).join('')}</div>`:emptyState('The first big moment is still ahead','Major medals, records, appointments and career milestones will build this section.')}</section>`;
 }
+
+function legacyHTML(){const stats=careerStats('career'),rep=careerStore().reputation;return `<section class="am-mgr-card am-mgr-legacy"><div class="am-mgr-card-head"><div><small>CAREER LEGACY</small><h2>${esc(legacyStatus())}</h2></div><span>${esc(rep.current)} reputation</span></div><div class="am-mgr-legacy-grid">${statBox('Olympic Gold',stats.olympicGolds)}${statBox('World Medals',stats.worldMedals)}${statBox('Records',stats.records)}${statBox('Nations Managed',(career().nationsManaged||[]).length)}</div><p>${esc(careerBiography())}</p></section>`}
 
 function impactHTML(){
- const arrival=model().arrivals[currentNation()],current=currentProgrammeSnapshot();
- if(!arrival)return `<section class="mp-card"><div class="mp-card-head"><div><small>PROGRAMME</small><h2>Your Impact</h2></div></div>${empty('Arrival snapshot unavailable','This Alpha career began before full manager snapshots were introduced. Future appointments and seasons will be preserved in full.')}</section>`;
- const cells=[
-  ['Nation rank',`#${arrival.rank}`,`#${current.rank}`],
-  ['Squad assessment',arrival.squadAssessment==null?'Unavailable':String(arrival.squadAssessment),current.squadAssessment==null?'Unavailable':String(current.squadAssessment)],
-  ['Elite squad athletes',arrival.eliteAthletes,current.eliteAthletes],
-  ['Squad size',arrival.squadSize,current.squadSize]
- ];
- return `<section class="mp-card"><div class="mp-card-head"><div><small>PROGRAMME</small><h2>Your Impact</h2></div><span class="mp-chip">Since ${arrival.season}</span></div><div class="mp-impact"><div class="head"><span></span><small>ARRIVAL</small><small>CURRENT</small></div>${cells.map(c=>`<div><strong>${esc(c[0])}</strong><span>${esc(c[1])}</span><b>${esc(c[2])}</b></div>`).join('')}</div></section>`;
+ const impact=programmeImpact();if(!impact.available)return `<section class="am-mgr-card"><div class="am-mgr-card-head"><div><small>PROGRAMME IMPACT</small><h2>${esc(nationLabel(currentNation()))}</h2></div></div>${emptyState('Historic baseline unavailable',impact.reason)}<div class="am-mgr-current-baseline">${statBox('Current Squad',impact.current.squadSize)}${statBox('Staff Squad Assessment',impact.current.squadStrength||'—')}${statBox('Elite Athletes',impact.current.eliteCount)}${statBox('Facilities',`L${impact.current.facilityAverage}`)}</div></section>`;
+ const b=impact.base,c=impact.current,delta=(x,y,format=v=>String(v))=>`${format(x)} → ${format(y)}`;return `<section class="am-mgr-card"><div class="am-mgr-card-head"><div><small>PROGRAMME IMPACT</small><h2>Your impact at ${esc(nationLabel(currentNation()))}</h2></div><span>Since ${b.startSeason}</span></div><div class="am-mgr-impact-grid">${statBox('Squad Staff Assessment',delta(b.squadStrength,c.squadStrength))}${statBox('Elite Athletes',delta(b.eliteCount,c.eliteCount))}${statBox('Squad Size',delta(b.squadSize,c.squadSize))}${statBox('Facilities',delta(b.facilityAverage,c.facilityAverage,v=>`L${v}`))}${b.rank&&c.rank?statBox('Programme Rank',`#${b.rank} → #${c.rank}`):''}</div></section>`;
 }
 
-function recentMilestonesHTML(){const list=milestones().slice(0,5);return `<section class="mp-card"><div class="mp-card-head"><div><small>CAREER MEMORY</small><h2>Recent Milestones</h2></div><button class="mp-text-button" data-mp-tab="career">VIEW CAREER</button></div>${list.length?`<div class="mp-timeline compact">${list.map(x=>`<div><i></i><span><small>${x.season} · W${x.week}</small><strong>${esc(x.title)}</strong><p>${esc(x.detail||'')}</p></span></div>`).join('')}</div>`:empty('The first milestone is ahead','Wins, records, major medals, discoveries and long-service moments will build your career history.')}</section>`}
+function greatestHTML(){const athlete=greatestAthletes(1)[0],discovery=greatestDiscovery();return `<div class="am-mgr-two"><section class="am-mgr-card"><div class="am-mgr-card-head"><div><small>GREATEST ATHLETE CONNECTION</small><h2>${athlete?esc(athlete.name):'Still to emerge'}</h2></div></div>${athlete?athleteButton(athlete.id,athlete.name,`${athlete.wins} wins · ${athlete.majorMedals} major medals · ${athlete.records} records`):emptyState('No defining athlete yet','Career athlete connections will emerge from real results over time.')}</section><section class="am-mgr-card"><div class="am-mgr-card-head"><div><small>GREATEST DISCOVERY</small><h2>${discovery?esc(discovery.name):'Still to emerge'}</h2></div></div>${discovery?athleteButton(discovery.id,discovery.name,`${discovery.wins} wins · ${discovery.majorMedals} major medals · ${discovery.records} records`):emptyState('No major discovery yet','A scouted prospect who becomes a major performer will appear here.')}</section></div>`}
 
-function overviewHTML(){
- return `<div class="mp-overview-grid"><div class="mp-main-stack">${jobCardHTML()}${impactHTML()}${recentMilestonesHTML()}</div><div class="mp-side-stack">${objectivesHTML()}${highlightsHTML()}${greatestAthletesHTML(4)}</div></div>`;
+function recentMilestonesHTML(){const events=[...careerStore().events].sort((a,b)=>b.season-a.season||b.week-a.week).slice(0,8);return `<section class="am-mgr-card"><div class="am-mgr-card-head"><div><small>RECENT MILESTONES</small><h2>Career feed</h2></div><span>${careerStore().events.length} logged moments</span></div>${events.length?`<div class="am-mgr-timeline compact">${events.map(timelineEntry).join('')}</div>`:emptyState('Your career log is ready','Meaningful results and decisions will begin filling the timeline.')}</section>`}
+
+function profileEditorHTML(){return `<details class="am-mgr-profile-editor"><summary>Profile details</summary><div><label>Manager name<input id="managerCareerName" maxlength="60" value="${esc(management().name||'Performance Director')}"></label><button type="button" class="am-button am-button--secondary" data-manager-save-name>SAVE NAME</button></div><p>Only your displayed manager name is editable here. Career history and results remain attached to the same manager ID.</p></details>`}
+
+function overviewHTML(){return `<div class="am-mgr-dashboard"><div class="am-mgr-main-column">${currentJobHTML()}${impactHTML()}${recentMilestonesHTML()}</div><div class="am-mgr-side-column">${objectivesHTML()}${highlightsHTML()}${legacyHTML()}</div></div>${greatestHTML()}${profileEditorHTML()}`}
+
+function timelineEntry(e){const icon={appointment:'JOB',review:'REV',medal:'MED',record:'REC',milestone:'MILE',scouting:'SCOUT',programme:'PROG',athlete:'ATH',reputation:'REP',season:'YEAR',title:'WIN'}[e.type]||'CAREER';const athleteId=e.data?.athleteId;return `<article class="am-mgr-timeline-row"><div class="am-mgr-timeline-mark">${icon}</div><div><time>${e.season} · Week ${e.week}</time><strong>${esc(e.title)}</strong><p>${esc(e.detail)}</p>${athleteId?athleteButton(athleteId,athleteById(athleteId)?.name||e.title,'Open athlete profile'):''}</div></article>`}
+
+function seasonCardsHTML(){
+ const years=uniq([...(career().seasonHistory||[]).map(x=>safeNumber(x.season)),nowSeason()]).filter(Boolean).sort((a,b)=>b-a);return `<section class="am-mgr-card"><div class="am-mgr-card-head"><div><small>SEASON ARCHIVE</small><h2>${years.length} season${years.length===1?'':'s'}</h2></div><span>Historical snapshots</span></div><div class="am-mgr-season-grid">${years.map(year=>{const snap=careerStore().seasons[String(year)],current=year===nowSeason();const summary=(career().seasonHistory||[]).find(x=>safeNumber(x.season)===year);const nation=snap?.nation||summary?.nation||currentNation();return `<button type="button" class="am-mgr-season-card ${current?'current':''}" data-manager-season="${year}"><small>${current?'CURRENT SEASON':`CAREER YEAR ${snap?.careerYear||summary?.careerYear||'—'}`}</small><strong>${year}</strong><span>${esc(nationFlag(nation))} ${esc(nationLabel(nation))}</span><em>${snap?.available?`${safeNumber(snap.wins)} wins · ${safeNumber(snap.records)} records`:summary?`Final rank ${summary.rank?'#'+summary.rank:'—'} · ${safeNumber(summary.records)} records`:'Season in progress'}</em></button>`}).join('')}</div></section>`;
 }
 
-function greatestAthletesHTML(limit=6){const list=greatestAthletes().slice(0,limit);return `<section class="mp-card"><div class="mp-card-head"><div><small>CAREER CONNECTIONS</small><h2>Greatest Athletes</h2></div></div>${list.length?`<div class="mp-athlete-list">${list.map((a,i)=>`<div><b>${i+1}</b><span><strong>${athleteButton(a)}</strong><small>${a.wins} wins · ${a.podiums} podiums${a.olympicMedals?` · ${a.olympicMedals} Olympic medals`:''}${a.records?` · ${a.records} records`:''}</small></span></div>`).join('')}</div>`:empty('Career connections will grow','Athletes will appear here once they have built meaningful results under your management.')}</section>`}
+function jobHistoryHTML(){
+ const rows=(career().tenures||[]).map((t,i)=>{const start=safeNumber(t.startSeason),end=safeNumber(t.endSeason)||nowSeason(),jobRows=managerResults().filter(r=>r.nation===t.nation&&r.season>=start&&r.season<=end),stats=aggregateRows(jobRows);const current=!t.endSeason;return `<article class="am-mgr-job-history ${current?'current':''}"><div><small>${current?'CURRENT ROLE':'FORMER ROLE'}</small><h3>${esc(nationFlag(t.nation))} ${esc(nationLabel(t.nation))}</h3><p>${start}–${current?'Present':end} · ${Math.max(1,end-start+1)} season${end-start+1===1?'':'s'}</p></div><div>${statBox('Wins',stats.wins)}${statBox('Major Medals',stats.majorMedals)}${statBox('Records',stats.records)}${statBox('Olympic Gold',stats.olympicGolds)}</div></article>`}).reverse();return `<section class="am-mgr-card"><div class="am-mgr-card-head"><div><small>JOB HISTORY</small><h2>${rows.length} national programme${rows.length===1?'':'s'}</h2></div></div><div class="am-mgr-job-history-list">${rows.join('')}</div></section>`;
+}
+
+function aggregateRows(rows){const wins=rows.filter(r=>r.place===1),olympic=rows.filter(r=>r.olympic&&r.place<=3),world=rows.filter(r=>!r.olympic&&isWorldEvent(r.event)&&r.place<=3),continental=rows.filter(r=>!r.olympic&&isContinentalEvent(r.event)&&r.place<=3);return {wins:wins.length,podiums:rows.filter(r=>r.place<=3).length,majorMedals:olympic.length+world.length+continental.length,olympicGolds:olympic.filter(r=>r.place===1).length,records:rows.reduce((n,r)=>n+recordCodes(r).length,0)}}
+
+function contractHistoryHTML(){const rows=[...careerStore().contracts].reverse();return `<section class="am-mgr-card"><div class="am-mgr-card-head"><div><small>CONTRACT HISTORY</small><h2>Appointments & Olympic cycles</h2></div></div>${rows.length?`<div class="am-mgr-contract-list">${rows.map(c=>`<article><span class="am-mgr-state ${statusClass(c.status)}">${esc(c.status)}</span><div><strong>${esc(nationFlag(c.nation))} ${esc(nationLabel(c.nation))} · ${esc(c.type)}</strong><p>${c.startSeason}${c.endSeason?'–'+c.endSeason:'–Present'} · ${esc(c.outcome||'')}</p></div></article>`).join('')}</div>`:emptyState('No contract history yet','Your appointment and future Olympic-cycle decisions will appear here.')}</section>`}
+
+function firstsHTML(){const items=firsts();return `<section class="am-mgr-card"><div class="am-mgr-card-head"><div><small>CAREER FIRSTS</small><h2>The moments that started it</h2></div></div>${items.length?`<div class="am-mgr-firsts">${items.map(([label,row])=>`<article><small>${esc(label)}</small><strong>${esc(row.name||row.event||'Career milestone')}</strong><span>${row.season} · Week ${row.week}${row.event?' · '+esc(row.event):''}</span></article>`).join('')}</div>`:emptyState('Firsts still to come','Your first win, medal, record and discovery will be preserved here.')}</section>`}
 
 function careerHTML(){
- const jobs=jobHistory(),contracts=contractHistory(),seasons=seasonArchive(),events=timeline().slice(0,120);
- return `<div class="mp-career-layout"><div class="mp-main-stack"><section class="mp-card"><div class="mp-card-head"><div><small>CAREER STORY</small><h2>Timeline</h2></div><span>${events.length} recorded moments</span></div>${events.length?`<div class="mp-timeline">${events.map(e=>`<div class="${esc(e.type)}"><i></i><span><small>${e.season} · Week ${e.week}</small><strong>${esc(e.title)}</strong><p>${esc(e.detail||'')}</p></span></div>`).join('')}</div>`:empty('Your timeline starts here','Major results, appointments, records, discoveries and career milestones will appear as they happen.')}</section></div><aside class="mp-side-stack"><section class="mp-card"><div class="mp-card-head"><div><small>EMPLOYMENT</small><h2>Job History</h2></div></div><div class="mp-job-history">${jobs.map(j=>`<div><small>${nationFlag(j.nation)} ${esc(nationLabel(j.nation))}</small><strong>${j.start}–${j.end||'Present'}</strong><span>${j.seasons} season${j.seasons===1?'':'s'} · ${j.wins} event wins${j.bestRank?` · best rank #${j.bestRank}`:''}</span>${medalTotal(j.olympic)?medalStrip(j.olympic):''}</div>`).join('')}</div></section><section class="mp-card"><div class="mp-card-head"><div><small>CONTRACTS</small><h2>Contract History</h2></div></div><div class="mp-contract-list">${contracts.map(c=>`<div><span><strong>${c.start}–${c.end}</strong><small>${nationFlag(c.nation)} ${esc(nationLabel(c.nation))}</small></span><b class="${statusClass(c.status)}">${esc(c.status)}</b></div>`).join('')}</div></section></aside><section class="mp-card mp-season-archive"><div class="mp-card-head"><div><small>HISTORICAL SNAPSHOTS</small><h2>Season Archive</h2></div><span>${seasons.length} season${seasons.length===1?'':'s'} stored</span></div>${seasons.length?`<div class="mp-season-grid">${seasons.map(x=>`<details><summary><span><small>${nationFlag(x.nation)} ${esc(nationLabel(x.nation))}</small><strong>${x.season}</strong></span><b>#${x.rank||'—'}</b></summary><div class="mp-season-detail"><div><small>Entries</small><strong>${x.entries??'—'}</strong></div><div><small>Wins</small><strong>${x.wins??'—'}</strong></div><div><small>Podiums</small><strong>${x.podiums??'—'}</strong></div><div><small>Records</small><strong>${x.records??0}</strong></div>${medalTotal(x.olympicMedals)?`<div class="wide"><small>Olympic medals</small>${medalStrip(x.olympicMedals)}</div>`:''}${x.squad?`<div class="wide"><small>End-of-season squad snapshot</small><strong>${x.squad.size} athletes · assessment ${x.squad.assessment??'Unavailable'} · ${x.squad.elite} elite-tier</strong></div>`:`<div class="wide muted">Detailed squad snapshot unavailable for this legacy season.</div>`}</div></details>`).join('')}</div>`:empty('No completed seasons yet','Your first full season snapshot will be stored at the end of the year.')}</section></div>`;
+ const events=[...careerStore().events].sort((a,b)=>b.season-a.season||b.week-a.week),pageSize=60,start=timelinePage*pageSize,page=events.slice(start,start+pageSize),pages=Math.max(1,Math.ceil(events.length/pageSize));
+ return `${seasonCardsHTML()}<div class="am-mgr-two">${jobHistoryHTML()}${contractHistoryHTML()}</div>${firstsHTML()}<section class="am-mgr-card"><div class="am-mgr-card-head"><div><small>CAREER TIMELINE</small><h2>${events.length} meaningful moments</h2></div><div class="am-mgr-pager"><button type="button" data-manager-timeline="newer" ${timelinePage===0?'disabled':''}>NEWER</button><span>${timelinePage+1}/${pages}</span><button type="button" data-manager-timeline="older" ${timelinePage>=pages-1?'disabled':''}>OLDER</button></div></div>${page.length?`<div class="am-mgr-timeline">${page.map(timelineEntry).join('')}</div>`:emptyState('Timeline ready','Meaningful career events will be stored here without logging routine clicks or screen visits.')}</section>`;
 }
 
-function achievementsHTML(){
- const st=stats('career'),cycles=(careerState().completedCycles||[]).slice().reverse(),recordRows=flattenRows(rawResults()).filter(r=>(r.achievements||[]).some(a=>['WR','NR','CR'].includes(a))).sort((a,b)=>(b._season-a._season)||(b._week-a._week)),firsts=milestones().filter(x=>/^first-/i.test(x.id)||['world-rank-1'].includes(x.id)),seasonStats=new Map();
- for(const r of flattenRows(rawResults())){const x=seasonStats.get(r._season)||{wins:0,podiums:0,records:0};if(r.place===1)x.wins++;if(r.place<=3)x.podiums++;x.records+=(r.achievements||[]).filter(a=>['WR','NR','CR'].includes(a)).length;seasonStats.set(r._season,x)}
- const bestWins=[...seasonStats].sort((a,b)=>b[1].wins-a[1].wins)[0],bestPodiums=[...seasonStats].sort((a,b)=>b[1].podiums-a[1].podiums)[0],bestRecords=[...seasonStats].sort((a,b)=>b[1].records-a[1].records)[0];
- return `<div class="mp-achievements"><section class="mp-card mp-trophy"><div class="mp-card-head"><div><small>MAJOR HONOURS</small><h2>Trophy Cabinet</h2></div></div><div class="mp-honour-grid"><div><span class="mp-trophy-mark gold">OLY</span><small>Olympic Gold</small><strong>${st.olympicMedals.g}</strong></div><div><span class="mp-trophy-mark world">WR</span><small>World Records</small><strong>${st.worldRecords}</strong></div><div><span class="mp-trophy-mark national">NAT</span><small>National Titles</small><strong>${st.nationalTitles}</strong></div><div><span class="mp-trophy-mark podium">POD</span><small>Career Podiums</small><strong>${st.podiums}</strong></div></div><div class="mp-medal-block"><span><small>Olympic medal record</small><strong>${medalTotal(st.olympicMedals)} total</strong></span>${medalStrip(st.olympicMedals)}</div></section><div class="mp-achievement-grid"><section class="mp-card"><div class="mp-card-head"><div><small>OLYMPIC CYCLES</small><h2>Games Record</h2></div></div>${cycles.length?`<div class="mp-cycle-list">${cycles.map(c=>`<div><span><small>Cycle ${c.cycle} · ${c.startSeason}–${c.endSeason}</small><strong>${nationFlag(c.nation)} ${esc(nationLabel(c.nation))}</strong><em>${esc(c.verdict||'Cycle complete')} · board score ${c.score}</em></span>${medalStrip(c.medals||{g:0,s:0,b:0})}</div>`).join('')}</div>`:empty('No Olympic Games managed yet',`The first Games in this career will become a permanent part of your honours record.`)}</section><section class="mp-card"><div class="mp-card-head"><div><small>CAREER FIRSTS</small><h2>Milestones</h2></div></div>${firsts.length?`<div class="mp-firsts">${firsts.map(x=>`<div><small>${x.season}</small><span><strong>${esc(x.title)}</strong><p>${esc(x.detail||'')}</p></span></div>`).join('')}</div>`:empty('Firsts still to come','Your first win, major medal and record will be retained here once achieved.')}</section></div><section class="mp-card"><div class="mp-card-head"><div><small>RECORDS UNDER MANAGEMENT</small><h2>Record Performances</h2></div><span>${recordRows.length}</span></div>${recordRows.length?`<div class="mp-record-table"><div class="head"><span>Year</span><span>Athlete</span><span>Event</span><span>Mark</span><span>Record</span></div>${recordRows.slice(0,80).map(r=>`<div><span>${r._season}</span><span>${athleteButton({id:rowAthleteId(r),name:r.name})}</span><span>${esc(discName(r._disc))}</span><span>${esc(fmtPerformance(r._disc,r.perf))}</span><span>${esc((r.achievements||[]).filter(a=>['WR','NR','CR'].includes(a)).join(' · '))}</span></div>`).join('')}</div>`:empty('No records yet','World and national records achieved while you are manager will appear here.')}</section><section class="mp-card"><div class="mp-card-head"><div><small>PERSONAL MANAGEMENT RECORDS</small><h2>Career Bests</h2></div></div><div class="mp-record-bests"><div><small>Most wins in a season</small><strong>${bestWins?bestWins[1].wins:0}</strong><span>${bestWins?bestWins[0]:'—'}</span></div><div><small>Most podiums in a season</small><strong>${bestPodiums?bestPodiums[1].podiums:0}</strong><span>${bestPodiums?bestPodiums[0]:'—'}</span></div><div><small>Most records in a season</small><strong>${bestRecords?bestRecords[1].records:0}</strong><span>${bestRecords?bestRecords[0]:'—'}</span></div><div><small>Best programme rank</small><strong>${model().snapshots.length?'#'+Math.min(...model().snapshots.map(x=>Number(x.rank)||999)):'—'}</strong><span>Season-end snapshot</span></div></div></section></div>`;
+function medalCabinetHTML(){const stats=careerStats('career');return `<section class="am-mgr-card am-mgr-medals"><div class="am-mgr-card-head"><div><small>MAJOR MEDAL RECORD</small><h2>${stats.majorMedals} major medals</h2></div></div><div class="am-mgr-medal-row"><div class="gold"><i>G</i><strong>${stats.medals.g}</strong><span>Olympic Gold</span></div><div class="silver"><i>S</i><strong>${stats.medals.s}</strong><span>Olympic Silver</span></div><div class="bronze"><i>B</i><strong>${stats.medals.b}</strong><span>Olympic Bronze</span></div><div><i>W</i><strong>${stats.worldMedals}</strong><span>World Medals</span></div></div></section>`}
+
+function olympicRecordHTML(){const games=olympicHistory(),best=[...games].sort((a,b)=>b.total-a.total||b.g-a.g)[0];return `<section class="am-mgr-card"><div class="am-mgr-card-head"><div><small>OLYMPIC RECORD</small><h2>${games.length?`${games.length} Games managed`:'First Games ahead'}</h2></div></div>${games.length?`<div class="am-mgr-olympic-summary">${statBox('Gold',games.reduce((n,x)=>n+x.g,0))}${statBox('Silver',games.reduce((n,x)=>n+x.s,0))}${statBox('Bronze',games.reduce((n,x)=>n+x.b,0))}${statBox('Best Games',best?best.season:'—',best?`${best.total} medals`:'' )}</div><div class="am-mgr-olympic-cycles">${games.map(g=>`<article><strong>${g.season} · ${esc(g.event)}</strong><span>${g.g}G · ${g.s}S · ${g.b}B</span></article>`).join('')}</div>`:emptyState('No Olympic Games managed yet',`Your Olympic record will begin when the programme reaches its first Games.`)}</section>`}
+
+function honoursHTML(){const items=honours().slice(0,80);return `<section class="am-mgr-card"><div class="am-mgr-card-head"><div><small>MAJOR HONOURS</small><h2>${items.length} recorded titles</h2></div></div>${items.length?`<div class="am-mgr-honours">${items.map(r=>`<article><span>${r.olympic?'OLYMPIC':isWorldEvent(r.event)?'WORLD':r.national?'NATIONAL':'MAJOR'}</span><div>${athleteButton(r.id,r.name,disciplineLabel(r.disc))}<p>${esc(r.event)} · ${r.season} · ${performanceText(r.disc,r.perf)}</p></div></article>`).join('')}</div>`:emptyState('The trophy cabinet is waiting','Major titles will appear here with the athlete, event, year and performance.')}</section>`}
+
+function recordHistoryHTML(){const items=recordMoments().slice(0,80);return `<section class="am-mgr-card"><div class="am-mgr-card-head"><div><small>RECORDS UNDER MANAGEMENT</small><h2>${careerStats('career').records} record achievements</h2></div></div>${items.length?`<div class="am-mgr-records">${items.map(r=>`<article><strong>${esc(recordCodes(r).join(' · '))}</strong><div>${athleteButton(r.id,r.name,disciplineLabel(r.disc))}<p>${r.season} · ${esc(r.event)} · ${performanceText(r.disc,r.perf)}</p></div></article>`).join('')}</div>`:emptyState('No records yet','National, championship and world records achieved under your programme will appear here.')}</section>`}
+
+function managerRecordsHTML(){const r=managerRecords(),cards=[['Most wins in one season',r.wins,'wins'],['Most podiums in one season',r.podiums,'podiums'],['Most major medals in one season',r.majorMedals,'majorMedals'],['Most records in one season',r.records,'records']];return `<section class="am-mgr-card"><div class="am-mgr-card-head"><div><small>MANAGER RECORDS</small><h2>Personal career bests</h2></div></div><div class="am-mgr-record-grid">${cards.map(([label,x,key])=>x&&x[key]>0?statBox(label,x[key],String(x.season)):statBox(label,'—','Not established yet')).join('')}</div></section>`}
+
+function achievementsHTML(){return `${medalCabinetHTML()}<div class="am-mgr-two">${olympicRecordHTML()}${managerRecordsHTML()}</div>${honoursHTML()}${recordHistoryHTML()}<section class="am-mgr-card"><div class="am-mgr-card-head"><div><small>CAREER MILESTONES</small><h2>${Object.keys(careerStore().milestones).length} unlocked</h2></div></div><div class="am-mgr-milestones">${Object.values(careerStore().milestones).sort((a,b)=>b.season-a.season||b.week-a.week).map(m=>`<article><span>${m.season}</span><div><strong>${esc(m.title)}</strong><p>${esc(m.detail)}</p></div></article>`).join('')||emptyState('Milestones will build naturally','Only meaningful career thresholds are recorded; routine actions do not create achievement spam.')}</div></section>`}
+
+function scopeButton(id,label){return `<button type="button" class="${statsScope===id?'on':''}" data-manager-scope="${id}">${label}</button>`}
+function statisticsHTML(){
+ const stats=careerStats(statsScope),rows=stats.rows,groups=['Sprints','Distance','Jumps','Throws'];
+ return `<section class="am-mgr-card"><div class="am-mgr-card-head"><div><small>CAREER ANALYSIS</small><h2>Statistics</h2></div><div class="am-mgr-segment">${scopeButton('career','CAREER')}${scopeButton('job','CURRENT JOB')}${scopeButton('season','CURRENT SEASON')}</div></div><div class="am-mgr-stat-grid">${statBox('Competitions',stats.competitions)}${statBox('Athlete Entries',stats.entries)}${statBox('Event Wins',stats.wins)}${statBox('Podiums',stats.podiums)}${statBox('Major Medals',stats.majorMedals)}${statBox('Olympic Medals',stats.olympicMedals)}${statBox('National Titles',stats.nationalTitles)}${statBox('Records',stats.records)}${statBox('Athletes Used',stats.athletesManaged)}${statBox('Scouting Discoveries',stats.athletesDiscovered)}</div></section>
+ <div class="am-mgr-two"><section class="am-mgr-card"><div class="am-mgr-card-head"><div><small>EVENT GROUP PERFORMANCE</small><h2>Entries by discipline family</h2></div></div><div class="am-mgr-bars">${groups.map(g=>{const count=stats.groups[g]||0,max=Math.max(1,...Object.values(stats.groups));return `<div><span>${g}</span><i><b style="width:${Math.round(count/max*100)}%"></b></i><strong>${count}</strong></div>`}).join('')}</div></section><section class="am-mgr-card"><div class="am-mgr-card-head"><div><small>PROGRAMME BALANCE</small><h2>Men / Women</h2></div></div><div class="am-mgr-stat-grid compact">${statBox("Men's Entries",stats.gender.Men)}${statBox("Women's Entries",stats.gender.Women)}${statBox('World Records',stats.worldRecords)}${statBox('National Records',stats.nationalRecords)}</div></section></div>
+ ${statsScope==='career'?developmentStatsHTML():''}${rows.length?'':emptyState('No results in this scope','Statistics will appear when athletes from this period compete.')}`;
 }
 
-function statsHTML(){
- const st=stats(statsScope),scopeLabel=statsScope==='career'?'Entire Career':statsScope==='job'?`Current Job · ${nationLabel(currentNation())}`:`${nowSeason()} Season`;
- return `<div class="mp-statistics"><section class="mp-card"><div class="mp-card-head"><div><small>CAREER ANALYSIS</small><h2>Statistics</h2></div><label class="mp-scope">Scope<select id="mpStatsScope"><option value="career" ${statsScope==='career'?'selected':''}>Entire Career</option><option value="job" ${statsScope==='job'?'selected':''}>Current Job</option><option value="season" ${statsScope==='season'?'selected':''}>Current Season</option></select></label></div><div class="mp-scope-label">${esc(scopeLabel)}</div><div class="mp-stat-grid">${[
-  ['Competitions',st.competitions],['Event Entries',st.entries],['Event Wins',st.wins],['Podiums',st.podiums],['Top-8 Finishes',st.finals],['Win Rate',st.winPct+'%'],['Podium Rate',st.podiumPct+'%'],['National Titles',st.nationalTitles],['Olympic Medals',medalTotal(st.olympicMedals)],['World-Level Medals',medalTotal(st.worldMedals)],['Records',st.records],['Athletes Represented',st.athletesManaged]
- ].map(([k,v])=>`<div><small>${k}</small><strong>${v}</strong></div>`).join('')}</div></section><div class="mp-achievement-grid"><section class="mp-card"><div class="mp-card-head"><div><small>EVENT GROUPS</small><h2>Performance by Discipline</h2></div></div><div class="mp-breakdown">${Object.entries(st.byGroup).map(([k,v])=>`<div><strong>${k}</strong><span>${v.entries} entries</span><b>${v.wins} wins · ${v.podiums} podiums</b></div>`).join('')}</div></section><section class="mp-card"><div class="mp-card-head"><div><small>PROGRAMME BALANCE</small><h2>Men / Women</h2></div></div><div class="mp-breakdown">${Object.entries(st.byGender).map(([k,v])=>`<div><strong>${k}</strong><span>${v.entries} entries</span><b>${v.wins} wins · ${v.podiums} podiums</b></div>`).join('')}</div></section></div><section class="mp-card"><div class="mp-card-head"><div><small>DEVELOPMENT & PATHWAY</small><h2>Career Contributions</h2></div></div><div class="mp-stat-grid"><div><small>Athletes Discovered</small><strong>${st.athletesDiscovered}</strong></div><div><small>Athletes Developed</small><strong>${st.athletesDeveloped}</strong></div><div><small>Recorded Debuts</small><strong>${st.debuts}</strong></div><div><small>Nations Managed</small><strong>${st.nationsManaged}</strong></div></div></section></div>`;
-}
+function developmentStatsHTML(){const mc=careerStore(),d=developmentSummary(mc),disc=discoveryIds(mc),scoutedMedalists=new Set(managerResults().filter(r=>disc.has(r.id)&&isMajorEventRecord(r)&&r.place<=3).map(r=>r.id));return `<section class="am-mgr-card"><div class="am-mgr-card-head"><div><small>DEVELOPMENT & TALENT LEGACY</small><h2>Pathway outcomes</h2></div></div><div class="am-mgr-stat-grid">${statBox('Tracked Baselines',d.tracked)}${statBox('Athletes +5 Ability',d.developed)}${statBox('Developed to World Class',d.elite)}${statBox('Scouted Major Medalists',scoutedMedalists.size)}${statBox('Prospects Discovered',disc.size)}</div><p class="am-mgr-caption">For older Alpha careers, development totals begin only where a reliable saved baseline exists. Missing historic starting values are never invented.</p></section>`}
 
 function reputationHTML(){
- const st=stats('career'),rep=reputationFor(st),fed=federationState(),history=[...model().reputation.history].reverse();
- const evidence=[`${st.wins} career event wins`,`${medalTotal(st.majorMedals)} Olympic/world-level medals`,`${st.worldRecords} world records`,`${st.athletesDeveloped} athletes meeting the tracked development threshold`];
- return `<div class="mp-reputation"><section class="mp-reputation-hero mp-card"><div><small>CURRENT REPUTATION</small><strong>${esc(rep.tier)}</strong><span>Career peak: ${esc(rep.peakTier)}</span></div><div class="mp-rep-track"><i style="width:${rep.score}%"></i></div><p>${rep.next?`Your next reputation tier is earned through stronger championship results, records and sustained programme progress.`:'You have reached the highest career reputation tier.'}</p></section><div class="mp-achievement-grid"><section class="mp-card"><div class="mp-card-head"><div><small>WHY YOUR STANDING HAS CHANGED</small><h2>Reputation Evidence</h2></div></div><div class="mp-evidence">${evidence.map(x=>`<div><i></i><span>${esc(x)}</span></div>`).join('')}</div></section><section class="mp-card"><div class="mp-card-head"><div><small>CURRENT JOB</small><h2>Federation Standing</h2></div><span class="mp-chip ${statusClass(fed.label)}">${esc(fed.label)}</span></div>${fed.positives.map(x=>`<div class="mp-fed-line good"><b>+</b><span>${esc(x)}</span></div>`).join('')}${fed.concerns.map(x=>`<div class="mp-fed-line warn"><b>!</b><span>${esc(x)}</span></div>`).join('')||'<div class="mp-fed-line"><b>•</b><span>No material federation concerns are currently recorded.</span></div>'}</section></div><section class="mp-card"><div class="mp-card-head"><div><small>CAREER PROGRESSION</small><h2>Reputation Milestones</h2></div></div>${history.length?`<div class="mp-rep-history">${history.map(x=>`<div><small>${x.season} · W${x.week}</small><strong>${esc(x.tier)}</strong></div>`).join('')}</div>`:empty('Reputation history starts here','Meaningful tier changes will be preserved rather than logging every small numerical movement.')}</section></div>`;
+ const mc=careerStore(),rep=mc.reputation,f=federationConfidence(),good=f.reasonsGood,concern=f.reasonsConcern;
+ return `<div class="am-mgr-two"><section class="am-mgr-card am-mgr-reputation"><div class="am-mgr-card-head"><div><small>MANAGER REPUTATION</small><h2>${esc(rep.current)}</h2></div><span>Peak · ${esc(rep.peak||rep.current)}</span></div><p>Reputation is earned from real wins, major medals, records, programme development and long-term results. It is not an automatic season counter.</p><div class="am-mgr-rep-track"><i style="width:${clampValue(rep.score,0,100)}%"></i></div><div class="am-mgr-rep-tiers">${REPUTATION_TIERS.slice().reverse().map(([,name])=>`<span class="${name===rep.current?'on':''}">${esc(name)}</span>`).join('')}</div></section><section class="am-mgr-card"><div class="am-mgr-card-head"><div><small>FEDERATION STANDING</small><h2>${esc(f.label)}</h2></div><span>${esc(nationLabel(currentNation()))}</span></div><div class="am-mgr-reasons">${good.map(x=>`<p class="positive">${esc(x)}</p>`).join('')}${concern.map(x=>`<p class="concern">${esc(x)}</p>`).join('')}</div></section></div><section class="am-mgr-card"><div class="am-mgr-card-head"><div><small>REPUTATION HISTORY</small><h2>Major standing changes</h2></div></div><div class="am-mgr-rep-history">${rep.history.slice().reverse().map(x=>`<article><span>${x.season} · W${x.week}</span><strong>${esc(x.tier)}</strong><p>${x.baseline?'Historical tracking baseline established from the career data available at migration.':'Reputation tier changed after new career evidence.'}</p></article>`).join('')}</div></section>`;
 }
 
 function philosophyHTML(){
- const ph=philosophy(),cp=model(),st=stats('career'),discovery=greatestDiscovery(),great=greatestAthletes()[0];
- return `<div class="mp-philosophy"><section class="mp-style-hero mp-card"><div><small>YOUR MANAGEMENT STYLE</small><strong>${esc(ph.primary.name)}</strong><p>${esc(ph.primary.why)}</p></div>${ph.secondary?`<aside><small>SECONDARY TENDENCY</small><strong>${esc(ph.secondary.name)}</strong><p>${esc(ph.secondary.why)}</p></aside>`:''}</section><div class="mp-achievement-grid"><section class="mp-card"><div class="mp-card-head"><div><small>BEHAVIOUR</small><h2>What Shapes It</h2></div></div><div class="mp-breakdown"><div><strong>Squad call-ups</strong><span>${cp.decisions.callups||0} recorded</span><b>${cp.decisions.scoutedCallups||0} from scouted athletes</b></div><div><strong>Agreement preference</strong><span>${cp.decisions.longAgreements||0} long-term</span><b>${cp.decisions.shortAgreements||0} short assessment</b></div><div><strong>Squad turnover</strong><span>${cp.decisions.poolReturns||0} returns to National Pool</span><b>Career decisions, not a personality slider</b></div><div><strong>Development</strong><span>${st.athletesDeveloped} athletes developed</span><b>${st.athletesDiscovered} scouting discoveries</b></div></div></section><section class="mp-card"><div class="mp-card-head"><div><small>LEGACY CONNECTIONS</small><h2>People Who Define the Career</h2></div></div>${great?`<div class="mp-person-feature"><small>Greatest athlete</small><strong>${athleteButton(great)}</strong><span>${great.wins} wins · ${great.podiums} podiums · ${great.olympicMedals} Olympic medals</span></div>`:''}${discovery?`<div class="mp-person-feature"><small>Greatest discovery</small><strong>${athleteButton(discovery)}</strong><span>${discovery.wins} wins · ${discovery.podiums} podiums since entering the pathway</span></div>`:empty('A defining discovery is still ahead','Scouted athletes who go on to meaningful senior success will be recognised here.')}</section></div><section class="mp-card"><div class="mp-card-head"><div><small>DESIGN PRINCIPLE</small><h2>Identity From Decisions</h2></div></div><p class="mp-copy">Your management style is derived from selections, squad agreements, athlete development, scouting outcomes and championship performance. It is descriptive rather than restrictive, and it can change as your career changes.</p></section></div>`;
+ const p=philosophy(),g=greatestDiscovery(),d=developmentSummary(careerStore());return `<section class="am-mgr-card am-mgr-philosophy"><div class="am-mgr-card-head"><div><small>MANAGEMENT PHILOSOPHY</small><h2>${esc(p.primary.name)}</h2></div><span>Derived from your decisions</span></div><p>${esc(p.primary.detail)}</p>${p.secondary?`<div class="am-mgr-secondary-style"><small>SECONDARY TENDENCY</small><strong>${esc(p.secondary.name)}</strong><p>${esc(p.secondary.detail)}</p></div>`:''}<div class="am-mgr-behaviour-grid">${statBox('Squad Call-Ups',p.metrics.callups)}${statBox('Young Call-Ups',p.metrics.youngCallups)}${statBox('Scouted Promotions',p.metrics.scoutedCallups)}${statBox('Squad Drops',p.metrics.drops)}${statBox('Completed Camps',p.metrics.camps)}${statBox('Facility Investments',p.metrics.facilities)}</div><p class="am-mgr-caption">These labels describe what you have actually done. They do not lock future decisions or alter hidden gameplay outcomes.</p></section><div class="am-mgr-two"><section class="am-mgr-card"><div class="am-mgr-card-head"><div><small>DEVELOPMENT LEGACY</small><h2>${d.developed} confirmed development success${d.developed===1?'':'es'}</h2></div></div><div class="am-mgr-stat-grid compact">${statBox('Tracked',d.tracked)}${statBox('+5 Ability',d.developed)}${statBox('World-Class Development',d.elite)}</div></section><section class="am-mgr-card"><div class="am-mgr-card-head"><div><small>SCOUTING LEGACY</small><h2>${g?esc(g.name):'Still being built'}</h2></div></div>${g?athleteButton(g.id,g.name,`${g.wins} wins · ${g.majorMedals} major medals · ${g.records} records`):emptyState('No defining scouting success yet','A prospect discovered by your network can grow into this career-defining slot.')}</section></div>`;
 }
 
-function bodyForTab(tab){if(tab==='career')return careerHTML();if(tab==='achievements')return achievementsHTML();if(tab==='statistics')return statsHTML();if(tab==='reputation')return reputationHTML();if(tab==='philosophy')return philosophyHTML();return overviewHTML()}
-
-function tabsHTML(){return `<nav class="mp-tabs" aria-label="Manager profile sections">${PROFILE_TABS.map(t=>`<button data-mp-tab="${t}" class="${activeTab===t?'on':''}">${t==='overview'?'Overview':t==='career'?'Career':t==='achievements'?'Achievements':t==='statistics'?'Statistics':t==='reputation'?'Reputation':'Philosophy'}</button>`).join('')}</nav>`}
-
-function renderProfile(tab=activeTab){
- activeTab=PROFILE_TABS.includes(tab)?tab:'overview';syncCareerData();
- const el=document.getElementById('managementProfile');if(!el)return;
- const scroll=el.querySelector('.mp-body')?.scrollTop||0;
- el.innerHTML=`<div class="mp-shell"><header class="mp-top"><div><small>ATHLETICS MANAGER</small><strong>MY PROFILE</strong></div><div><span>${nationFlag(currentNation())} ${esc(nationLabel(currentNation()))}</span><button class="am-button ghost compact" data-mp-close>← BACK</button></div></header>${heroHTML()}${headlineStatsHTML()}${tabsHTML()}<main class="mp-body">${bodyForTab(activeTab)}</main></div>`;
- bindProfile(el);
- if(!el.open)el.showModal();
- requestAnimationFrame(()=>{const body=el.querySelector('.mp-body');if(body&&scroll&&activeTab===tab)body.scrollTop=scroll});
+function seasonDetailHTML(year){
+ const mc=careerStore(),snap=mc.seasons[String(year)],summary=(career().seasonHistory||[]).find(x=>safeNumber(x.season)===safeNumber(year)),rows=managerResults().filter(r=>r.season===safeNumber(year)),stats=aggregateRows(rows);if(!snap&&!summary&&year!==nowSeason())return emptyState('Season data unavailable','No reliable archive exists for this season.');
+ const nation=snap?.nation||summary?.nation||currentNation(),available=snap?.available;
+ return `<section class="am-mgr-season-detail"><button type="button" class="am-button am-button--ghost" data-manager-season-back>← BACK TO CAREER</button><div class="am-mgr-season-hero"><div><small>SEASON ARCHIVE</small><h2>${year}</h2><p>${esc(nationFlag(nation))} ${esc(nationLabel(nation))}${available?` · Career Year ${snap.careerYear}`:''}</p></div><span class="am-mgr-state ${available?'good':'warn'}">${available?'FULL SNAPSHOT':'PARTIAL ARCHIVE'}</span></div>${!available?`<div class="am-mgr-migration-note">${esc(snap?.reason||'This season predates the full snapshot system. Only reliable archived fields are shown.')}</div>`:''}<div class="am-mgr-stat-grid">${statBox('Final Rank',(snap?.rank||summary?.rank)?`#${snap?.rank||summary?.rank}`:'—')}${statBox('Wins',available?snap.wins:stats.wins)}${statBox('Podiums',available?snap.podiums:stats.podiums)}${statBox('Major Medals',available?snap.majorMedals:stats.majorMedals)}${statBox('Records',available?snap.records:safeNumber(summary?.records)||stats.records)}${available?statBox('Federation',snap.federation):''}</div>${available?`<div class="am-mgr-two"><section class="am-mgr-card"><div class="am-mgr-card-head"><div><small>SEASON-END PROGRAMME</small><h2>Saved snapshot</h2></div></div><div class="am-mgr-stat-grid compact">${statBox('Squad',snap.squadSize)}${statBox('Staff Assessment',snap.squadStrength)}${statBox('Elite Athletes',snap.eliteCount)}${statBox('Facilities',`L${snap.facilityAverage}`)}${statBox('Funding',moneyText(snap.funding))}</div></section><section class="am-mgr-card"><div class="am-mgr-card-head"><div><small>TOP ATHLETE</small><h2>${snap.topAthlete?esc(snap.topAthlete.name):'No season leader'}</h2></div></div>${snap.topAthlete?athleteButton(snap.topAthlete.id,snap.topAthlete.name,`${snap.topAthlete.wins} wins · ${snap.topAthlete.podiums} podiums`):emptyState('No competition data','No athlete result was available for the snapshot.')}</section></div><section class="am-mgr-card"><div class="am-mgr-card-head"><div><small>HISTORIC SQUAD</small><h2>${snap.squad.length} athletes</h2></div></div><div class="am-mgr-historic-squad">${snap.squad.map(a=>`<article><strong>${esc(a.name)}</strong><span>${esc(disciplineLabel(a.disc))} · Age ${a.age}</span><em>Staff ability ${esc(a.abilityText)} · PB ${performanceText(a.disc,a.pb)}</em></article>`).join('')}</div></section>`:''}<section class="am-mgr-card"><div class="am-mgr-card-head"><div><small>SEASON RESULTS</small><h2>${rows.length} athlete results</h2></div></div>${rows.length?`<div class="am-mgr-season-results">${rows.slice().reverse().slice(0,100).map(r=>`<article><span>#${r.place}</span><div>${athleteButton(r.id,r.name,disciplineLabel(r.disc))}<p>${esc(r.event)} · ${performanceText(r.disc,r.perf)} ${recordCodes(r).length?'· '+esc(recordCodes(r).join(' / ')):''}</p></div></article>`).join('')}</div>`:emptyState('No archived competition results','This season has no manager result rows available.')}</section></section>`;
 }
 
-function bindProfile(el){
- el.querySelectorAll('[data-mp-close]').forEach(b=>b.onclick=()=>el.close());
- el.querySelectorAll('[data-mp-tab]').forEach(b=>b.onclick=()=>{activeTab=b.dataset.mpTab;renderProfile(activeTab)});
- el.querySelectorAll('[data-mp-athlete]').forEach(b=>b.onclick=()=>openCareerAthlete(b.dataset.mpAthlete));
- const name=el.querySelector('#mpManagerName'),saveName=el.querySelector('#mpSaveName');
- if(saveName&&name)saveName.onclick=()=>{managementState().name=name.value.trim().slice(0,60)||'Performance Director';safe(()=>save());renderProfile(activeTab)};
- const scope=el.querySelector('#mpStatsScope');if(scope)scope.onchange=()=>{statsScope=scope.value;renderProfile('statistics')};
+function tabContent(){if(activeTab==='career')return seasonFocus?seasonDetailHTML(seasonFocus):careerHTML();if(activeTab==='achievements')return achievementsHTML();if(activeTab==='statistics')return statisticsHTML();if(activeTab==='reputation')return reputationHTML();if(activeTab==='philosophy')return philosophyHTML();return overviewHTML()}
+
+function profileHTML(){
+ return `<div class="am-manager-profile-shell"><header class="am-mgr-top"><div><small>ATHLETICS MANAGER</small><strong>My Profile · Career Headquarters</strong></div><button type="button" class="am-button am-button--ghost" data-manager-close>← BACK</button></header><div class="am-manager-profile-scroll">${heroHTML()}<nav class="am-mgr-tabs" role="tablist" aria-label="Manager profile sections">${tabButton('overview','OVERVIEW')}${tabButton('career','CAREER')}${tabButton('achievements','ACHIEVEMENTS')}${tabButton('statistics','STATISTICS')}${tabButton('reputation','REPUTATION')}${tabButton('philosophy','PHILOSOPHY')}</nav><main class="am-mgr-content" role="tabpanel">${tabContent()}</main><footer class="am-mgr-footer"><span>Manager ID · ${MANAGER_ID}</span><span>${esc(typeof careerLabel==='function'?careerLabel():`Career Year ${careerYear()}`)}</span></footer></div></div>`;
 }
 
-function openCareerAthlete(id){
- const athlete=(s?.athletes||[]).find(a=>a.id===id);if(!athlete)return;
- const dialog=document.getElementById('managementProfile'),body=dialog?.querySelector('.mp-body');profileReturn={tab:activeTab,scroll:body?.scrollTop||0};
- if(dialog?.open)dialog.close();
- safe(()=>openAthleteProfile(id));
+function bindProfile(dialog){
+ dialog.querySelector('[data-manager-close]')?.addEventListener('click',()=>dialog.close());
+ dialog.querySelectorAll('[data-manager-tab]').forEach(button=>button.addEventListener('click',()=>{activeTab=button.dataset.managerTab;seasonFocus=null;timelinePage=0;restoreScroll=0;renderProfile(false);requestAnimationFrame(()=>dialog.querySelector(`[data-manager-tab="${activeTab}"]`)?.focus())}));
+ dialog.querySelectorAll('[data-manager-scope]').forEach(button=>button.addEventListener('click',()=>{statsScope=button.dataset.managerScope;renderProfile(true)}));
+ dialog.querySelectorAll('[data-manager-season]').forEach(button=>button.addEventListener('click',()=>{activeTab='career';seasonFocus=safeNumber(button.dataset.managerSeason);restoreScroll=0;renderProfile(false)}));
+ dialog.querySelector('[data-manager-season-back]')?.addEventListener('click',()=>{seasonFocus=null;restoreScroll=0;renderProfile(false)});
+ dialog.querySelectorAll('[data-manager-timeline]').forEach(button=>button.addEventListener('click',()=>{const pages=Math.max(1,Math.ceil(careerStore().events.length/60));timelinePage=clampValue(timelinePage+(button.dataset.managerTimeline==='older'?1:-1),0,pages-1);renderProfile(false)}));
+ dialog.querySelectorAll('[data-manager-athlete]').forEach(button=>button.addEventListener('click',()=>openAthleteFromManager(button.dataset.managerAthlete)));
+ dialog.querySelector('[data-manager-save-name]')?.addEventListener('click',()=>{const input=byId('managerCareerName'),next=input?.value.trim().slice(0,60);if(!next)return;management().name=next;s.managerName=next;persist();renderProfile(true);if(typeof toast==='function')toast('Manager name updated')});
 }
 
-function openManagerProfileV2(tab='overview'){
- activeTab=PROFILE_TABS.includes(tab)?tab:activeTab||'overview';syncCareerData({persist:true});renderProfile(activeTab);
- const drawer=document.getElementById('mobileNavDrawer');if(drawer)drawer.hidden=true;
+function renderProfile(preserve=true){
+ const dialog=byId('managementProfile');if(!dialog)return;const oldScroll=dialog.querySelector('.am-manager-profile-scroll')?.scrollTop||0;if(preserve)restoreScroll=oldScroll;dialog.classList.add('am-manager-profile-dialog');dialog.innerHTML=profileHTML();bindProfile(dialog);if(!dialog.open)dialog.showModal();requestAnimationFrame(()=>{const scroller=dialog.querySelector('.am-manager-profile-scroll');if(scroller)scroller.scrollTop=restoreScroll||0});
 }
 
-function wrap(name,after,before){
- const original=window[name];if(typeof original!=='function'||original.__managerCareerWrapped)return;
- const wrapped=function(...args){if(before)safe(()=>before(args));const out=original.apply(this,args);safe(()=>after(args,out));return out};
- wrapped.__managerCareerWrapped=true;wrapped.__managerCareerOriginal=original;window[name]=wrapped;
+function openAthleteFromManager(id){
+ if(!id||typeof openAthleteProfile!=='function')return;const dialog=byId('managementProfile'),scroller=dialog?.querySelector('.am-manager-profile-scroll');const state={tab:activeTab,season:seasonFocus,scroll:scroller?.scrollTop||0,scope:statsScope,page:timelinePage};
+ if(dialog?.open)dialog.close();const athleteDialog=byId('athleteProfile');let handled=false;const onClose=()=>{if(handled)return;handled=true;activeTab=state.tab;seasonFocus=state.season;statsScope=state.scope;timelinePage=state.page;restoreScroll=state.scroll;setTimeout(()=>window.openManagerProfile(),0)};athleteDialog?.addEventListener('close',onClose,{once:true});openAthleteProfile(id);
+}
+
+function openManagerProfileV1(){
+ try{syncAll();persist()}catch(err){console.warn('Manager Career V1 sync warning',err)}
+ const dialog=byId('managementProfile');if(!dialog)return;if(dialog.open)dialog.close();dialog.classList.add('am-manager-profile-dialog');const cleanup=()=>dialog.classList.remove('am-manager-profile-dialog');dialog.addEventListener('close',cleanup,{once:true});renderProfile(false);
+}
+
+function hook(name,after){
+ const original=window[name];if(typeof original!=='function'||original.__managerCareerHook)return;
+ const wrapped=function(...args){const before={nation:currentNation(),season:nowSeason(),week:nowWeek()};const result=original.apply(this,args);try{after({args,result,before})}catch(err){console.warn(`Manager Career V1 hook ${name} failed`,err)}return result};wrapped.__managerCareerHook=true;wrapped.__managerCareerOriginal=original;window[name]=wrapped;
 }
 
 function installHooks(){
- wrap('recordManagementResults',()=>syncCareerData());
- wrap('recordCareerSeason',(args,out)=>{captureSeasonSnapshot(out);syncCareerData()});
- wrap('generateProspects',(args,out)=>{for(const a of out||[]){if(a&&!a.managerDiscoverySnapshot)a.managerDiscoverySnapshot={season:nowSeason(),week:nowWeek(),age:a.age,overall:a.overall,pb:a.pb,nation:a.nation}}syncCareerData()});
- wrap('finaliseSquadAgreementCallUp',(args,out)=>{if(!out)return;const [id,term]=args,a=(s?.athletes||[]).find(x=>x.id===id),cp=model();cp.decisions.callups++;if(a?.age<=21)cp.decisions.youthCallups++;if(a?.source==='Scouted')cp.decisions.scoutedCallups++;if(Number(term)>=40)cp.decisions.longAgreements++;if(Number(term)<=20)cp.decisions.shortAgreements++;upsertEvent({id:`callup:${id}:${safe(()=>careerNow(),Date.now())}`,type:'callup',season:nowSeason(),week:nowWeek(),nation:a?.nation||currentNation(),athleteId:id,title:`${a?.name||'Athlete'} called into the senior squad`,detail:`${term}-week National Squad Agreement${a?.age?` · age ${a.age}`:''}.`});syncCareerData()});
- wrap('returnAgreementToPool',(args)=>{const [a]=args;if(a){model().decisions.poolReturns++;upsertEvent({id:`pool-return:${a.id}:${safe(()=>careerNow(),Date.now())}`,type:'selection',season:nowSeason(),week:nowWeek(),nation:a.nation,title:`${a.name} returns to the National Pool`,detail:'Senior squad spell completed.'})}});
- wrap('acceptCareerJob',(args)=>{const nation=args[0];captureArrivalSnapshot(nation,true);syncCareerData({persist:true})});
- wrap('signAppointmentContract',()=>{captureArrivalSnapshot(currentNation(),true);syncCareerData({persist:true})});
- wrap('upgradeFacility',()=>{model().decisions.facilityUpgrades++;syncCareerData()});
- wrap('appointCoach',()=>{model().decisions.staffAppointments++;syncCareerData()});
- wrap('renewCoach',()=>syncCareerData());
+ hook('recordManagementResults',()=>{syncAll();persist()});
+ hook('generateProspects',ctx=>{const mc=careerStore();recordFreshDiscoveries(mc,ctx.result,ctx.args?.[1]);syncAll();persist()});
+ hook('finaliseSquadAgreementCallUp',ctx=>{if(!ctx.result)return;const a=athleteById(ctx.args?.[0]);if(a){const mc=careerStore();addEvent(mc,`callup:${a.id}:${nowSeason()}:${nowWeek()}`,'athlete',`${a.name} called into the national squad`,`${ctx.args?.[1]}-week National Squad Agreement.`,{athleteId:a.id});syncAll();persist()}});
+ hook('upgradeFacility',ctx=>{const mc=careerStore();syncFacilityEvents(mc);syncAll();persist()});
+ hook('signAppointmentContract',ctx=>{const mc=careerStore();captureArrival(mc,currentNation(),true);addEvent(mc,`initial-contract:${currentNation()}:${nowSeason()}`,'appointment',`Accepted ${nationLabel(currentNation())} appointment`,`Four-year national Performance Director contract accepted.`,{nation:currentNation()});syncAll();persist()});
+ hook('acceptCareerJob',ctx=>{const moved=ctx.before.nation!==currentNation(),mc=careerStore();captureArrival(mc,currentNation(),true);addEvent(mc,`career-job:${currentNation()}:${nowSeason()}:${safeNumber(career().cycleNumber)}`,'appointment',moved?`Joined ${nationLabel(currentNation())}`:`Renewed with ${nationLabel(currentNation())}`,moved?'A new national programme role began at the start of the Olympic cycle.':'A new four-year Olympic-cycle contract was accepted.',{nation:currentNation()});syncAll({captureArrival:true});persist()});
+ hook('recordCareerSeason',ctx=>{const mc=careerStore(),summary=ctx.result,year=String(summary?.season||nowSeason());mc.seasons[year]=buildSeasonSnapshot(summary);addEvent(mc,`season:${year}:${currentNation()}`,'season',`${year} season archived`,`Season snapshot saved with programme rank, results, squad, federation standing and resources.`,{season:year},{season:safeNumber(year),week:52,nation:currentNation()});syncAll();persist()});
+ hook('openCareerLegacy',()=>{syncAll();persist()});
 }
 
-function bindLaunchers(){
- document.addEventListener('click',event=>{
-  const target=event.target.closest?.('#myProfileShortcut,#mobileMyProfile,#managerProfileButton');if(!target)return;
-  event.preventDefault();event.stopImmediatePropagation();openManagerProfileV2(activeTab||'overview');
- },true);
- const athleteDialog=document.getElementById('athleteProfile');if(athleteDialog)athleteDialog.addEventListener('close',()=>{if(!profileReturn)return;const back=profileReturn;profileReturn=null;setTimeout(()=>{openManagerProfileV2(back.tab);requestAnimationFrame(()=>{const body=document.querySelector('#managementProfile .mp-body');if(body)body.scrollTop=back.scroll})},0)});
+function publicSnapshot(){const mc=syncAll(),stats=careerStats('career'),f=federationConfidence();return {version:VERSION,managerId:mc.managerId,name:management().name||'Performance Director',nation:currentNation(),careerYear:careerYear(),eventCount:mc.events.length,milestones:Object.keys(mc.milestones).length,seasons:Object.keys(mc.seasons).length,contracts:mc.contracts.length,reputation:{...mc.reputation},federation:{label:f.label,score:f.score},stats:{wins:stats.wins,podiums:stats.podiums,majorMedals:stats.majorMedals,records:stats.records,athletesManaged:stats.athletesManaged,athletesDeveloped:stats.athletesDeveloped},migration:{...mc.migration}}}
+
+function initialise(){
+ try{installHooks();syncAll();const shortcut=byId('myProfileShortcut');if(shortcut)shortcut.onclick=()=>window.openManagerProfile();const mobile=byId('mobileMyProfile');if(mobile)mobile.onclick=()=>{byId('mobileNavDrawer')?.setAttribute('hidden','');window.openManagerProfile()};window.openManagerProfile=openManagerProfileV1;if(s?.appointment?.contractSigned||localStorage.getItem('rto_full_game_v1'))persist()}catch(err){console.error('Manager Career V1 failed to initialise',err)}
 }
 
-function diagnostics(){
- const st=stats('career'),rep=reputationFor(st),fed=federationState(),legacy=legacyTier(),cp=model();
- return {version:VERSION,managerId:cp.managerId,currentJob:currentNation(),careerYear:careerState().careerYear,reputation:rep,legacy,federationConfidence:{label:fed.label,score:fed.score},careerEventCount:cp.events.length,milestoneCount:Object.keys(cp.milestones).length,seasonSnapshots:cp.snapshots.length,stats:st,modelVersion:cp.version};
-}
+window.__athleticsManagerCareerV1={version:VERSION,ensure:()=>careerStore(),sync:()=>syncAll(),stats:scope=>careerStats(scope||'career'),snapshot:publicSnapshot,events:()=>[...careerStore().events],open:()=>window.openManagerProfile(),debug:()=>({store:careerStore(),philosophy:philosophy(),impact:programmeImpact(),confidence:federationConfidence()})};
 
-installHooks();bindLaunchers();
-window.openManagerProfile=openManagerProfileV2;
-window.AMManagerCareerV1={version:VERSION,open:openManagerProfileV2,state:()=>syncCareerData(),stats,diagnostics,sync:syncCareerData,captureSeasonSnapshot};
-setTimeout(()=>safe(()=>syncCareerData({persist:true})),0);
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initialise,{once:true});else initialise();
 })();

@@ -101,7 +101,7 @@ try{
  const w=dom.window;
  const requiredGlobals=[
   'AthleticsUI','__athleticsInboxDecisionCore','__athleticsHomeV2','__athleticsInboxV3','__athleticsSquadAthleteV2',
-  '__athleticsCalendarV2','__athleticsCompetitionJourneyV2','__athleticsScoutingV3','__athleticsStaffFinanceV2','__athleticsWorldSeasonV2','__athleticsRegression','AMLiveBroadcastV4'
+  '__athleticsCalendarV2','__athleticsCompetitionJourneyV2','__athleticsScoutingV3','__athleticsStaffFinanceV2','__athleticsWorldSeasonV2','__athleticsManagerCareerV1','__athleticsRegression','AMLiveBroadcastV4'
  ];
  for(const key of requiredGlobals)if(!w[key])fail(`Required runtime global missing after page load: ${key}`);
 
@@ -124,6 +124,14 @@ try{
    const qa=w.AMLiveBroadcastV4.qa();
    if(!qa||qa.ok!==true||!Array.isArray(qa.issues))fail('Broadcast V4.6 QA snapshot is invalid while idle.');
   }catch(err){fail(`Broadcast V4.6 diagnostics threw: ${err?.stack||err}`)}
+ }
+ if(w.__athleticsManagerCareerV1){
+  try{
+   const profile=w.__athleticsManagerCareerV1.snapshot();
+   if(!profile||profile.version!==1||profile.managerId!=='player-manager-v1')fail('Manager Career V1 snapshot is not authoritative.');
+   if(!profile.migration?.completed)fail('Manager Career V1 migration did not complete in runtime smoke.');
+   if(!profile.reputation?.current)fail('Manager Career V1 reputation state is missing.');
+  }catch(err){fail(`Manager Career V1 diagnostics threw: ${err?.stack||err}`)}
  }
  console.log('[smoke] runtime globals and snapshot checked');
 
