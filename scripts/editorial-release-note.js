@@ -17,3 +17,21 @@ const update={
 if(typeof window.addDevelopmentUpdate==='function')window.addDevelopmentUpdate(update);
 })();
 /* ===== End Text & Language Systems Release Note ===== */
+
+/* ===== Inbox Character Voice Loader ===== */
+(function(){
+'use strict';
+if(window.__amInboxCharacterVoiceLoader)return;window.__amInboxCharacterVoiceLoader=1;
+function loadInboxVoices(){
+ if(window.__amInboxCharacterVoicesV1||document.querySelector('script[data-am-inbox-voices]'))return;
+ const script=document.createElement('script');
+ script.src='scripts/inbox-character-voices-v1.js?v=20260911-inboxvoice1';
+ script.async=false;
+ script.dataset.amInboxVoices='1';
+ script.onload=()=>{try{if(typeof renderMenu==='function')renderMenu()}catch(_){}};
+ document.body.appendChild(script);
+}
+if(document.readyState==='complete')loadInboxVoices();
+else window.addEventListener('load',loadInboxVoices,{once:true});
+})();
+/* ===== End Inbox Character Voice Loader ===== */
