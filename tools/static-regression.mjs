@@ -214,6 +214,10 @@ for(const [file,contracts] of Object.entries(sourceContracts)){
  for(const [token,message] of contracts)if(!text.includes(token))fail(`${message} (${file})`);
 }
 
+const selectionDecisionSource=read('scripts/selection-decision-v3.js');
+const reviewActionTokens=(selectionDecisionSource.match(/data-review/g)||[]).length;
+if(reviewActionTokens!==2)fail(`Selection V3 must contain one rendered Review & Submit action plus one binding selector; found ${reviewActionTokens} data-review tokens`);
+
 note(`${routes.length} route containers present`);
 note(`${localRefs.length} local assets referenced by game.html`);
 note(`${requiredScripts.length} critical runtimes checked for load order`);
