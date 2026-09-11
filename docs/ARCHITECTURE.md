@@ -35,6 +35,13 @@ The current live-event presentation authority is:
 
 `window.AMLiveBroadcastV4` and the compatibility handle `window.AMLiveEventV3` must continue to resolve to the production renderer.
 
+Two additional live-event compatibility modules are still requested during startup and must remain until their loaders are deliberately retired:
+
+- `scripts/event-exit-authority-v1.js` — completed-event return/home compatibility authority.
+- `scripts/high-jump-broadcast-v1.js` — High Jump highlights/full-event compatibility integration layered onto the authoritative V4 broadcast renderer.
+
+They are not replacement renderers, but they are runtime dependencies. A repository cleanup must verify browser/runtime requests, not only direct `game.html` imports, before deleting them.
+
 ### Production UI authorities
 
 The current shipping authorities are documented in `RELEASE-1.0.md`. Key route owners include:
@@ -53,7 +60,7 @@ The current shipping authorities are documented in `RELEASE-1.0.md`. Key route o
 
 ## Dynamic dependencies
 
-Not every production dependency appears as a direct `<script>` tag in `game.html`.
+Not every production dependency appears as a direct `<script>` tag in `game.html`. Runtime smoke is therefore the final authority before declaring an apparently unreferenced file safe to delete.
 
 ### Training bootstrap
 
@@ -78,6 +85,10 @@ These files are production dependencies even though they are not direct tags in 
 
 `scripts/editorial-release-note.js` dynamically loads `scripts/inbox-character-voices-v1.js`.
 
+### Live-event compatibility loaders
+
+Startup currently requests `scripts/event-exit-authority-v1.js` and `scripts/high-jump-broadcast-v1.js` indirectly. Keep both until the requesting loader and the functionality they protect are deliberately consolidated into the canonical Live Event authority and regression coverage is updated.
+
 ## CSS structure
 
 `game.html` is the source of truth for production stylesheet order. Later feature-specific styles intentionally layer over `styles/game.css`. Do not casually alphabetise or regroup styles: order is part of the runtime presentation contract.
@@ -85,7 +96,7 @@ These files are production dependencies even though they are not direct tags in 
 ## Tooling
 
 - `tools/static-regression.mjs` — validates the active asset graph, required authorities, source contracts and migration order.
-- `tools/runtime-smoke.mjs` — browserless runtime smoke test.
+- `tools/runtime-smoke.mjs` — browserless runtime smoke test, including dynamically requested runtime assets.
 - `tools/repository-hygiene.mjs` — rejects orphan top-level runtime files and accidental temporary artefacts.
 
 ## CI/CD
@@ -110,9 +121,10 @@ Historical `backup/*`, `batch/*` and old update branches are archival developmen
 When a runtime layer is replaced:
 
 1. Remove it from `game.html` or the dynamic loader.
-2. Confirm no production module imports it.
-3. Delete the retired file rather than keeping `old`, `backup`, `copy` or `final-final` variants in the repository.
-4. Rely on Git history and the release branch for recovery.
-5. Add/update regression coverage when authority changes.
+2. Confirm no production module imports or requests it.
+3. Run the full browserless runtime smoke to catch indirect startup requests.
+4. Delete the retired file rather than keeping `old`, `backup`, `copy` or `final-final` variants in the repository.
+5. Rely on Git history and the release branch for recovery.
+6. Add/update regression coverage when authority changes.
 
 This keeps the repository readable without sacrificing rollback safety.
