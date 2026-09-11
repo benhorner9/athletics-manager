@@ -142,6 +142,7 @@ const sourceContracts={
  ],
  'scripts/summit-event-unified.js':[
   ['function reconcileMeeting(m)','Summit meetings with every result must reconcile to completed state'],
+  ["root.dataset.amUiScreen='competition-v2'",'Summit overview/results must identify themselves as the production Competition screen'],
   ["summitLiveMeetingNumber=null;saveNow();view('home')",'Returning Home from Summit must clear the remembered Summit route']
  ],
  'scripts/live-event-broadcast-v4.js':[
