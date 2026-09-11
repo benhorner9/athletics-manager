@@ -49,6 +49,9 @@ const requiredScripts=[
  'scripts/inbox-v3.js',
  'scripts/squad-athlete-v2.js',
  'scripts/calendar-v2.js',
+ 'scripts/live-event-engine-v3.js',
+ 'scripts/shotput-athlete-v1.js',
+ 'scripts/live-event-broadcast-v4.js',
  'scripts/competition-journey-v2.js',
  'scripts/training-v3.js',
  'scripts/scouting-v3.js',
@@ -69,6 +72,9 @@ before('scripts/game.js','scripts/ui-platform-v1.js');
 before('scripts/inbox-decision-core-v1.js','scripts/home-v2.js');
 before('scripts/inbox-decision-core-v1.js','scripts/inbox-v3.js');
 before('scripts/ui-platform-v1.js','scripts/home-v2.js');
+before('scripts/live-event-engine-v3.js','scripts/live-event-broadcast-v4.js');
+before('scripts/shotput-athlete-v1.js','scripts/live-event-broadcast-v4.js');
+before('scripts/live-event-broadcast-v4.js','scripts/competition-journey-v2.js');
 before('scripts/competition-journey-v2.js','scripts/competition-journey-route-guard-v1.js');
 before('scripts/scouting-v3.js','scripts/world-season-v2.js');
 before('scripts/staff-finance-v2.js','scripts/world-season-v2.js');
@@ -89,7 +95,7 @@ for(const file of retiredPresentation)if(localRefs.includes(file)||scriptOrder.i
 
 const productionAssets=[
  'styles/ui-platform-v1.css','styles/home-v2.css','styles/inbox-v3.css','styles/squad-athlete-v2.css','styles/calendar-v2.css',
- 'styles/competition-journey-v2.css','styles/training-v3.css','styles/scouting-v3.css','styles/staff-finance-v2.css','styles/world-season-v2.css',
+ 'styles/competition-journey-v2.css','styles/live-event-broadcast-v4.css','styles/training-v3.css','styles/scouting-v3.css','styles/staff-finance-v2.css','styles/world-season-v2.css',
  'styles/event-flow-stability.css'
 ];
 for(const file of productionAssets){
@@ -123,6 +129,14 @@ const sourceContracts={
  ],
  'scripts/competition-journey-v2.js':[
   ['window.__athleticsCompetitionJourneyV2','Competition Journey public handle is missing']
+ ],
+ 'scripts/live-event-broadcast-v4.js':[
+  ['window.AMLiveBroadcastV4','Broadcast V4 public handle is missing'],
+  ['window.AMLiveEventV3=api','Broadcast V4 must remain compatible with existing live integrations'],
+  ["speed:'broadcast'",'Broadcast auto-pacing mode is missing'],
+  ['function photoFinish(c)','Broadcast photo-finish handling is missing'],
+  ['commentQueue','Broadcast commentary priority queue is missing'],
+  ["document.addEventListener('visibilitychange'",'Broadcast background-tab pause safeguard is missing']
  ],
  'scripts/inbox-decision-core-v1.js':[
   ['getProgressionBlockers:blockers','Inbox decision core must remain the progression-blocker authority'],
