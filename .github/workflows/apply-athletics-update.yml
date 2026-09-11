@@ -22,7 +22,10 @@ jobs:
 
       - name: Apply staged Athletics Manager update
         run: |
-          python3 - <<'PY'
+          if [ -f .am-update/apply.py ]; then
+            python3 .am-update/apply.py
+          else
+            python3 - <<'PY'
           from pathlib import Path
           import base64, gzip
           parts = sorted(Path('.am-update').glob('part*.b64'))
@@ -33,6 +36,7 @@ jobs:
           Path('/tmp/apply_update.py').write_text(script, encoding='utf-8')
           exec(compile(script, '/tmp/apply_update.py', 'exec'))
           PY
+          fi
 
       - name: Enforce staged-migration safety
         shell: bash
