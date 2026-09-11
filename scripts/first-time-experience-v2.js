@@ -162,13 +162,9 @@ function starAthlete(){
  })[0]||null;
 }
 function trainingRecommendation(){
- const star=starAthlete(),avg=managed().length?managed().reduce((t,a)=>t+n(a.fatigue),0)/managed().length:0;
- if(avg>=52||n(star?.fatigue)>=65)return{focus:'Recovery',athlete:star,reason:'The squad is carrying enough fatigue that freshness matters more than extra load this week.'};
- const d=String(star?.disc||'');
- if(/100|200|400/.test(d))return{focus:'Speed',athlete:star,reason:`${star?.name||'Your leading sprinter'} is ready for a sharper speed-focused week.`};
- if(/SP|DT|HT|JT/.test(d))return{focus:'Strength',athlete:star,reason:`${star?.name||'Your leading thrower'} would benefit from a power-focused block.`};
- if(/HJ|LJ|TJ|PV/.test(d))return{focus:'Technique',athlete:star,reason:`${star?.name||'Your leading jumper'} can use a technical emphasis before the competitive block.`};
- return{focus:'Balanced',athlete:star,reason:'A balanced week is the safest starting point while the staff build more evidence.'};
+ const star=starAthlete(),team=managed(),avg=team.length?team.reduce((t,a)=>t+n(a.fatigue),0)/team.length:0;
+ if(avg>=52||n(star?.fatigue)>=65)return{athlete:star,reason:`${star?.name||'One athlete'} is a useful first check because current fatigue makes load management worth reviewing.`};
+ return{athlete:star,reason:`Start with ${star?.name||'one athlete'} and review the current programme, intensity and load before deciding whether anything actually needs to change.`};
 }
 function currentPhase(){
  const st=ensureState(),cw=careerWeek(),e=openingEvent(),mail=selectionMail(e);
@@ -194,7 +190,7 @@ function phaseCopy(){
  const st=ensureState(),phase=currentPhase(),e=openingEvent(),coach=headCoach(),scout=headScout(),rec=trainingRecommendation();
  if(phase==='squad')return{eyebrow:'WEEK 1 • ARRIVAL',title:'Meet your programme',body:`${coach.name}: “Start with the athletes you have inherited. You only need to know the key names today.”`,action:'MEET THE SQUAD',route:'squad',required:true};
  if(phase==='athlete')return{eyebrow:'WEEK 1 • YOUR SQUAD',title:`Take a closer look at ${starAthlete()?.name||'one athlete'}`,body:`Open ${starAthlete()?.name||'the athlete'}'s profile, check Event, Form and Fitness, then close the profile to return to Squad. That completes this step.`,action:'VIEW ATHLETE',athlete:starAthlete()?.id,required:true};
- if(phase==='training')return{eyebrow:'WEEK 2 • TRAINING',title:'Make one training decision',body:`${coach.name}: “${rec.reason} I recommend ${rec.focus}.” Training continues automatically after this.`,action:'REVIEW TRAINING',route:'training',required:true};
+ if(phase==='training')return{eyebrow:'WEEK 2 • TRAINING',title:'Review one athlete’s training',body:`${coach.name}: “${rec.reason}” Open Training and make one deliberate call: keep the current plan, or adjust it if the evidence gives you a reason.`,action:'REVIEW TRAINING',route:'training',required:true};
  if(phase==='scouting')return{eyebrow:'WEEK 3 • SCOUTING',title:'Set your first scouting assignment',body:`${scout.name}: “Open Scouting and use any one of the five assignment slots. Choose where you want me to look and confirm the brief.”`,action:'OPEN SCOUTING',route:'scouting',required:true};
  if(phase==='preview')return{eyebrow:'WEEK 3 • FIRST COMPETITION',title:e?.name||'Your first competition is approaching',body:`${e?`Week ${e.week}. `:''}Selection opens before the meeting. You decide who competes — or explicitly choose No Entry.`,action:'VIEW COMPETITION',route:'competition'};
  if(phase==='selection')return{eyebrow:'ACTION REQUIRED • TEAM SELECTION',title:`Choose the team for ${e?.name||'your first competition'}`,body:'Use the coach recommendation, choose the team yourself, or deliberately enter nobody. Nothing is submitted until you confirm it.',action:'OPEN SELECTION',route:'inbox',mail:selectionMail(e)?.id,required:true};
@@ -228,10 +224,11 @@ function decorateSquad(){
  const row=root.querySelector(`[data-ath="${CSS.escape(String(star.id))}"]`)||root.querySelector(`[data-profile="${CSS.escape(String(star.id))}"]`)?.closest('tr,article,button');row?.classList.add('ftx-spotlight');
 }
 function decorateTraining(){
- if(!active()||careerWeek()<2||ensureState().steps.trainingDecision)return;
- const root=$('training');if(!root)return;markSeen('training');const rec=trainingRecommendation();
+ const root=$('training');if(!root)return;
+ if(!active()||careerWeek()<2||ensureState().steps.trainingDecision){root.querySelector('.ftx-training-card')?.remove();return}
+ markSeen('training');const rec=trainingRecommendation();
  if(root.querySelector('.ftx-training-card'))return;
- root.insertAdjacentHTML('afterbegin',`<section class="ftx-mentor ftx-training-card"><div><small>${esc(headCoach().name.toUpperCase())} • COACH RECOMMENDATION</small><strong>${esc(rec.athlete?.name||'The squad')} — ${esc(rec.focus)}</strong><p>${esc(rec.reason)} You can change training later; this is not a permanent decision.</p></div><div class="ftx-inline-actions"><button class="am-button primary" data-ftx-accept-training="${esc(rec.focus)}">ACCEPT RECOMMENDATION</button><button class="am-button ghost" data-ftx-choose-training>CHOOSE MYSELF</button></div></section>`);
+ root.insertAdjacentHTML('afterbegin',`<section class="ftx-mentor ftx-training-card"><div><small>${esc(headCoach().name.toUpperCase())} • TRAINING REVIEW</small><strong>${esc(rec.athlete?.name||'One athlete')} — review the current plan</strong><p>${esc(rec.reason)} Keeping a suitable plan is a valid decision; you do not need to change something just to complete this step.</p></div><div class="ftx-inline-actions"><button class="am-button primary" data-ftx-keep-training>KEEP CURRENT PLAN</button><button class="am-button ghost" data-ftx-choose-training>REVIEW ATHLETE TRAINING</button></div></section>`);
 }
 function scoutingChoices(){return [['All','Best Available Talent'],['Sprints','Sprints'],['Distance','Distance'],['Jumps','Jumps'],['Throws','Throws']]}
 function groupDisciplines(group){return (SCOUT_GROUPS[group]||[]).filter(d=>typeof DISCIPLINES==='undefined'||DISCIPLINES[d])}
@@ -478,8 +475,8 @@ function handleClick(ev){
  if(b.dataset.ftxAthlete){if(active()&&currentPhase()==='athlete')markStep('athleteOpened');if(typeof openAthleteProfile==='function')openAthleteProfile(b.dataset.ftxAthlete);return}
  if(b.hasAttribute('data-ftx-advance')){if(typeof advanceWeek==='function')advanceWeek();return}
  if(b.hasAttribute('data-ftx-complete')){const st=ensureState();st.completed=true;st.active=false;saveSafe();decorateCurrent();return}
- if(b.dataset.ftxAcceptTraining){s.trainingFocus=b.dataset.ftxAcceptTraining;markStep('trainingDecision');saveSafe();toastSafe(`Training focus: ${s.trainingFocus}`);try{if(typeof drawTraining==='function')drawTraining()}catch(_){ }scheduleDecorate();return}
- if(b.hasAttribute('data-ftx-choose-training')){rootFocus('[data-focus]');return}
+ if(b.hasAttribute('data-ftx-keep-training')){markStep('trainingDecision');saveSafe();toastSafe('Training reviewed — current plan kept');try{if(typeof drawTraining==='function')drawTraining()}catch(_){ }scheduleDecorate();return}
+ if(b.hasAttribute('data-ftx-choose-training')){const rec=trainingRecommendation(),name=String(rec.athlete?.name||''),buttons=[...document.querySelectorAll('#training [data-tr2-edit]')],edit=buttons.find(x=>String(x.dataset.tr2Edit||'')===name)||buttons[0];if(edit){edit.click();return}rootFocus('#training select,#training button');return}
  if(b.dataset.ftxScout){const state=typeof scoutingState==='function'?scoutingState():(s.scouting??={});state.focus=b.dataset.ftxScout;markStep('scoutAssignment');saveSafe();toastSafe('Scouting assignment started');try{if(typeof drawScouting==='function')drawScouting()}catch(_){ }scheduleDecorate();return}
  const open=currentOpenSelection();
  if(open&&b.hasAttribute('data-ftx-coach-team')){useCoachTeam(open.e);return}
@@ -501,7 +498,7 @@ function initialise(){
   if(st&&!st.legacy&&s?.appointment?.contractSigned){st.active=!st.completed;ensureOpeningSchedule();retireLegacyOpeningTasks();weekMessages()}
   document.addEventListener('click',handleClick);
   document.addEventListener('click',event=>{if(!active()||currentPhase()!=='scouting')return;const target=event.target.closest?.('#scouting button,#scouting [role="button"],#scouting label');if(target)maybeCompleteScoutingV2Assignment(target,'scouting-v2-click')});
-  document.addEventListener('change',event=>{if(!active())return;const el=event.target;if(currentPhase()==='scouting'&&$('scouting')?.contains(el))maybeCompleteScoutingV2Assignment(el,'scouting-v2-change');if(typeof currentView!=='undefined'&&currentView==='training'&&el?.dataset?.focus&&!ensureState().steps.trainingDecision)markStep('trainingDecision')});
+  document.addEventListener('change',event=>{if(!active())return;const el=event.target;if(currentPhase()==='scouting'&&$('scouting')?.contains(el))maybeCompleteScoutingV2Assignment(el,'scouting-v2-change');if(currentPhase()==='training'&&typeof currentView!=='undefined'&&currentView==='training'&&$('training')?.contains(el)&&!ensureState().steps.trainingDecision)markStep('trainingDecision')});
   document.addEventListener('click',captureAdvance,true);
   const observer=new MutationObserver(()=>scheduleDecorate());observer.observe(document.body,{subtree:true,childList:true});
   const athleteDialog=$('athleteProfile');if(athleteDialog&&!athleteDialog.dataset.ftxCloseBound){athleteDialog.dataset.ftxCloseBound='1';athleteDialog.addEventListener('close',()=>{clearSquadGuidance();scheduleDecorate()})}
