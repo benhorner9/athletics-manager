@@ -1,7 +1,8 @@
 /* Athletics Manager — Squad Call-Up Flow V2
    iPad-safe National Pool -> National Squad Agreement flow.
    Keeps the agreement chooser inside the already-open athlete profile dialog so Safari
-   never has to close one modal and open another in the same interaction frame. */
+   never has to close one modal and open another in the same interaction frame.
+   Production hotfix build: 2026-09-11. */
 (function(){
 'use strict';
 if(window.__amSquadCallupFlowV2)return;window.__amSquadCallupFlowV2=1;
