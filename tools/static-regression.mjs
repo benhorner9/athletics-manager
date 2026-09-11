@@ -197,6 +197,9 @@ const sourceContracts={
   ['getProgressionBlockers:blockers','Inbox decision core must remain the progression-blocker authority'],
   ['openAction','Inbox decision core action router is missing']
  ],
+ 'scripts/selection-decision-v3.js':[
+  ["querySelectorAll('[data-review]')",'Every visible Review & Submit control must receive the selection review handler']
+ ],
  'scripts/ui-cutover-v1.js':[
   ['am-ui-cutover','Production cutover body marker is missing'],
   ['errorBoundary','Production cutover recovery boundary is missing'],
