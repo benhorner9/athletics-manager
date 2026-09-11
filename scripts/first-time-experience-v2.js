@@ -166,6 +166,33 @@ function trainingRecommendation(){
  if(avg>=52||n(star?.fatigue)>=65)return{athlete:star,reason:`${star?.name||'One athlete'} is a useful first check because current fatigue makes load management worth reviewing.`};
  return{athlete:star,reason:`Start with ${star?.name||'one athlete'} and review the current programme, intensity and load before deciding whether anything actually needs to change.`};
 }
+function trainingDecisionSignature(){
+ const rows=managed().filter(a=>!a.retired).map(a=>{
+  const t=a?.trainingV2;if(!t||typeof t!=='object')return null;
+  const plan={
+   programme:t.programme??'',programmeLabel:t.programmeLabel??'',focus:t.focus??'',secondaryFocus:t.secondaryFocus??'',
+   intensity:t.intensity??'',volume:t.volume??'',sessionsPerWeek:t.sessionsPerWeek??t.frequency??''
+  };
+  return [String(a.id),plan];
+ }).filter(Boolean).sort((a,b)=>a[0].localeCompare(b[0]));
+ return rows.length?JSON.stringify(rows):'';
+}
+function ensureTrainingDecisionBaseline(){
+ const st=ensureState();if(!st)return'';
+ const sig=trainingDecisionSignature();if(!sig)return'';
+ const cw=careerWeek();
+ if(n(st.trainingDecisionBaselineWeek)!==cw||!st.trainingDecisionBaseline){st.trainingDecisionBaselineWeek=cw;st.trainingDecisionBaseline=sig;saveSafe()}
+ return st.trainingDecisionBaseline;
+}
+function detectTrainingDecision(source='training-state'){
+ const st=ensureState();if(!st||!active()||currentPhase()!=='training'||st.steps.trainingDecision)return false;
+ const baseline=ensureTrainingDecisionBaseline(),sig=trainingDecisionSignature();if(!baseline||!sig||baseline===sig)return false;
+ markStep('trainingDecision');log('training_decision_detected',{source});toastSafe('Training decision recorded');return true;
+}
+function queueTrainingDecisionDetection(source){
+ setTimeout(()=>detectTrainingDecision(source),0);
+ setTimeout(()=>detectTrainingDecision(`${source}-settled`),120);
+}
 function currentPhase(){
  const st=ensureState(),cw=careerWeek(),e=openingEvent(),mail=selectionMail(e);
  if(!st||st.completed)return'complete';
@@ -236,7 +263,7 @@ function decorateSquad(){
 function decorateTraining(){
  const root=$('training');if(!root)return;
  if(!active()||careerWeek()<2||ensureState().steps.trainingDecision){root.querySelector('.ftx-training-card')?.remove();return}
- markSeen('training');const rec=trainingRecommendation();
+ markSeen('training');ensureTrainingDecisionBaseline();const rec=trainingRecommendation();
  if(root.querySelector('.ftx-training-card'))return;
  root.insertAdjacentHTML('afterbegin',`<section class="ftx-mentor ftx-training-card"><div><small>${esc(headCoach().name.toUpperCase())} • TRAINING REVIEW</small><strong>${esc(rec.athlete?.name||'One athlete')} — review the current plan</strong><p>${esc(rec.reason)} Keeping a suitable plan is a valid decision; you do not need to change something just to complete this step.</p></div><div class="ftx-inline-actions"><button class="am-button primary" data-ftx-keep-training>KEEP CURRENT PLAN</button><button class="am-button ghost" data-ftx-choose-training>REVIEW ATHLETE TRAINING</button></div></section>`);
 }
@@ -480,7 +507,7 @@ function routeTo(target){
 function handleClick(ev){
  const b=ev.target.closest?.('button,[data-ftx-route]');if(!b)return;
  if(b.dataset.ftxGuidance){setGuidance(b.dataset.ftxGuidance);return}
- if(b.dataset.ftxRoute){routeTo(b.dataset.ftxRoute);return}
+ if(b.dataset.ftxRoute){if(b.dataset.ftxRoute==='training')ensureTrainingDecisionBaseline();routeTo(b.dataset.ftxRoute);return}
  if(b.dataset.ftxMail){try{openMail=b.dataset.ftxMail}catch(_){ }routeTo('inbox');return}
  if(b.dataset.ftxAthlete){if(active()&&currentPhase()==='athlete')markStep('athleteOpened');if(typeof openAthleteProfile==='function')openAthleteProfile(b.dataset.ftxAthlete);return}
  if(b.hasAttribute('data-ftx-advance')){if(typeof advanceWeek==='function')advanceWeek();return}
@@ -493,7 +520,7 @@ function handleClick(ev){
  if(open&&b.hasAttribute('data-ftx-no-entry-all')){noEntryCompetition(open.e);return}
  if(open&&b.dataset.ftxNoEntry){noEntryDiscipline(open.e,b.dataset.ftxNoEntry);return}
  if(open&&b.hasAttribute('data-ftx-choose-team')){rootFocus('[data-sel],.select-toggle');return}
- if(active()&&typeof currentView!=='undefined'&&currentView==='training'&&b.matches('[data-focus]')){setTimeout(()=>markStep('trainingDecision'),0)}
+ if(active()&&currentPhase()==='training'&&$('training')?.contains(b))queueTrainingDecisionDetection('training-click')
 }
 function rootFocus(sel){const el=document.querySelector(sel);if(el){el.scrollIntoView({block:'center',behavior:'smooth'});el.focus?.()}}
 function captureAdvance(ev){
@@ -508,7 +535,7 @@ function initialise(){
   if(st&&!st.legacy&&s?.appointment?.contractSigned){st.active=!st.completed;ensureOpeningSchedule();retireLegacyOpeningTasks();weekMessages()}
   document.addEventListener('click',handleClick);
   document.addEventListener('click',event=>{if(!active()||currentPhase()!=='scouting')return;const target=event.target.closest?.('#scouting button,#scouting [role="button"],#scouting label');if(target)maybeCompleteScoutingV2Assignment(target,'scouting-v2-click')});
-  document.addEventListener('change',event=>{if(!active())return;const el=event.target;if(currentPhase()==='scouting'&&$('scouting')?.contains(el))maybeCompleteScoutingV2Assignment(el,'scouting-v2-change');if(currentPhase()==='training'&&typeof currentView!=='undefined'&&currentView==='training'&&$('training')?.contains(el)&&!ensureState().steps.trainingDecision)markStep('trainingDecision')});
+  document.addEventListener('change',event=>{if(!active())return;const el=event.target;if(currentPhase()==='scouting'&&$('scouting')?.contains(el))maybeCompleteScoutingV2Assignment(el,'scouting-v2-change');if(currentPhase()==='training'&&$('training')?.contains(el)&&!ensureState().steps.trainingDecision)queueTrainingDecisionDetection('training-change')});
   document.addEventListener('click',captureAdvance,true);
   const observer=new MutationObserver(()=>scheduleDecorate());observer.observe(document.body,{subtree:true,childList:true});
   const athleteDialog=$('athleteProfile');if(athleteDialog&&!athleteDialog.dataset.ftxCloseBound){athleteDialog.dataset.ftxCloseBound='1';athleteDialog.addEventListener('close',()=>{clearSquadGuidance();scheduleDecorate()})}
