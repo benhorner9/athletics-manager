@@ -1,6 +1,6 @@
 name: UI Regression Gate
 
-# Live Event Broadcast V4.4 jumps phase is validated by this gate.
+# Live Event Broadcast V4.5 championship & performance moments are validated by this gate.
 on:
   push:
     branches: [main]
@@ -36,7 +36,7 @@ jobs:
           node-version: '20'
       - name: Validate UI asset graph and migration order
         run: node tools/static-regression.mjs
-      - name: Validate Live Event Broadcast V4.4
+      - name: Validate Live Event Broadcast V4.5
         run: |
           node --check scripts/live-event-broadcast-v4.js
           grep -q 'function distanceGroups(c,state)' scripts/live-event-broadcast-v4.js
@@ -50,7 +50,11 @@ jobs:
           grep -q 'function horizontalJumpPhase(c,p)' scripts/live-event-broadcast-v4.js
           grep -q 'function highJumpAttemptState(c,q)' scripts/live-event-broadcast-v4.js
           grep -q 'function highJumpSvg(c,q,p)' scripts/live-event-broadcast-v4.js
-          grep -q "version:'4.4.0'" scripts/live-event-broadcast-v4.js
+          grep -q 'function achievementPriority(code)' scripts/live-event-broadcast-v4.js
+          grep -q 'function recordReference(d,e,kind' scripts/live-event-broadcast-v4.js
+          grep -q 'function finalMomentHTML(e,d,a)' scripts/live-event-broadcast-v4.js
+          grep -q 'function nextDiscipline(e,ds,current)' scripts/live-event-broadcast-v4.js
+          grep -q "version:'4.5.0'" scripts/live-event-broadcast-v4.js
       - name: Check JavaScript syntax
         shell: bash
         run: |
