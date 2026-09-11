@@ -28,3 +28,14 @@
 /* Broadcast V4.2 — distance racing */
 .lv4-distance-status rect{fill:#04131eed;stroke:#8db0c1;stroke-opacity:.28}.lv4-distance-status text{fill:#dce9ee;font-size:7px;font-weight:950;letter-spacing:.04em}.lv4-distance-status text+text{fill:#7898aa;font-size:5.8px;font-weight:850;letter-spacing:.025em}.lv4-bell circle{fill:#071823ee;stroke:#d9bf72;stroke-opacity:.48;stroke-width:1.5}.lv4-bell path{fill:none;stroke:#edcf79;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}.lv4-bell text{fill:#e7cb7a;font-size:6px;font-weight:950;letter-spacing:.12em}.lv4event .lv4-athlete{transition:opacity .16s ease}.lv4event .lv4-athlete-label{transition:opacity .16s ease}
 @media(max-width:700px){.lv4-distance-status{transform:translate(8px 8px) scale(.88)}.lv4-bell{transform:translate(-12px 8px) scale(.88)}}
+
+
+/* Live Event Broadcast V4.3 — field-event drama */
+.lv43-best-marker text{fill:#c8d8df;font-size:6px;font-weight:900;paint-order:stroke;stroke:#123328;stroke-width:2.5}
+.lv4-attempt-card.final-round{border-color:rgba(233,196,107,.42);background:linear-gradient(180deg,rgba(30,27,18,.94),rgba(7,20,29,.94));box-shadow:0 12px 30px rgba(0,0,0,.24),inset 0 1px 0 rgba(233,196,107,.12)}
+.lv4-attempt-card.final-round small{color:#d9bd72}
+.lv4-board-row.attempt-update{animation:lv43AttemptFlash .9s ease-out}
+.lv4-board-row.position-change{box-shadow:inset 3px 0 rgba(233,196,107,.8)}
+.lv4-board-row.ours.position-change{box-shadow:inset 3px 0 #9dddf8}
+@keyframes lv43AttemptFlash{0%{background:rgba(126,215,255,.16)}45%{background:rgba(126,215,255,.08)}100%{background:transparent}}
+@media(prefers-reduced-motion:reduce){.lv4-board-row.attempt-update{animation:none;background:rgba(126,215,255,.07)}}
