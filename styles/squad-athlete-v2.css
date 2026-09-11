@@ -1,5 +1,5 @@
 /* Athletics Manager — Squad + Canonical Athlete Profile V2 */
-.sav2{display:grid;gap:12px;min-height:calc(100vh - 112px)}
+.sav2{display:grid;grid-template-rows:auto auto auto minmax(0,1fr);gap:12px;min-height:calc(100vh - 112px)}
 .sav2-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:2px 2px 0}
 .sav2-head small,.apv2-kicker{display:block;color:var(--am-muted,var(--muted));font-size:9px;font-weight:950;letter-spacing:.12em;text-transform:uppercase}
 .sav2-head h1{margin:3px 0 5px;font-size:clamp(24px,3vw,34px);line-height:1;letter-spacing:-.03em}.sav2-head p{margin:0;color:var(--am-muted,var(--muted));font-size:11px;line-height:1.45;max-width:760px}
