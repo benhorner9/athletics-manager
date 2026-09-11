@@ -102,7 +102,7 @@ try{
  const w=dom.window;
  const requiredGlobals=[
   'AthleticsUI','__athleticsInboxDecisionCore','__athleticsHomeV2','__athleticsInboxV3','__athleticsSquadAthleteV2',
-  '__athleticsCalendarV2','__athleticsCompetitionJourneyV2','__athleticsScoutingV3','__athleticsStaffFinanceV2','__athleticsWorldSeasonV2','__athleticsManagerCareerV1','AMFirstTimeExperienceV2','__athleticsRegression','AMLiveBroadcastV4'
+  '__athleticsCalendarV2','__athleticsCompetitionJourneyV2','__athleticsScoutingV3','__athleticsStaffFinanceV2','__athleticsWorldSeasonV2','__athleticsManagerCareerV1','AMFirstTimeExperienceV2','AMRelease','__athleticsRegression','AMLiveBroadcastV4'
  ];
  for(const key of requiredGlobals)if(!w[key])fail(`Required runtime global missing after page load: ${key}`);
 
@@ -117,6 +117,17 @@ try{
    if(snapshot?.duplicateIds?.length)fail(`Runtime duplicate DOM ids: ${snapshot.duplicateIds.map(x=>`${x.id}×${x.count}`).join(', ')}`);
    if(snapshot?.activeViews?.length!==1)fail(`Regression snapshot has ${snapshot?.activeViews?.length||0} active views.`);
   }catch(err){fail(`Regression snapshot threw: ${err?.stack||err}`)}
+ }
+ if(w.AMRelease){
+  try{
+   const release=w.AMRelease;
+   if(release.version!=='1.0'||release.systemVersion!=='1.0')fail('Athletics Manager canonical shipping baseline is not 1.0.');
+   const entries=Object.entries(release.systems||{});
+   if(entries.length<20)fail('Athletics Manager 1.0 release manifest is missing production systems.');
+   const wrong=entries.filter(([,value])=>value?.version!=='1.0').map(([key])=>key);
+   if(wrong.length)fail(`Release manifest systems not on 1.0: ${wrong.join(', ')}`);
+   if(release.policy?.oneAuthorityPerSystem!==true)fail('Release manifest one-authority rule is missing.');
+  }catch(err){fail(`Athletics Manager 1.0 release manifest threw: ${err?.stack||err}`)}
  }
  if(w.AMLiveBroadcastV4){
   try{

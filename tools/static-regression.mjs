@@ -59,6 +59,7 @@ const requiredScripts=[
  'scripts/world-season-v2.js',
  'scripts/manager-career-v1.js',
  'scripts/first-time-experience-v2.js',
+ 'scripts/release-baseline.js',
  'scripts/integration-regression-v1.js',
  'scripts/ui-cutover-v1.js'
 ];
@@ -82,7 +83,8 @@ before('scripts/scouting-v3.js','scripts/world-season-v2.js');
 before('scripts/staff-finance-v2.js','scripts/world-season-v2.js');
 before('scripts/world-season-v2.js','scripts/manager-career-v1.js');
 before('scripts/manager-career-v1.js','scripts/first-time-experience-v2.js');
-before('scripts/first-time-experience-v2.js','scripts/integration-regression-v1.js');
+before('scripts/first-time-experience-v2.js','scripts/release-baseline.js');
+before('scripts/release-baseline.js','scripts/integration-regression-v1.js');
 for(const script of requiredScripts.filter(x=>!['scripts/integration-regression-v1.js','scripts/ui-cutover-v1.js'].includes(x)))before(script,'scripts/integration-regression-v1.js');
 before('scripts/integration-regression-v1.js','scripts/ui-cutover-v1.js');
 
@@ -183,6 +185,13 @@ const sourceContracts={
   ['window.AMScoutingV2?.refreshScoutingIntegration?.()','FTUE Scouting routing must target the production Scouting V2 integration'],
   ['function captureAdvance(ev)','Guided Advance Week protection is missing'],
   ['setGuidance','Guidance assist level control is missing']
+ ],
+ 'scripts/release-baseline.js':[
+  ["const PRODUCT_VERSION='1.0'",'Athletics Manager shipping release must remain anchored to 1.0 until deliberately upgraded'],
+  ["const SYSTEM_VERSION='1.0'",'Canonical production systems must share the 1.0 baseline'],
+  ['oneAuthorityPerSystem:true','Release baseline must enforce one production authority per system'],
+  ["baselineBranch:'release/1.0'",'Release baseline must name the 1.0 failsafe branch'],
+  ['window.AMRelease=release','Canonical release manifest global is missing']
  ],
  'scripts/inbox-decision-core-v1.js':[
   ['getProgressionBlockers:blockers','Inbox decision core must remain the progression-blocker authority'],
