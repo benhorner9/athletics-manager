@@ -1,6 +1,6 @@
 name: UI Regression Gate
 
-# Production UI, Live Event Broadcast V4.6, Manager Career / My Profile V1, Scouting V2 route-root detection, FTUE Scouting V2 assignment routing, and FTUE V2.0.2 active-assignment reconciliation safeguards are validated by this gate.
+# Production UI, Live Event Broadcast V4.6, Manager Career / My Profile V1, Scouting V2 route-root detection, FTUE Scouting V2 assignment routing, FTUE V2.0.2 active-assignment reconciliation safeguards, and repository hygiene are validated by this gate.
 on:
   push:
     branches: [main]
@@ -10,6 +10,7 @@ on:
       - 'styles/**'
       - 'tools/static-regression.mjs'
       - 'tools/runtime-smoke.mjs'
+      - 'tools/repository-hygiene.mjs'
       - '.github/workflows/ui-regression.yml'
   pull_request:
     paths:
@@ -18,6 +19,7 @@ on:
       - 'styles/**'
       - 'tools/static-regression.mjs'
       - 'tools/runtime-smoke.mjs'
+      - 'tools/repository-hygiene.mjs'
       - '.github/workflows/ui-regression.yml'
 
 permissions:
@@ -34,6 +36,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - name: Validate repository hygiene
+        run: node tools/repository-hygiene.mjs
       - name: Validate UI asset graph and migration order
         run: node tools/static-regression.mjs
       - name: Validate Live Event Broadcast V4.6
