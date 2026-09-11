@@ -136,6 +136,10 @@ const sourceContracts={
   ["speed:'broadcast'",'Broadcast auto-pacing mode is missing'],
   ['function photoFinish(c)','Broadcast photo-finish handling is missing'],
   ['commentQueue','Broadcast commentary priority queue is missing'],
+  ['function sprintPhase(c,state)','Sprint phase choreography is missing'],
+  ['function cameraTarget(c,state)','Sprint camera director is missing'],
+  ['function postFinishPos(d,x,i,extra)','Post-finish runout is missing'],
+  ['function trackMomentText(c,m,top)','Sprint-specific commentary is missing'],
   ["document.addEventListener('visibilitychange'",'Broadcast background-tab pause safeguard is missing']
  ],
  'scripts/inbox-decision-core-v1.js':[
