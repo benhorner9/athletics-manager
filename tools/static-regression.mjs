@@ -140,6 +140,10 @@ const sourceContracts={
   ['function cameraTarget(c,state)','Sprint camera director is missing'],
   ['function postFinishPos(d,x,i,extra)','Post-finish runout is missing'],
   ['function trackMomentText(c,m,top)','Sprint-specific commentary is missing'],
+  ['function distanceGroups(c,state)','Broadcast distance pack/gap model is missing'],
+  ['function distanceCameraTarget(c,state)','Broadcast distance camera director is missing'],
+  ['function distanceMoment(c)','Broadcast lap/bell/breakaway timeline is missing'],
+  ['function distanceLeadComment(c,state)','Broadcast distance commentary is missing'],
   ["document.addEventListener('visibilitychange'",'Broadcast background-tab pause safeguard is missing']
  ],
  'scripts/inbox-decision-core-v1.js':[

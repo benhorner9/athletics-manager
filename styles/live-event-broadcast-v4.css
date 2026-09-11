@@ -24,3 +24,7 @@
 @media(max-width:900px){.lv4-split{right:8px;bottom:9px;min-width:126px}.lv4-finish-strip{width:92%}.lv4-finish-strip>small{display:none}}
 @media(max-width:680px){.lv4-finish-strip{grid-template-columns:repeat(3,minmax(0,1fr))}.lv4-finish-strip>span{border-left:0}.lv4-split{max-width:48%;min-width:0}.lv4-split small{font-size:8px}}
 @media(prefers-reduced-motion:reduce){.lv4-gun{animation:none}}
+
+/* Broadcast V4.2 — distance racing */
+.lv4-distance-status rect{fill:#04131eed;stroke:#8db0c1;stroke-opacity:.28}.lv4-distance-status text{fill:#dce9ee;font-size:7px;font-weight:950;letter-spacing:.04em}.lv4-distance-status text+text{fill:#7898aa;font-size:5.8px;font-weight:850;letter-spacing:.025em}.lv4-bell circle{fill:#071823ee;stroke:#d9bf72;stroke-opacity:.48;stroke-width:1.5}.lv4-bell path{fill:none;stroke:#edcf79;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}.lv4-bell text{fill:#e7cb7a;font-size:6px;font-weight:950;letter-spacing:.12em}.lv4event .lv4-athlete{transition:opacity .16s ease}.lv4event .lv4-athlete-label{transition:opacity .16s ease}
+@media(max-width:700px){.lv4-distance-status{transform:translate(8px 8px) scale(.88)}.lv4-bell{transform:translate(-12px 8px) scale(.88)}}
