@@ -102,7 +102,7 @@ try{
  const w=dom.window;
  const requiredGlobals=[
   'AthleticsUI','__athleticsInboxDecisionCore','__athleticsHomeV2','__athleticsInboxV3','__athleticsSquadAthleteV2',
-  '__athleticsCalendarV2','__athleticsCompetitionJourneyV2','__athleticsScoutingV3','__athleticsStaffFinanceV2','__athleticsWorldSeasonV2','__athleticsManagerCareerV1','__athleticsRegression','AMLiveBroadcastV4'
+  '__athleticsCalendarV2','__athleticsCompetitionJourneyV2','__athleticsScoutingV3','__athleticsStaffFinanceV2','__athleticsWorldSeasonV2','__athleticsManagerCareerV1','AMFirstTimeExperienceV2','__athleticsRegression','AMLiveBroadcastV4'
  ];
  for(const key of requiredGlobals)if(!w[key])fail(`Required runtime global missing after page load: ${key}`);
 
@@ -133,6 +133,14 @@ try{
    if(!profile.migration?.completed)fail('Manager Career V1 migration did not complete in runtime smoke.');
    if(!profile.reputation?.current)fail('Manager Career V1 reputation state is missing.');
   }catch(err){fail(`Manager Career V1 diagnostics threw: ${err?.stack||err}`)}
+ }
+ if(w.AMFirstTimeExperienceV2){
+  try{
+   const ftx=w.AMFirstTimeExperienceV2.snapshot();
+   if(!ftx||ftx.version!=='2.0.0'||ftx.stateVersion!==2)fail('First-Time Experience V2 snapshot is invalid.');
+   if(!['recommended','minimal','off'].includes(ftx.guidance))fail('First-Time Experience V2 guidance state is invalid.');
+   if(!ftx.steps||!ftx.seen)fail('First-Time Experience V2 state model is incomplete.');
+  }catch(err){fail(`First-Time Experience V2 diagnostics threw: ${err?.stack||err}`)}
  }
  console.log('[smoke] runtime globals and snapshot checked');
 
