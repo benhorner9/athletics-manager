@@ -136,7 +136,13 @@ const sourceContracts={
   ['__selectionImmersion','Selection immersion wrapper ownership marker is missing']
  ],
  'scripts/competition-journey-v2.js':[
-  ['window.__athleticsCompetitionJourneyV2','Competition Journey public handle is missing']
+  ['window.__athleticsCompetitionJourneyV2','Competition Journey public handle is missing'],
+  ['function summitRouteActive()','Competition Journey must delegate active Summit routes to the Summit authority'],
+  ['function completeEventIfReady(e)','Competition Journey must reconcile fully-resulted meetings before returning Home']
+ ],
+ 'scripts/summit-event-unified.js':[
+  ['function reconcileMeeting(m)','Summit meetings with every result must reconcile to completed state'],
+  ["summitLiveMeetingNumber=null;saveNow();view('home')",'Returning Home from Summit must clear the remembered Summit route']
  ],
  'scripts/live-event-broadcast-v4.js':[
   ['window.AMLiveBroadcastV4','Broadcast V4 public handle is missing'],
@@ -180,6 +186,7 @@ const sourceContracts={
  'scripts/first-time-experience-v2.js':[
   ['window.AMFirstTimeExperienceV2','First-Time Experience V2 public service is missing'],
   ["const OPENING_EVENT_ID='opening-meet-v2'",'Opening-month competition authority is missing'],
+  ['const FIRST_SEASON_SPRING_WEEK=13','First-season Spring Grand Prix must not collide with Summit Series 1 in Week 14'],
   ['function ensureOpeningSchedule()','Opening-month schedule migration is missing'],
   ['function firstSelectionComplete(e)','Explicit first-selection decision gate is missing'],
   ['function showLiveIntro(e,d,start)','First live-event contextual help is missing'],
