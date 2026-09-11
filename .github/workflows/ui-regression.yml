@@ -1,6 +1,6 @@
 name: UI Regression Gate
 
-# Production UI, Live Event Broadcast V4.6, Manager Career / My Profile V1, and Scouting V2 route-root detection safeguards are validated by this gate.
+# Production UI, Live Event Broadcast V4.6, Manager Career / My Profile V1, Scouting V2 route-root detection, and FTUE Scouting V2 assignment routing safeguards are validated by this gate.
 on:
   push:
     branches: [main]
