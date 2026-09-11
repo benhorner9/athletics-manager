@@ -13,7 +13,7 @@ const systems=Object.freeze({
  core:system('scripts/game.js',{label:'Core Game Runtime'}),
  ui:system('scripts/ui-platform-v1.js',{label:'UI Platform / Shell'}),
  home:system('scripts/home-v2.js',{label:'Home / Performance Centre'}),
- inbox:system('scripts/inbox-v3.js',{label:'Inbox',logic:'scripts/inbox-decision-core-v1.js'}),
+ inbox:system('scripts/inbox-v3.js',{label:'Inbox',logic:'scripts/inbox-decision-core-v1.js',voice:'scripts/inbox-character-voices-v1.js'}),
  squad:system('scripts/squad-athlete-v2.js',{label:'Squad'}),
  nationalPool:system('scripts/squad-athlete-v2.js',{label:'National Pool'}),
  athleteProfile:system('scripts/squad-athlete-v2.js',{label:'Athlete Profile'}),
