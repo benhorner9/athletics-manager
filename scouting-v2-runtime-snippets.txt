@@ -1,0 +1,2076 @@
+/* Athletics Manager — Scouting & Talent Identification V2
+   Foundation engine: one hidden athlete truth -> organisation knowledge -> scout opinion -> report snapshots. */
+(function(){
+'use strict';
+if(window.__amScoutingV2Engine)return;
+window.__amScoutingV2Engine=1;
+
+const VERSION=2;
+const STAGES=[
+  {id:'unknown',label:'Unknown',min:0},
+  {id:'discovered',label:'Discovered',min:1},
+  {id:'observed',label:'Observed',min:18},
+  {id:'scouted',label:'Scouted',min:42},
+  {id:'extensive',label:'Extensively Scouted',min:72},
+  {id:'programme',la
+
+===== MATCH =====
+
+/* Athletics Manager — Scouting & Talent Identification V2
+   Foundation engine: one hidden athlete truth -> organisation knowledge -> scout opinion -> report snapshots. */
+(function(){
+'use strict';
+if(window.__amScoutingV2Engine)return;
+window.__amScoutingV2Engine=1;
+
+const VERSION=2;
+const STAGES=[
+  {id:'unknown',label:'Unknown',min:0},
+  {id:'discovered',label:'Discovered',min:1},
+  {id:'observed',label:'Observed',min:18},
+  {id:'scouted',label:'Scouted',min:42},
+  {id:'extensive',label:'Extensively Scouted',min:72},
+  {id:'programme',label:'Programme Known',min:94}
+];
+const CONFIDENCE=[
+  {label:'Very Low',min:0},
+  {label:'Low',min:24},
+  {label
+
+===== MATCH =====
+
+/* Athletics Manager — Scouting & Talent Identification V2
+   Foundation engine: one hidden athlete truth -> organisation knowledge -> scout opinion -> report snapshots. */
+(function(){
+'use strict';
+if(window.__amScoutingV2Engine)return;
+window.__amScoutingV2Engine=1;
+
+const VERSION=2;
+const STAGES=[
+  {id:'unknown',label:'Unknown',min:0},
+  {id:'discovered',label:'Discovered',min:1},
+  {id:'observed',label:'Observed',min:18},
+  {id:'scouted',label:'Scouted',min:42},
+  {id:'extensive',label:'Extensively Scouted',min:72},
+  {id:'programme',label:'Programme Known',min:94}
+];
+const CONFIDENCE=[
+  {label:'Very Low',min:0},
+  {label:'Low',min:24},
+  {label:'Moderate',min:44},
+  {label:'High',min:66},
+  {label:'Very High',min:84}
+];
+c
+
+===== MATCH =====
+
+/* Athletics Manager — Scouting & Talent Identification V2
+   Foundation engine: one hidden athlete truth -> organisation knowledge -> scout opinion -> report snapshots. */
+(function(){
+'use strict';
+if(window.__amScoutingV2Engine)return;
+window.__amScoutingV2Engine=1;
+
+const VERSION=2;
+const STAGES=[
+  {id:'unknown',label:'Unknown',min:0},
+  {id:'discovered',label:'Discovered',min:1},
+  {id:'observed',label:'Observed',min:18},
+  {id:'scouted',label:'Scouted',min:42},
+  {id:'extensive',label:'Extensively Scouted',min:72},
+  {id:'programme',label:'Programme Known',min:94}
+];
+const CONFIDENCE=[
+  {label:'Very Low',min:0},
+  {label:'Low',min:24},
+  {label:'Moderate',min:44},
+  {label:'High',min:66},
+  {label:'Very High',min:84}
+];
+const EVENT_GROUPS={
+  sprints:/100|2
+
+===== MATCH =====
+
+on knowledge -> scout opinion -> report snapshots. */
+(function(){
+'use strict';
+if(window.__amScoutingV2Engine)return;
+window.__amScoutingV2Engine=1;
+
+const VERSION=2;
+const STAGES=[
+  {id:'unknown',label:'Unknown',min:0},
+  {id:'discovered',label:'Discovered',min:1},
+  {id:'observed',label:'Observed',min:18},
+  {id:'scouted',label:'Scouted',min:42},
+  {id:'extensive',label:'Extensively Scouted',min:72},
+  {id:'programme',label:'Programme Known',min:94}
+];
+const CONFIDENCE=[
+  {label:'Very Low',min:0},
+  {label:'Low',min:24},
+  {label:'Moderate',min:44},
+  {label:'High',min:66},
+  {label:'Very High',min:84}
+];
+const EVENT_GROUPS={
+  sprints:/100|200|400|sprint/i,
+  distance:/800|1500|3000|5000|10000|steeple|distance/i,
+  jumps:/HJ|LJ|TJ|PV|jump/i,
+  throws:/SP|DT|HT|JT|throw|shot/i,
+  combined:/decathlon|heptathlon|combined/i
+};
+con
+
+===== MATCH =====
+
+scout opinion -> report snapshots. */
+(function(){
+'use strict';
+if(window.__amScoutingV2Engine)return;
+window.__amScoutingV2Engine=1;
+
+const VERSION=2;
+const STAGES=[
+  {id:'unknown',label:'Unknown',min:0},
+  {id:'discovered',label:'Discovered',min:1},
+  {id:'observed',label:'Observed',min:18},
+  {id:'scouted',label:'Scouted',min:42},
+  {id:'extensive',label:'Extensively Scouted',min:72},
+  {id:'programme',label:'Programme Known',min:94}
+];
+const CONFIDENCE=[
+  {label:'Very Low',min:0},
+  {label:'Low',min:24},
+  {label:'Moderate',min:44},
+  {label:'High',min:66},
+  {label:'Very High',min:84}
+];
+const EVENT_GROUPS={
+  sprints:/100|200|400|sprint/i,
+  distance:/800|1500|3000|5000|10000|steeple|distance/i,
+  jumps:/HJ|LJ|TJ|PV|jump/i,
+  throws:/SP|DT|HT|JT|throw|shot/i,
+  combined:/decathlon|heptathlon|combined/i
+};
+const GROUP_LABELS=
+
+===== MATCH =====
+
+ strict';
+if(window.__amScoutingV2Engine)return;
+window.__amScoutingV2Engine=1;
+
+const VERSION=2;
+const STAGES=[
+  {id:'unknown',label:'Unknown',min:0},
+  {id:'discovered',label:'Discovered',min:1},
+  {id:'observed',label:'Observed',min:18},
+  {id:'scouted',label:'Scouted',min:42},
+  {id:'extensive',label:'Extensively Scouted',min:72},
+  {id:'programme',label:'Programme Known',min:94}
+];
+const CONFIDENCE=[
+  {label:'Very Low',min:0},
+  {label:'Low',min:24},
+  {label:'Moderate',min:44},
+  {label:'High',min:66},
+  {label:'Very High',min:84}
+];
+const EVENT_GROUPS={
+  sprints:/100|200|400|sprint/i,
+  distance:/800|1500|3000|5000|10000|steeple|distance/i,
+  jumps:/HJ|LJ|TJ|PV|jump/i,
+  throws:/SP|DT|HT|JT|throw|shot/i,
+  combined:/decathlon|heptathlon|combined/i
+};
+const GROUP_LABELS={sprints:'Sprints',distance:'Distance',jumps:'Jumps',th
+
+===== MATCH =====
+
+|10000|steeple|distance/i,
+  jumps:/HJ|LJ|TJ|PV|jump/i,
+  throws:/SP|DT|HT|JT|throw|shot/i,
+  combined:/decathlon|heptathlon|combined/i
+};
+const GROUP_LABELS={sprints:'Sprints',distance:'Distance',jumps:'Jumps',throws:'Throws',combined:'Combined Events'};
+const PERSONALITIES=['Prospect Hunter','Proven Performer','Data Focused','Traditional Eye','Risk Taker','Conservative'];
+const PHILOSOPHIES=['Balanced','Youth First','Win Now','High Potential','Low Risk','Undervalued Talent'];
+const PRIORITIES=['Find Future Talent','Find Immediate Squad Upgrades','Focus on Youth','Focus on Women’s Events','Focus on Throws','Prepare Next Olympic Cycle'];
+const POT_SCALE=[
+  {g:'D',min:0},{g:'C',min:68},{g:'B',min:76},{g:'B+',min:82},{g:'A-',min:86},{g:'A',min:90},{g:'A+',min:95}
+];
+const RATING_LABELS=[
+  [90,'Elite'],[82,'Excellent'],[74,'Very Good'
+
+===== MATCH =====
+
+:'Combined Events'};
+const PERSONALITIES=['Prospect Hunter','Proven Performer','Data Focused','Traditional Eye','Risk Taker','Conservative'];
+const PHILOSOPHIES=['Balanced','Youth First','Win Now','High Potential','Low Risk','Undervalued Talent'];
+const PRIORITIES=['Find Future Talent','Find Immediate Squad Upgrades','Focus on Youth','Focus on Women’s Events','Focus on Throws','Prepare Next Olympic Cycle'];
+const POT_SCALE=[
+  {g:'D',min:0},{g:'C',min:68},{g:'B',min:76},{g:'B+',min:82},{g:'A-',min:86},{g:'A',min:90},{g:'A+',min:95}
+];
+const RATING_LABELS=[
+  [90,'Elite'],[82,'Excellent'],[74,'Very Good'],[66,'Good'],[56,'Average'],[0,'Limited']
+];
+
+const nowState=()=>typeof s!=='undefined'?s:null;
+const cw=()=>{try{return typeof careerNow==='function'?careerNow():(Number(s?.game?.careerWeek)||Number(s?.game?.week)||1)}catch(_){return
+
+===== MATCH =====
+
+'};
+const PERSONALITIES=['Prospect Hunter','Proven Performer','Data Focused','Traditional Eye','Risk Taker','Conservative'];
+const PHILOSOPHIES=['Balanced','Youth First','Win Now','High Potential','Low Risk','Undervalued Talent'];
+const PRIORITIES=['Find Future Talent','Find Immediate Squad Upgrades','Focus on Youth','Focus on Women’s Events','Focus on Throws','Prepare Next Olympic Cycle'];
+const POT_SCALE=[
+  {g:'D',min:0},{g:'C',min:68},{g:'B',min:76},{g:'B+',min:82},{g:'A-',min:86},{g:'A',min:90},{g:'A+',min:95}
+];
+const RATING_LABELS=[
+  [90,'Elite'],[82,'Excellent'],[74,'Very Good'],[66,'Good'],[56,'Average'],[0,'Limited']
+];
+
+const nowState=()=>typeof s!=='undefined'?s:null;
+const cw=()=>{try{return typeof careerNow==='function'?careerNow():(Number(s?.game?.careerWeek)||Number(s?.game?.week)||1)}catch(_){return Number(s?.game?.
+
+===== MATCH =====
+
+Prospect Hunter','Proven Performer','Data Focused','Traditional Eye','Risk Taker','Conservative'];
+const PHILOSOPHIES=['Balanced','Youth First','Win Now','High Potential','Low Risk','Undervalued Talent'];
+const PRIORITIES=['Find Future Talent','Find Immediate Squad Upgrades','Focus on Youth','Focus on Women’s Events','Focus on Throws','Prepare Next Olympic Cycle'];
+const POT_SCALE=[
+  {g:'D',min:0},{g:'C',min:68},{g:'B',min:76},{g:'B+',min:82},{g:'A-',min:86},{g:'A',min:90},{g:'A+',min:95}
+];
+const RATING_LABELS=[
+  [90,'Elite'],[82,'Excellent'],[74,'Very Good'],[66,'Good'],[56,'Average'],[0,'Limited']
+];
+
+const nowState=()=>typeof s!=='undefined'?s:null;
+const cw=()=>{try{return typeof careerNow==='function'?careerNow():(Number(s?.game?.careerWeek)||Number(s?.game?.week)||1)}catch(_){return Number(s?.game?.careerWeek)||Number(s?.gam
+
+===== MATCH =====
+
+0)/vals.length;if(!mean)return .5;const sd=Math.sqrt(vals.reduce((n,x)=>n+(x-mean)*(x-mean),0)/vals.length);const cv=Math.abs(sd/mean);return clamp(1-cv*25,.1,1)}
+function trend(a){const rows=(a?.profileResults||[]).filter(r=>Number.isFinite(r?.perf)).slice(-8);if(rows.length<3)return 'Limited Evidence';const q=typeof DISCIPLINES!=='undefined'?DISCIPLINES[a.disc]:null,isTime=q?.type==='time';const half=Math.floor(rows.length/2),old=rows.slice(0,half).map(r=>r.perf),recent=rows.slice(half).map(r=>r.perf);const av=x=>x.reduce((a,b)=>a+b,0)/Math.max(1,x.length),delta=(av(recent)-av(old))*(isTime?-1:1);const scale=Math.abs(av(old))||1,pct=delta/scale;if(pct>.018)return 'Rapidly Improving';if(pct>.004)return 'Improving';if(pct<-.018)return 'Declining';if(resultConsistency(a)<.45)return 'Inconsistent';return 'Stable'}
+
+function root(){
+ const s
+
+===== MATCH =====
+
+turn .5;const sd=Math.sqrt(vals.reduce((n,x)=>n+(x-mean)*(x-mean),0)/vals.length);const cv=Math.abs(sd/mean);return clamp(1-cv*25,.1,1)}
+function trend(a){const rows=(a?.profileResults||[]).filter(r=>Number.isFinite(r?.perf)).slice(-8);if(rows.length<3)return 'Limited Evidence';const q=typeof DISCIPLINES!=='undefined'?DISCIPLINES[a.disc]:null,isTime=q?.type==='time';const half=Math.floor(rows.length/2),old=rows.slice(0,half).map(r=>r.perf),recent=rows.slice(half).map(r=>r.perf);const av=x=>x.reduce((a,b)=>a+b,0)/Math.max(1,x.length),delta=(av(recent)-av(old))*(isTime?-1:1);const scale=Math.abs(av(old))||1,pct=delta/scale;if(pct>.018)return 'Rapidly Improving';if(pct>.004)return 'Improving';if(pct<-.018)return 'Declining';if(resultConsistency(a)<.45)return 'Inconsistent';return 'Stable'}
+
+function root(){
+ const state=nowState();if(!state)
+
+===== MATCH =====
+
+ecent)-av(old))*(isTime?-1:1);const scale=Math.abs(av(old))||1,pct=delta/scale;if(pct>.018)return 'Rapidly Improving';if(pct>.004)return 'Improving';if(pct<-.018)return 'Declining';if(resultConsistency(a)<.45)return 'Inconsistent';return 'Stable'}
+
+function root(){
+ const state=nowState();if(!state)return null;
+ state.scoutingV2??={version:VERSION,nations:{},debug:false,analytics:{recommendations:[],discoveries:[],reportAccuracy:[]}};
+ state.scoutingV2.version=VERSION;
+ state.scoutingV2.nations??={};state.scoutingV2.analytics??={recommendations:[],discoveries:[],reportAccuracy:[]};
+ return state.scoutingV2;
+}
+function organisation(n=nation()){
+ const r=root();if(!r)return null;
+ const org=r.nations[n]??={knowledge:{},reports:[],watchlist:{},assignments:[],staff:{},settings:{control:'Shared',philosophy:'Balanced',priority:'Find Future
+
+===== MATCH =====
+
+004)return 'Improving';if(pct<-.018)return 'Declining';if(resultConsistency(a)<.45)return 'Inconsistent';return 'Stable'}
+
+function root(){
+ const state=nowState();if(!state)return null;
+ state.scoutingV2??={version:VERSION,nations:{},debug:false,analytics:{recommendations:[],discoveries:[],reportAccuracy:[]}};
+ state.scoutingV2.version=VERSION;
+ state.scoutingV2.nations??={};state.scoutingV2.analytics??={recommendations:[],discoveries:[],reportAccuracy:[]};
+ return state.scoutingV2;
+}
+function organisation(n=nation()){
+ const r=root();if(!r)return null;
+ const org=r.nations[n]??={knowledge:{},reports:[],watchlist:{},assignments:[],staff:{},settings:{control:'Shared',philosophy:'Balanced',priority:'Find Future Talent'},alerts:[],history:[],migrated:false};
+ org.nation=n;org.knowledge??={};org.reports??=[];org.watchlist??={};org.assig
+
+===== MATCH =====
+
+)return 'Declining';if(resultConsistency(a)<.45)return 'Inconsistent';return 'Stable'}
+
+function root(){
+ const state=nowState();if(!state)return null;
+ state.scoutingV2??={version:VERSION,nations:{},debug:false,analytics:{recommendations:[],discoveries:[],reportAccuracy:[]}};
+ state.scoutingV2.version=VERSION;
+ state.scoutingV2.nations??={};state.scoutingV2.analytics??={recommendations:[],discoveries:[],reportAccuracy:[]};
+ return state.scoutingV2;
+}
+function organisation(n=nation()){
+ const r=root();if(!r)return null;
+ const org=r.nations[n]??={knowledge:{},reports:[],watchlist:{},assignments:[],staff:{},settings:{control:'Shared',philosophy:'Balanced',priority:'Find Future Talent'},alerts:[],history:[],migrated:false};
+ org.nation=n;org.knowledge??={};org.reports??=[];org.watchlist??={};org.assignments??=[];org.staff??={};org.sett
+
+===== MATCH =====
+
+onsistency(a)<.45)return 'Inconsistent';return 'Stable'}
+
+function root(){
+ const state=nowState();if(!state)return null;
+ state.scoutingV2??={version:VERSION,nations:{},debug:false,analytics:{recommendations:[],discoveries:[],reportAccuracy:[]}};
+ state.scoutingV2.version=VERSION;
+ state.scoutingV2.nations??={};state.scoutingV2.analytics??={recommendations:[],discoveries:[],reportAccuracy:[]};
+ return state.scoutingV2;
+}
+function organisation(n=nation()){
+ const r=root();if(!r)return null;
+ const org=r.nations[n]??={knowledge:{},reports:[],watchlist:{},assignments:[],staff:{},settings:{control:'Shared',philosophy:'Balanced',priority:'Find Future Talent'},alerts:[],history:[],migrated:false};
+ org.nation=n;org.knowledge??={};org.reports??=[];org.watchlist??={};org.assignments??=[];org.staff??={};org.settings??={};org.settings.control
+
+===== MATCH =====
+
+tate();if(!state)return null;
+ state.scoutingV2??={version:VERSION,nations:{},debug:false,analytics:{recommendations:[],discoveries:[],reportAccuracy:[]}};
+ state.scoutingV2.version=VERSION;
+ state.scoutingV2.nations??={};state.scoutingV2.analytics??={recommendations:[],discoveries:[],reportAccuracy:[]};
+ return state.scoutingV2;
+}
+function organisation(n=nation()){
+ const r=root();if(!r)return null;
+ const org=r.nations[n]??={knowledge:{},reports:[],watchlist:{},assignments:[],staff:{},settings:{control:'Shared',philosophy:'Balanced',priority:'Find Future Talent'},alerts:[],history:[],migrated:false};
+ org.nation=n;org.knowledge??={};org.reports??=[];org.watchlist??={};org.assignments??=[];org.staff??={};org.settings??={};org.settings.control??='Shared';org.settings.philosophy??='Balanced';org.settings.priority??='Find Future Talent
+
+===== MATCH =====
+
+y:[]}};
+ state.scoutingV2.version=VERSION;
+ state.scoutingV2.nations??={};state.scoutingV2.analytics??={recommendations:[],discoveries:[],reportAccuracy:[]};
+ return state.scoutingV2;
+}
+function organisation(n=nation()){
+ const r=root();if(!r)return null;
+ const org=r.nations[n]??={knowledge:{},reports:[],watchlist:{},assignments:[],staff:{},settings:{control:'Shared',philosophy:'Balanced',priority:'Find Future Talent'},alerts:[],history:[],migrated:false};
+ org.nation=n;org.knowledge??={};org.reports??=[];org.watchlist??={};org.assignments??=[];org.staff??={};org.settings??={};org.settings.control??='Shared';org.settings.philosophy??='Balanced';org.settings.priority??='Find Future Talent';org.alerts??=[];org.history??=[];
+ ensureScout(org,n);if(!org.migrated)migrateLegacy(org,n);
+ return org;
+}
+function currentScoutObject(targetNatio
+
+===== MATCH =====
+
+n()){
+ const r=root();if(!r)return null;
+ const org=r.nations[n]??={knowledge:{},reports:[],watchlist:{},assignments:[],staff:{},settings:{control:'Shared',philosophy:'Balanced',priority:'Find Future Talent'},alerts:[],history:[],migrated:false};
+ org.nation=n;org.knowledge??={};org.reports??=[];org.watchlist??={};org.assignments??=[];org.staff??={};org.settings??={};org.settings.control??='Shared';org.settings.philosophy??='Balanced';org.settings.priority??='Find Future Talent';org.alerts??=[];org.history??=[];
+ ensureScout(org,n);if(!org.migrated)migrateLegacy(org,n);
+ return org;
+}
+function currentScoutObject(targetNation=nation()){
+ if(targetNation===nation()){
+  try{if(typeof ensureCoaches==='function')ensureCoaches()}catch(_){ }
+  const c=nowState()?.coaches?.scout;
+  if(c)return c;
+  const level=clamp(Number(nowState()?.staff?.
+
+===== MATCH =====
+
+t'},alerts:[],history:[],migrated:false};
+ org.nation=n;org.knowledge??={};org.reports??=[];org.watchlist??={};org.assignments??=[];org.staff??={};org.settings??={};org.settings.control??='Shared';org.settings.philosophy??='Balanced';org.settings.priority??='Find Future Talent';org.alerts??=[];org.history??=[];
+ ensureScout(org,n);if(!org.migrated)migrateLegacy(org,n);
+ return org;
+}
+function currentScoutObject(targetNation=nation()){
+ if(targetNation===nation()){
+  try{if(typeof ensureCoaches==='function')ensureCoaches()}catch(_){ }
+  const c=nowState()?.coaches?.scout;
+  if(c)return c;
+  const level=clamp(Number(nowState()?.staff?.scout)||1,1,5);
+  return {id:`interim-scout-${targetNation.replace(/\W+/g,'-').toLowerCase()}`,name:'Interim Talent Scout',role:'scout',level};
+ }
+ let level=2;
+ try{const rp=typeof rivalProgramme==='func
+
+===== MATCH =====
+
+rts??=[];org.watchlist??={};org.assignments??=[];org.staff??={};org.settings??={};org.settings.control??='Shared';org.settings.philosophy??='Balanced';org.settings.priority??='Find Future Talent';org.alerts??=[];org.history??=[];
+ ensureScout(org,n);if(!org.migrated)migrateLegacy(org,n);
+ return org;
+}
+function currentScoutObject(targetNation=nation()){
+ if(targetNation===nation()){
+  try{if(typeof ensureCoaches==='function')ensureCoaches()}catch(_){ }
+  const c=nowState()?.coaches?.scout;
+  if(c)return c;
+  const level=clamp(Number(nowState()?.staff?.scout)||1,1,5);
+  return {id:`interim-scout-${targetNation.replace(/\W+/g,'-').toLowerCase()}`,name:'Interim Talent Scout',role:'scout',level};
+ }
+ let level=2;
+ try{const rp=typeof rivalProgramme==='function'?rivalProgramme(targetNation):null;level=clamp(Math.round(((rp?.staff?.pathway
+
+===== MATCH =====
+
+rity??='Find Future Talent';org.alerts??=[];org.history??=[];
+ ensureScout(org,n);if(!org.migrated)migrateLegacy(org,n);
+ return org;
+}
+function currentScoutObject(targetNation=nation()){
+ if(targetNation===nation()){
+  try{if(typeof ensureCoaches==='function')ensureCoaches()}catch(_){ }
+  const c=nowState()?.coaches?.scout;
+  if(c)return c;
+  const level=clamp(Number(nowState()?.staff?.scout)||1,1,5);
+  return {id:`interim-scout-${targetNation.replace(/\W+/g,'-').toLowerCase()}`,name:'Interim Talent Scout',role:'scout',level};
+ }
+ let level=2;
+ try{const rp=typeof rivalProgramme==='function'?rivalProgramme(targetNation):null;level=clamp(Math.round(((rp?.staff?.pathway||rp?.staff?.science||60)-35)/12),1,5)}catch(_){ }
+ const names={USA:'Jordan Hayes',JAMAICA:'Andre Campbell',GERMANY:'Lukas Weber'};
+ return {id:`ai-head-scout-${target
+
+===== MATCH =====
+
+cout(org,n);if(!org.migrated)migrateLegacy(org,n);
+ return org;
+}
+function currentScoutObject(targetNation=nation()){
+ if(targetNation===nation()){
+  try{if(typeof ensureCoaches==='function')ensureCoaches()}catch(_){ }
+  const c=nowState()?.coaches?.scout;
+  if(c)return c;
+  const level=clamp(Number(nowState()?.staff?.scout)||1,1,5);
+  return {id:`interim-scout-${targetNation.replace(/\W+/g,'-').toLowerCase()}`,name:'Interim Talent Scout',role:'scout',level};
+ }
+ let level=2;
+ try{const rp=typeof rivalProgramme==='function'?rivalProgramme(targetNation):null;level=clamp(Math.round(((rp?.staff?.pathway||rp?.staff?.science||60)-35)/12),1,5)}catch(_){ }
+ const names={USA:'Jordan Hayes',JAMAICA:'Andre Campbell',GERMANY:'Lukas Weber'};
+ return {id:`ai-head-scout-${targetNation.replace(/\W+/g,'-').toLowerCase()}`,name:names[targetNation]||`
+
+===== MATCH =====
+
+gacy(org,n);
+ return org;
+}
+function currentScoutObject(targetNation=nation()){
+ if(targetNation===nation()){
+  try{if(typeof ensureCoaches==='function')ensureCoaches()}catch(_){ }
+  const c=nowState()?.coaches?.scout;
+  if(c)return c;
+  const level=clamp(Number(nowState()?.staff?.scout)||1,1,5);
+  return {id:`interim-scout-${targetNation.replace(/\W+/g,'-').toLowerCase()}`,name:'Interim Talent Scout',role:'scout',level};
+ }
+ let level=2;
+ try{const rp=typeof rivalProgramme==='function'?rivalProgramme(targetNation):null;level=clamp(Math.round(((rp?.staff?.pathway||rp?.staff?.science||60)-35)/12),1,5)}catch(_){ }
+ const names={USA:'Jordan Hayes',JAMAICA:'Andre Campbell',GERMANY:'Lukas Weber'};
+ return {id:`ai-head-scout-${targetNation.replace(/\W+/g,'-').toLowerCase()}`,name:names[targetNation]||`${targetNation} Talent Scout`,role:'sc
+
+===== MATCH =====
+
+{
+ if(targetNation===nation()){
+  try{if(typeof ensureCoaches==='function')ensureCoaches()}catch(_){ }
+  const c=nowState()?.coaches?.scout;
+  if(c)return c;
+  const level=clamp(Number(nowState()?.staff?.scout)||1,1,5);
+  return {id:`interim-scout-${targetNation.replace(/\W+/g,'-').toLowerCase()}`,name:'Interim Talent Scout',role:'scout',level};
+ }
+ let level=2;
+ try{const rp=typeof rivalProgramme==='function'?rivalProgramme(targetNation):null;level=clamp(Math.round(((rp?.staff?.pathway||rp?.staff?.science||60)-35)/12),1,5)}catch(_){ }
+ const names={USA:'Jordan Hayes',JAMAICA:'Andre Campbell',GERMANY:'Lukas Weber'};
+ return {id:`ai-head-scout-${targetNation.replace(/\W+/g,'-').toLowerCase()}`,name:names[targetNation]||`${targetNation} Talent Scout`,role:'scout',level};
+}
+function ensureScout(org,n){
+ const c=currentScoutObject(n),id=
+
+===== MATCH =====
+
+ation===nation()){
+  try{if(typeof ensureCoaches==='function')ensureCoaches()}catch(_){ }
+  const c=nowState()?.coaches?.scout;
+  if(c)return c;
+  const level=clamp(Number(nowState()?.staff?.scout)||1,1,5);
+  return {id:`interim-scout-${targetNation.replace(/\W+/g,'-').toLowerCase()}`,name:'Interim Talent Scout',role:'scout',level};
+ }
+ let level=2;
+ try{const rp=typeof rivalProgramme==='function'?rivalProgramme(targetNation):null;level=clamp(Math.round(((rp?.staff?.pathway||rp?.staff?.science||60)-35)/12),1,5)}catch(_){ }
+ const names={USA:'Jordan Hayes',JAMAICA:'Andre Campbell',GERMANY:'Lukas Weber'};
+ return {id:`ai-head-scout-${targetNation.replace(/\W+/g,'-').toLowerCase()}`,name:names[targetNation]||`${targetNation} Talent Scout`,role:'scout',level};
+}
+function ensureScout(org,n){
+ const c=currentScoutObject(n),id=String(c.id||
+
+===== MATCH =====
+
+',role:'scout',level};
+ }
+ let level=2;
+ try{const rp=typeof rivalProgramme==='function'?rivalProgramme(targetNation):null;level=clamp(Math.round(((rp?.staff?.pathway||rp?.staff?.science||60)-35)/12),1,5)}catch(_){ }
+ const names={USA:'Jordan Hayes',JAMAICA:'Andre Campbell',GERMANY:'Lukas Weber'};
+ return {id:`ai-head-scout-${targetNation.replace(/\W+/g,'-').toLowerCase()}`,name:names[targetNation]||`${targetNation} Talent Scout`,role:'scout',level};
+}
+function ensureScout(org,n){
+ const c=currentScoutObject(n),id=String(c.id||'head-scout');
+ if(org.staff[id]){org.headScoutId=id;return org.staff[id]}
+ const level=clamp(Number(c.level)||1,1,5),base=42+level*9,h=hash(id),eventKnowledge={};
+ for(const [i,g] of Object.keys(GROUP_LABELS).entries())eventKnowledge[g]=clamp(base+((h>>(i*3))%15)-7,35,96);
+ const age=38+(h%22),experience=Math.
+
+===== MATCH =====
+
+getNation):null;level=clamp(Math.round(((rp?.staff?.pathway||rp?.staff?.science||60)-35)/12),1,5)}catch(_){ }
+ const names={USA:'Jordan Hayes',JAMAICA:'Andre Campbell',GERMANY:'Lukas Weber'};
+ return {id:`ai-head-scout-${targetNation.replace(/\W+/g,'-').toLowerCase()}`,name:names[targetNation]||`${targetNation} Talent Scout`,role:'scout',level};
+}
+function ensureScout(org,n){
+ const c=currentScoutObject(n),id=String(c.id||'head-scout');
+ if(org.staff[id]){org.headScoutId=id;return org.staff[id]}
+ const level=clamp(Number(c.level)||1,1,5),base=42+level*9,h=hash(id),eventKnowledge={};
+ for(const [i,g] of Object.keys(GROUP_LABELS).entries())eventKnowledge[g]=clamp(base+((h>>(i*3))%15)-7,35,96);
+ const age=38+(h%22),experience=Math.max(6,age-31+(h%7));
+ const profile={
+  id,name:c.name||'National Scout',role:'Head Scout',ageAtOrigin:age,
+
+===== MATCH =====
+
+ll;level=clamp(Math.round(((rp?.staff?.pathway||rp?.staff?.science||60)-35)/12),1,5)}catch(_){ }
+ const names={USA:'Jordan Hayes',JAMAICA:'Andre Campbell',GERMANY:'Lukas Weber'};
+ return {id:`ai-head-scout-${targetNation.replace(/\W+/g,'-').toLowerCase()}`,name:names[targetNation]||`${targetNation} Talent Scout`,role:'scout',level};
+}
+function ensureScout(org,n){
+ const c=currentScoutObject(n),id=String(c.id||'head-scout');
+ if(org.staff[id]){org.headScoutId=id;return org.staff[id]}
+ const level=clamp(Number(c.level)||1,1,5),base=42+level*9,h=hash(id),eventKnowledge={};
+ for(const [i,g] of Object.keys(GROUP_LABELS).entries())eventKnowledge[g]=clamp(base+((h>>(i*3))%15)-7,35,96);
+ const age=38+(h%22),experience=Math.max(6,age-31+(h%7));
+ const profile={
+  id,name:c.name||'National Scout',role:'Head Scout',ageAtOrigin:age,originSeason:
+
+===== MATCH =====
+
+staff?.pathway||rp?.staff?.science||60)-35)/12),1,5)}catch(_){ }
+ const names={USA:'Jordan Hayes',JAMAICA:'Andre Campbell',GERMANY:'Lukas Weber'};
+ return {id:`ai-head-scout-${targetNation.replace(/\W+/g,'-').toLowerCase()}`,name:names[targetNation]||`${targetNation} Talent Scout`,role:'scout',level};
+}
+function ensureScout(org,n){
+ const c=currentScoutObject(n),id=String(c.id||'head-scout');
+ if(org.staff[id]){org.headScoutId=id;return org.staff[id]}
+ const level=clamp(Number(c.level)||1,1,5),base=42+level*9,h=hash(id),eventKnowledge={};
+ for(const [i,g] of Object.keys(GROUP_LABELS).entries())eventKnowledge[g]=clamp(base+((h>>(i*3))%15)-7,35,96);
+ const age=38+(h%22),experience=Math.max(6,age-31+(h%7));
+ const profile={
+  id,name:c.name||'National Scout',role:'Head Scout',ageAtOrigin:age,originSeason:season(),nationality:n,
+  biogra
+
+===== MATCH =====
+
+ence||60)-35)/12),1,5)}catch(_){ }
+ const names={USA:'Jordan Hayes',JAMAICA:'Andre Campbell',GERMANY:'Lukas Weber'};
+ return {id:`ai-head-scout-${targetNation.replace(/\W+/g,'-').toLowerCase()}`,name:names[targetNation]||`${targetNation} Talent Scout`,role:'scout',level};
+}
+function ensureScout(org,n){
+ const c=currentScoutObject(n),id=String(c.id||'head-scout');
+ if(org.staff[id]){org.headScoutId=id;return org.staff[id]}
+ const level=clamp(Number(c.level)||1,1,5),base=42+level*9,h=hash(id),eventKnowledge={};
+ for(const [i,g] of Object.keys(GROUP_LABELS).entries())eventKnowledge[g]=clamp(base+((h>>(i*3))%15)-7,35,96);
+ const age=38+(h%22),experience=Math.max(6,age-31+(h%7));
+ const profile={
+  id,name:c.name||'National Scout',role:'Head Scout',ageAtOrigin:age,originSeason:season(),nationality:n,
+  biography:`${experience} years in ta
+
+===== MATCH =====
+
+onst names={USA:'Jordan Hayes',JAMAICA:'Andre Campbell',GERMANY:'Lukas Weber'};
+ return {id:`ai-head-scout-${targetNation.replace(/\W+/g,'-').toLowerCase()}`,name:names[targetNation]||`${targetNation} Talent Scout`,role:'scout',level};
+}
+function ensureScout(org,n){
+ const c=currentScoutObject(n),id=String(c.id||'head-scout');
+ if(org.staff[id]){org.headScoutId=id;return org.staff[id]}
+ const level=clamp(Number(c.level)||1,1,5),base=42+level*9,h=hash(id),eventKnowledge={};
+ for(const [i,g] of Object.keys(GROUP_LABELS).entries())eventKnowledge[g]=clamp(base+((h>>(i*3))%15)-7,35,96);
+ const age=38+(h%22),experience=Math.max(6,age-31+(h%7));
+ const profile={
+  id,name:c.name||'National Scout',role:'Head Scout',ageAtOrigin:age,originSeason:season(),nationality:n,
+  biography:`${experience} years in talent identification, with experience 
+
+===== MATCH =====
+
+CA:'Andre Campbell',GERMANY:'Lukas Weber'};
+ return {id:`ai-head-scout-${targetNation.replace(/\W+/g,'-').toLowerCase()}`,name:names[targetNation]||`${targetNation} Talent Scout`,role:'scout',level};
+}
+function ensureScout(org,n){
+ const c=currentScoutObject(n),id=String(c.id||'head-scout');
+ if(org.staff[id]){org.headScoutId=id;return org.staff[id]}
+ const level=clamp(Number(c.level)||1,1,5),base=42+level*9,h=hash(id),eventKnowledge={};
+ for(const [i,g] of Object.keys(GROUP_LABELS).entries())eventKnowledge[g]=clamp(base+((h>>(i*3))%15)-7,35,96);
+ const age=38+(h%22),experience=Math.max(6,age-31+(h%7));
+ const profile={
+  id,name:c.name||'National Scout',role:'Head Scout',ageAtOrigin:age,originSeason:season(),nationality:n,
+  biography:`${experience} years in talent identification, with experience across domestic competition and athl
+
+===== MATCH =====
+
+n org.staff[id]}
+ const level=clamp(Number(c.level)||1,1,5),base=42+level*9,h=hash(id),eventKnowledge={};
+ for(const [i,g] of Object.keys(GROUP_LABELS).entries())eventKnowledge[g]=clamp(base+((h>>(i*3))%15)-7,35,96);
+ const age=38+(h%22),experience=Math.max(6,age-31+(h%7));
+ const profile={
+  id,name:c.name||'National Scout',role:'Head Scout',ageAtOrigin:age,originSeason:season(),nationality:n,
+  biography:`${experience} years in talent identification, with experience across domestic competition and athlete development pathways.`,
+  experience,reputation:clamp(35+level*11+(h%9),35,94),personality:PERSONALITIES[h%PERSONALITIES.length],
+  attributes:{
+   talentIdentification:clamp(base+((h>>2)%13)-6,35,97),
+   currentJudgement:clamp(base+((h>>5)%13)-6,35,97),
+   potentialJudgement:clamp(base+((h>>8)%13)-6,35,97),
+   analysis:clamp(base
+
+===== MATCH =====
+
+const level=clamp(Number(c.level)||1,1,5),base=42+level*9,h=hash(id),eventKnowledge={};
+ for(const [i,g] of Object.keys(GROUP_LABELS).entries())eventKnowledge[g]=clamp(base+((h>>(i*3))%15)-7,35,96);
+ const age=38+(h%22),experience=Math.max(6,age-31+(h%7));
+ const profile={
+  id,name:c.name||'National Scout',role:'Head Scout',ageAtOrigin:age,originSeason:season(),nationality:n,
+  biography:`${experience} years in talent identification, with experience across domestic competition and athlete development pathways.`,
+  experience,reputation:clamp(35+level*11+(h%9),35,94),personality:PERSONALITIES[h%PERSONALITIES.length],
+  attributes:{
+   talentIdentification:clamp(base+((h>>2)%13)-6,35,97),
+   currentJudgement:clamp(base+((h>>5)%13)-6,35,97),
+   potentialJudgement:clamp(base+((h>>8)%13)-6,35,97),
+   analysis:clamp(base+((h>>11)%13)-6,35
+
+===== MATCH =====
+
+-6,35,97),
+   analysis:clamp(base+((h>>11)%13)-6,35,97),
+   network:clamp(base+((h>>14)%13)-6,35,97),
+   workRate:clamp(base+((h>>17)%13)-6,35,97),
+   adaptability:clamp(base+((h>>20)%13)-6,35,97),eventKnowledge
+  },
+  history:[{season:season(),week:week(),text:`Serving as ${n==='GREAT BRITAIN'?'Great Britain':n} Head Scout.`}],discoveries:[],recommendations:[],active:true
+ };
+ const groups=Object.entries(eventKnowledge).sort((a,b)=>b[1]-a[1]);
+ profile.specialisms=[GROUP_LABELS[groups[0][0]],GROUP_LABELS[groups[1][0]],profile.personality==='Prospect Hunter'?'Young Athletes':'Domestic Competition'];
+ profile.weaknesses=[GROUP_LABELS[groups.at(-1)[0]]];
+ profile.capacity=clamp(2+Math.floor(profile.attributes.workRate/20),3,7);
+ org.staff[id]=profile;org.headScoutId=id;return profile;
+}
+function headScout(org=organisation()){return org
+
+===== MATCH =====
+
+;
+ profile.specialisms=[GROUP_LABELS[groups[0][0]],GROUP_LABELS[groups[1][0]],profile.personality==='Prospect Hunter'?'Young Athletes':'Domestic Competition'];
+ profile.weaknesses=[GROUP_LABELS[groups.at(-1)[0]]];
+ profile.capacity=clamp(2+Math.floor(profile.attributes.workRate/20),3,7);
+ org.staff[id]=profile;org.headScoutId=id;return profile;
+}
+function headScout(org=organisation()){return org?.staff?.[org.headScoutId]||null}
+function scoutAge(sc){return sc?sc.ageAtOrigin+Math.max(0,season()-Number(sc.originSeason||season())):0}
+function scoutQuality(sc,field='current',a=null){if(!sc)return 40;const attr=sc.attributes||{},g=a?groupFor(a):null,event=g?Number(attr.eventKnowledge?.[g]||50):50;if(field==='potential')return .42*(attr.potentialJudgement||50)+.25*(attr.analysis||50)+.23*event+.10*(attr.adaptability||50);if(field==='discov
+
+===== MATCH =====
+
+s[0][0]],GROUP_LABELS[groups[1][0]],profile.personality==='Prospect Hunter'?'Young Athletes':'Domestic Competition'];
+ profile.weaknesses=[GROUP_LABELS[groups.at(-1)[0]]];
+ profile.capacity=clamp(2+Math.floor(profile.attributes.workRate/20),3,7);
+ org.staff[id]=profile;org.headScoutId=id;return profile;
+}
+function headScout(org=organisation()){return org?.staff?.[org.headScoutId]||null}
+function scoutAge(sc){return sc?sc.ageAtOrigin+Math.max(0,season()-Number(sc.originSeason||season())):0}
+function scoutQuality(sc,field='current',a=null){if(!sc)return 40;const attr=sc.attributes||{},g=a?groupFor(a):null,event=g?Number(attr.eventKnowledge?.[g]||50):50;if(field==='potential')return .42*(attr.potentialJudgement||50)+.25*(attr.analysis||50)+.23*event+.10*(attr.adaptability||50);if(field==='discovery')return .42*(attr.talentIdentification
+
+===== MATCH =====
+
+y==='Prospect Hunter'?'Young Athletes':'Domestic Competition'];
+ profile.weaknesses=[GROUP_LABELS[groups.at(-1)[0]]];
+ profile.capacity=clamp(2+Math.floor(profile.attributes.workRate/20),3,7);
+ org.staff[id]=profile;org.headScoutId=id;return profile;
+}
+function headScout(org=organisation()){return org?.staff?.[org.headScoutId]||null}
+function scoutAge(sc){return sc?sc.ageAtOrigin+Math.max(0,season()-Number(sc.originSeason||season())):0}
+function scoutQuality(sc,field='current',a=null){if(!sc)return 40;const attr=sc.attributes||{},g=a?groupFor(a):null,event=g?Number(attr.eventKnowledge?.[g]||50):50;if(field==='potential')return .42*(attr.potentialJudgement||50)+.25*(attr.analysis||50)+.23*event+.10*(attr.adaptability||50);if(field==='discovery')return .42*(attr.talentIdentification||50)+.28*(attr.network||50)+.2*event+.1*(attr.workRat
+
+===== MATCH =====
+
+ung Athletes':'Domestic Competition'];
+ profile.weaknesses=[GROUP_LABELS[groups.at(-1)[0]]];
+ profile.capacity=clamp(2+Math.floor(profile.attributes.workRate/20),3,7);
+ org.staff[id]=profile;org.headScoutId=id;return profile;
+}
+function headScout(org=organisation()){return org?.staff?.[org.headScoutId]||null}
+function scoutAge(sc){return sc?sc.ageAtOrigin+Math.max(0,season()-Number(sc.originSeason||season())):0}
+function scoutQuality(sc,field='current',a=null){if(!sc)return 40;const attr=sc.attributes||{},g=a?groupFor(a):null,event=g?Number(attr.eventKnowledge?.[g]||50):50;if(field==='potential')return .42*(attr.potentialJudgement||50)+.25*(attr.analysis||50)+.23*event+.10*(attr.adaptability||50);if(field==='discovery')return .42*(attr.talentIdentification||50)+.28*(attr.network||50)+.2*event+.1*(attr.workRate||50);return .48*(attr.c
+
+===== MATCH =====
+
+acity=clamp(2+Math.floor(profile.attributes.workRate/20),3,7);
+ org.staff[id]=profile;org.headScoutId=id;return profile;
+}
+function headScout(org=organisation()){return org?.staff?.[org.headScoutId]||null}
+function scoutAge(sc){return sc?sc.ageAtOrigin+Math.max(0,season()-Number(sc.originSeason||season())):0}
+function scoutQuality(sc,field='current',a=null){if(!sc)return 40;const attr=sc.attributes||{},g=a?groupFor(a):null,event=g?Number(attr.eventKnowledge?.[g]||50):50;if(field==='potential')return .42*(attr.potentialJudgement||50)+.25*(attr.analysis||50)+.23*event+.10*(attr.adaptability||50);if(field==='discovery')return .42*(attr.talentIdentification||50)+.28*(attr.network||50)+.2*event+.1*(attr.workRate||50);return .48*(attr.currentJudgement||50)+.24*(attr.analysis||50)+.2*event+.08*(attr.adaptability||50)}
+
+function initialKnowl
+
+===== MATCH =====
+
+0)+.2*event+.1*(attr.workRate||50);return .48*(attr.currentJudgement||50)+.24*(attr.analysis||50)+.2*event+.08*(attr.adaptability||50)}
+
+function initialKnowledge(a,targetNation=nation()){
+ if(!a)return 0;if(a.nation!==targetNation)return 0;
+ if(a.inSquad!==false)return a.source==='Established'?100:82;
+ if(a.source==='Scouted')return 26;
+ if(a.source==='National Pool')return 34;
+ return 18;
+}
+function knowledge(aOrId,org=organisation()){
+ const a=typeof aOrId==='object'?aOrId:athlete(aOrId);if(!a||!org)return null;const id=String(a.id);
+ if(!org.knowledge[id]){
+  const evidence=initialKnowledge(a,org.nation||nation()),source=a.discoveredSeason?'Legacy scouting record':a.inSquad===false?'National Pool register':'National programme';
+  org.knowledge[id]={athleteId:id,evidence,stage:stageForEvidence(evidence).id,firstIdentified:{season:
+
+===== MATCH =====
+
+ if(a.source==='National Pool')return 34;
+ return 18;
+}
+function knowledge(aOrId,org=organisation()){
+ const a=typeof aOrId==='object'?aOrId:athlete(aOrId);if(!a||!org)return null;const id=String(a.id);
+ if(!org.knowledge[id]){
+  const evidence=initialKnowledge(a,org.nation||nation()),source=a.discoveredSeason?'Legacy scouting record':a.inSquad===false?'National Pool register':'National programme';
+  org.knowledge[id]={athleteId:id,evidence,stage:stageForEvidence(evidence).id,firstIdentified:{season:Number(a.discoveredSeason||season()),week:Number(a.discoveredWeek||week()),careerWeek:cw(),source,scoutId:org.headScoutId},lastObservedCW:cw(),observations:[],scoutOpinions:{},reportIds:[],stale:false};
+ }
+ const k=org.knowledge[id];k.observations??=[];k.scoutOpinions??={};k.reportIds??=[];k.evidence=clamp(Number(k.evidence)||0,0,110);k.s
+
+===== MATCH =====
+
+)),source=a.discoveredSeason?'Legacy scouting record':a.inSquad===false?'National Pool register':'National programme';
+  org.knowledge[id]={athleteId:id,evidence,stage:stageForEvidence(evidence).id,firstIdentified:{season:Number(a.discoveredSeason||season()),week:Number(a.discoveredWeek||week()),careerWeek:cw(),source,scoutId:org.headScoutId},lastObservedCW:cw(),observations:[],scoutOpinions:{},reportIds:[],stale:false};
+ }
+ const k=org.knowledge[id];k.observations??=[];k.scoutOpinions??={};k.reportIds??=[];k.evidence=clamp(Number(k.evidence)||0,0,110);k.stage=stageForEvidence(k.evidence).id;k.firstIdentified??={season:Number(a.discoveredSeason||season()),week:Number(a.discoveredWeek||week()),careerWeek:cw(),source:a.inSquad===false?'National Pool register':'National programme',scoutId:org.headScoutId};k.lastObservedCW=Number.isFinit
+
+===== MATCH =====
+
+overedSeason?'Legacy scouting record':a.inSquad===false?'National Pool register':'National programme';
+  org.knowledge[id]={athleteId:id,evidence,stage:stageForEvidence(evidence).id,firstIdentified:{season:Number(a.discoveredSeason||season()),week:Number(a.discoveredWeek||week()),careerWeek:cw(),source,scoutId:org.headScoutId},lastObservedCW:cw(),observations:[],scoutOpinions:{},reportIds:[],stale:false};
+ }
+ const k=org.knowledge[id];k.observations??=[];k.scoutOpinions??={};k.reportIds??=[];k.evidence=clamp(Number(k.evidence)||0,0,110);k.stage=stageForEvidence(k.evidence).id;k.firstIdentified??={season:Number(a.discoveredSeason||season()),week:Number(a.discoveredWeek||week()),careerWeek:cw(),source:a.inSquad===false?'National Pool register':'National programme',scoutId:org.headScoutId};k.lastObservedCW=Number.isFinite(Number(k.lastO
+
+===== MATCH =====
+
+ad===false?'National Pool register':'National programme';
+  org.knowledge[id]={athleteId:id,evidence,stage:stageForEvidence(evidence).id,firstIdentified:{season:Number(a.discoveredSeason||season()),week:Number(a.discoveredWeek||week()),careerWeek:cw(),source,scoutId:org.headScoutId},lastObservedCW:cw(),observations:[],scoutOpinions:{},reportIds:[],stale:false};
+ }
+ const k=org.knowledge[id];k.observations??=[];k.scoutOpinions??={};k.reportIds??=[];k.evidence=clamp(Number(k.evidence)||0,0,110);k.stage=stageForEvidence(k.evidence).id;k.firstIdentified??={season:Number(a.discoveredSeason||season()),week:Number(a.discoveredWeek||week()),careerWeek:cw(),source:a.inSquad===false?'National Pool register':'National programme',scoutId:org.headScoutId};k.lastObservedCW=Number.isFinite(Number(k.lastObservedCW))?Number(k.lastObservedCW):Number(k
+
+===== MATCH =====
+
+ence,stage:stageForEvidence(evidence).id,firstIdentified:{season:Number(a.discoveredSeason||season()),week:Number(a.discoveredWeek||week()),careerWeek:cw(),source,scoutId:org.headScoutId},lastObservedCW:cw(),observations:[],scoutOpinions:{},reportIds:[],stale:false};
+ }
+ const k=org.knowledge[id];k.observations??=[];k.scoutOpinions??={};k.reportIds??=[];k.evidence=clamp(Number(k.evidence)||0,0,110);k.stage=stageForEvidence(k.evidence).id;k.firstIdentified??={season:Number(a.discoveredSeason||season()),week:Number(a.discoveredWeek||week()),careerWeek:cw(),source:a.inSquad===false?'National Pool register':'National programme',scoutId:org.headScoutId};k.lastObservedCW=Number.isFinite(Number(k.lastObservedCW))?Number(k.lastObservedCW):Number(k.firstIdentified.careerWeek||cw());k.stale=!!k.stale;
+ return k;
+}
+function migrateLegacy(org,n)
+
+===== MATCH =====
+
+??=[];k.scoutOpinions??={};k.reportIds??=[];k.evidence=clamp(Number(k.evidence)||0,0,110);k.stage=stageForEvidence(k.evidence).id;k.firstIdentified??={season:Number(a.discoveredSeason||season()),week:Number(a.discoveredWeek||week()),careerWeek:cw(),source:a.inSquad===false?'National Pool register':'National programme',scoutId:org.headScoutId};k.lastObservedCW=Number.isFinite(Number(k.lastObservedCW))?Number(k.lastObservedCW):Number(k.firstIdentified.careerWeek||cw());k.stale=!!k.stale;
+ return k;
+}
+function migrateLegacy(org,n){
+ const legacy=nowState()?.scouting;
+ for(const a of (nowState()?.athletes||[]).filter(a=>a.nation===n))knowledge(a,org);
+ for(const old of legacy?.reports||[]){
+  const a=athlete(old.athleteId);if(!a||a.nation!==n)continue;const k=knowledge(a,org);if(k.observations.some(o=>o.legacySeason===old.season&&o.legac
+
+===== MATCH =====
+
+nions??={};k.reportIds??=[];k.evidence=clamp(Number(k.evidence)||0,0,110);k.stage=stageForEvidence(k.evidence).id;k.firstIdentified??={season:Number(a.discoveredSeason||season()),week:Number(a.discoveredWeek||week()),careerWeek:cw(),source:a.inSquad===false?'National Pool register':'National programme',scoutId:org.headScoutId};k.lastObservedCW=Number.isFinite(Number(k.lastObservedCW))?Number(k.lastObservedCW):Number(k.firstIdentified.careerWeek||cw());k.stale=!!k.stale;
+ return k;
+}
+function migrateLegacy(org,n){
+ const legacy=nowState()?.scouting;
+ for(const a of (nowState()?.athletes||[]).filter(a=>a.nation===n))knowledge(a,org);
+ for(const old of legacy?.reports||[]){
+  const a=athlete(old.athleteId);if(!a||a.nation!==n)continue;const k=knowledge(a,org);if(k.observations.some(o=>o.legacySeason===old.season&&o.legacyWeek===old.week
+
+===== MATCH =====
+
+ek:cw(),source:a.inSquad===false?'National Pool register':'National programme',scoutId:org.headScoutId};k.lastObservedCW=Number.isFinite(Number(k.lastObservedCW))?Number(k.lastObservedCW):Number(k.firstIdentified.careerWeek||cw());k.stale=!!k.stale;
+ return k;
+}
+function migrateLegacy(org,n){
+ const legacy=nowState()?.scouting;
+ for(const a of (nowState()?.athletes||[]).filter(a=>a.nation===n))knowledge(a,org);
+ for(const old of legacy?.reports||[]){
+  const a=athlete(old.athleteId);if(!a||a.nation!==n)continue;const k=knowledge(a,org);if(k.observations.some(o=>o.legacySeason===old.season&&o.legacyWeek===old.week))continue;
+  k.evidence=clamp(k.evidence+8,0,110);k.observations.push({id:`legacy-${a.id}-${old.season}-${old.week}`,type:'legacy',source:old.reason||'Previous scouting report',season:old.season,week:old.week,careerWeek:k.fi
+
+===== MATCH =====
+
+t a=athlete(old.athleteId);if(!a||a.nation!==n)continue;const k=knowledge(a,org);if(k.observations.some(o=>o.legacySeason===old.season&&o.legacyWeek===old.week))continue;
+  k.evidence=clamp(k.evidence+8,0,110);k.observations.push({id:`legacy-${a.id}-${old.season}-${old.week}`,type:'legacy',source:old.reason||'Previous scouting report',season:old.season,week:old.week,careerWeek:k.firstIdentified.careerWeek,legacySeason:old.season,legacyWeek:old.week,weight:8,scoutId:org.headScoutId});
+ }
+ org.migrated=true;
+}
+
+function scoutingDifficulty(){const raw=String(nowState()?.game?.difficulty||nowState()?.difficulty||'Normal').toLowerCase();return raw.includes('easy')?{name:'Easy',evidence:1.15,score:6,spread:.88}:raw.includes('hard')?{name:'Hard',evidence:.9,score:-6,spread:1.12}:{name:'Normal',evidence:1,score:0,spread:1}}
+function observat
+
+===== MATCH =====
+
+cyWeek===old.week))continue;
+  k.evidence=clamp(k.evidence+8,0,110);k.observations.push({id:`legacy-${a.id}-${old.season}-${old.week}`,type:'legacy',source:old.reason||'Previous scouting report',season:old.season,week:old.week,careerWeek:k.firstIdentified.careerWeek,legacySeason:old.season,legacyWeek:old.week,weight:8,scoutId:org.headScoutId});
+ }
+ org.migrated=true;
+}
+
+function scoutingDifficulty(){const raw=String(nowState()?.game?.difficulty||nowState()?.difficulty||'Normal').toLowerCase();return raw.includes('easy')?{name:'Easy',evidence:1.15,score:6,spread:.88}:raw.includes('hard')?{name:'Hard',evidence:.9,score:-6,spread:1.12}:{name:'Normal',evidence:1,score:0,spread:1}}
+function observationWeight(type,live=true){return ({discovery:4,remote:7,competition:live?14:8,athlete:12,testing:18,programme:22,followup:10}[type]||8)}
+funct
+
+===== MATCH =====
+
+k))continue;
+  k.evidence=clamp(k.evidence+8,0,110);k.observations.push({id:`legacy-${a.id}-${old.season}-${old.week}`,type:'legacy',source:old.reason||'Previous scouting report',season:old.season,week:old.week,careerWeek:k.firstIdentified.careerWeek,legacySeason:old.season,legacyWeek:old.week,weight:8,scoutId:org.headScoutId});
+ }
+ org.migrated=true;
+}
+
+function scoutingDifficulty(){const raw=String(nowState()?.game?.difficulty||nowState()?.difficulty||'Normal').toLowerCase();return raw.includes('easy')?{name:'Easy',evidence:1.15,score:6,spread:.88}:raw.includes('hard')?{name:'Hard',evidence:.9,score:-6,spread:1.12}:{name:'Normal',evidence:1,score:0,spread:1}}
+function observationWeight(type,live=true){return ({discovery:4,remote:7,competition:live?14:8,athlete:12,testing:18,programme:22,followup:10}[type]||8)}
+function observe(aOrI
+
+===== MATCH =====
+
+,110);k.observations.push({id:`legacy-${a.id}-${old.season}-${old.week}`,type:'legacy',source:old.reason||'Previous scouting report',season:old.season,week:old.week,careerWeek:k.firstIdentified.careerWeek,legacySeason:old.season,legacyWeek:old.week,weight:8,scoutId:org.headScoutId});
+ }
+ org.migrated=true;
+}
+
+function scoutingDifficulty(){const raw=String(nowState()?.game?.difficulty||nowState()?.difficulty||'Normal').toLowerCase();return raw.includes('easy')?{name:'Easy',evidence:1.15,score:6,spread:.88}:raw.includes('hard')?{name:'Hard',evidence:.9,score:-6,spread:1.12}:{name:'Normal',evidence:1,score:0,spread:1}}
+function observationWeight(type,live=true){return ({discovery:4,remote:7,competition:live?14:8,athlete:12,testing:18,programme:22,followup:10}[type]||8)}
+function observe(aOrId,{type='athlete',source='Scout observation',s
+
+===== MATCH =====
+
+:.88}:raw.includes('hard')?{name:'Hard',evidence:.9,score:-6,spread:1.12}:{name:'Normal',evidence:1,score:0,spread:1}}
+function observationWeight(type,live=true){return ({discovery:4,remote:7,competition:live?14:8,athlete:12,testing:18,programme:22,followup:10}[type]||8)}
+function observe(aOrId,{type='athlete',source='Scout observation',scoutId=null,live=true,weight=null,performance=null}={}){
+ const org=organisation(),a=typeof aOrId==='object'?aOrId:athlete(aOrId);if(!org||!a||a.nation!==(org.nation||nation()))return null;const k=knowledge(a,org),sc=scoutId?org.staff[scoutId]:headScout(org),w=Number(weight)||observationWeight(type,live),quality=scoutQuality(sc,'current',a),effective=w*(.7+quality/180)*scoutingDifficulty().evidence;
+ k.evidence=clamp(k.evidence+effective,0,110);k.stage=stageForEvidence(k.evidence).id;k.lastObservedCW
+
+===== MATCH =====
+
+'hard')?{name:'Hard',evidence:.9,score:-6,spread:1.12}:{name:'Normal',evidence:1,score:0,spread:1}}
+function observationWeight(type,live=true){return ({discovery:4,remote:7,competition:live?14:8,athlete:12,testing:18,programme:22,followup:10}[type]||8)}
+function observe(aOrId,{type='athlete',source='Scout observation',scoutId=null,live=true,weight=null,performance=null}={}){
+ const org=organisation(),a=typeof aOrId==='object'?aOrId:athlete(aOrId);if(!org||!a||a.nation!==(org.nation||nation()))return null;const k=knowledge(a,org),sc=scoutId?org.staff[scoutId]:headScout(org),w=Number(weight)||observationWeight(type,live),quality=scoutQuality(sc,'current',a),effective=w*(.7+quality/180)*scoutingDifficulty().evidence;
+ k.evidence=clamp(k.evidence+effective,0,110);k.stage=stageForEvidence(k.evidence).id;k.lastObservedCW=cw();k.stale=false
+
+===== MATCH =====
+
+rogramme:22,followup:10}[type]||8)}
+function observe(aOrId,{type='athlete',source='Scout observation',scoutId=null,live=true,weight=null,performance=null}={}){
+ const org=organisation(),a=typeof aOrId==='object'?aOrId:athlete(aOrId);if(!org||!a||a.nation!==(org.nation||nation()))return null;const k=knowledge(a,org),sc=scoutId?org.staff[scoutId]:headScout(org),w=Number(weight)||observationWeight(type,live),quality=scoutQuality(sc,'current',a),effective=w*(.7+quality/180)*scoutingDifficulty().evidence;
+ k.evidence=clamp(k.evidence+effective,0,110);k.stage=stageForEvidence(k.evidence).id;k.lastObservedCW=cw();k.stale=false;
+ const obs={id:`obs-${a.id}-${cw()}-${k.observations.length+1}`,type,source,season:season(),week:week(),careerWeek:cw(),weight:+effective.toFixed(2),scoutId:sc?.id||null,live:!!live};
+ if(Number.isFinite(performance)
+
+===== MATCH =====
+
+up:10}[type]||8)}
+function observe(aOrId,{type='athlete',source='Scout observation',scoutId=null,live=true,weight=null,performance=null}={}){
+ const org=organisation(),a=typeof aOrId==='object'?aOrId:athlete(aOrId);if(!org||!a||a.nation!==(org.nation||nation()))return null;const k=knowledge(a,org),sc=scoutId?org.staff[scoutId]:headScout(org),w=Number(weight)||observationWeight(type,live),quality=scoutQuality(sc,'current',a),effective=w*(.7+quality/180)*scoutingDifficulty().evidence;
+ k.evidence=clamp(k.evidence+effective,0,110);k.stage=stageForEvidence(k.evidence).id;k.lastObservedCW=cw();k.stale=false;
+ const obs={id:`obs-${a.id}-${cw()}-${k.observations.length+1}`,type,source,season:season(),week:week(),careerWeek:cw(),weight:+effective.toFixed(2),scoutId:sc?.id||null,live:!!live};
+ if(Number.isFinite(performance))obs.performance=p
+
+===== MATCH =====
+
+|8)}
+function observe(aOrId,{type='athlete',source='Scout observation',scoutId=null,live=true,weight=null,performance=null}={}){
+ const org=organisation(),a=typeof aOrId==='object'?aOrId:athlete(aOrId);if(!org||!a||a.nation!==(org.nation||nation()))return null;const k=knowledge(a,org),sc=scoutId?org.staff[scoutId]:headScout(org),w=Number(weight)||observationWeight(type,live),quality=scoutQuality(sc,'current',a),effective=w*(.7+quality/180)*scoutingDifficulty().evidence;
+ k.evidence=clamp(k.evidence+effective,0,110);k.stage=stageForEvidence(k.evidence).id;k.lastObservedCW=cw();k.stale=false;
+ const obs={id:`obs-${a.id}-${cw()}-${k.observations.length+1}`,type,source,season:season(),week:week(),careerWeek:cw(),weight:+effective.toFixed(2),scoutId:sc?.id||null,live:!!live};
+ if(Number.isFinite(performance))obs.performance=performance;k.
+
+===== MATCH =====
+
+ion',scoutId=null,live=true,weight=null,performance=null}={}){
+ const org=organisation(),a=typeof aOrId==='object'?aOrId:athlete(aOrId);if(!org||!a||a.nation!==(org.nation||nation()))return null;const k=knowledge(a,org),sc=scoutId?org.staff[scoutId]:headScout(org),w=Number(weight)||observationWeight(type,live),quality=scoutQuality(sc,'current',a),effective=w*(.7+quality/180)*scoutingDifficulty().evidence;
+ k.evidence=clamp(k.evidence+effective,0,110);k.stage=stageForEvidence(k.evidence).id;k.lastObservedCW=cw();k.stale=false;
+ const obs={id:`obs-${a.id}-${cw()}-${k.observations.length+1}`,type,source,season:season(),week:week(),careerWeek:cw(),weight:+effective.toFixed(2),scoutId:sc?.id||null,live:!!live};
+ if(Number.isFinite(performance))obs.performance=performance;k.observations.push(obs);if(k.observations.length>30)k.observations.
+
+===== MATCH =====
+
+{}){
+ const org=organisation(),a=typeof aOrId==='object'?aOrId:athlete(aOrId);if(!org||!a||a.nation!==(org.nation||nation()))return null;const k=knowledge(a,org),sc=scoutId?org.staff[scoutId]:headScout(org),w=Number(weight)||observationWeight(type,live),quality=scoutQuality(sc,'current',a),effective=w*(.7+quality/180)*scoutingDifficulty().evidence;
+ k.evidence=clamp(k.evidence+effective,0,110);k.stage=stageForEvidence(k.evidence).id;k.lastObservedCW=cw();k.stale=false;
+ const obs={id:`obs-${a.id}-${cw()}-${k.observations.length+1}`,type,source,season:season(),week:week(),careerWeek:cw(),weight:+effective.toFixed(2),scoutId:sc?.id||null,live:!!live};
+ if(Number.isFinite(performance))obs.performance=performance;k.observations.push(obs);if(k.observations.length>30)k.observations.splice(0,k.observations.length-30);
+ return obs;
+}
+functio
+
+===== MATCH =====
+
+(.7+quality/180)*scoutingDifficulty().evidence;
+ k.evidence=clamp(k.evidence+effective,0,110);k.stage=stageForEvidence(k.evidence).id;k.lastObservedCW=cw();k.stale=false;
+ const obs={id:`obs-${a.id}-${cw()}-${k.observations.length+1}`,type,source,season:season(),week:week(),careerWeek:cw(),weight:+effective.toFixed(2),scoutId:sc?.id||null,live:!!live};
+ if(Number.isFinite(performance))obs.performance=performance;k.observations.push(obs);if(k.observations.length>30)k.observations.splice(0,k.observations.length-30);
+ return obs;
+}
+function ageUncertainty(a){if(!a)return 1;return a.age<=17?1.35:a.age<=19?1.22:a.age<=21?1.12:a.age>=27?.9:1}
+function evidenceScore(a,k,sc,field){
+ const resultFactor=Math.min(12,competitionCount(a)*1.2)+Math.min(9,testCount(a)*3),consistency=resultConsistency(a),quality=scoutQuality(sc,field,a),ageSince=Mat
+
+===== MATCH =====
+
+ce(0,k.observations.length-30);
+ return obs;
+}
+function ageUncertainty(a){if(!a)return 1;return a.age<=17?1.35:a.age<=19?1.22:a.age<=21?1.12:a.age>=27?.9:1}
+function evidenceScore(a,k,sc,field){
+ const resultFactor=Math.min(12,competitionCount(a)*1.2)+Math.min(9,testCount(a)*3),consistency=resultConsistency(a),quality=scoutQuality(sc,field,a),ageSince=Math.max(0,cw()-Number(k.lastObservedCW||cw())),testingEvidence=(k.observations||[]).filter(o=>o.type==='testing').reduce((n,o)=>n+Number(o.weight||0),0),fieldEvidence=field==='potential'?Math.max(0,k.evidence-testingEvidence*.58):k.evidence;
+ // Current ability goes stale sooner than long-term potential. Existing knowledge is retained,
+ // but confidence in the current picture fades when an athlete has not been watched.
+ const stalePenalty=field==='current'?Math.max(0,ageSince-18)*.42:
+
+===== MATCH =====
+
+but confidence in the current picture fades when an athlete has not been watched.
+ const stalePenalty=field==='current'?Math.max(0,ageSince-18)*.42:Math.max(0,ageSince-52)*.12;
+ k.stale=ageSince>26;
+ return clamp(fieldEvidence*.66+resultFactor+quality*.19+consistency*8-(field==='potential'&&a.age<=18?8:0)-stalePenalty+scoutingDifficulty().score,0,100)
+}
+function currentEstimate(a,sc=headScout(),org=organisation()){
+ const k=knowledge(a,org);if(!a||!k)return null;const score=evidenceScore(a,k,sc,'current'),conf=confidenceFor(score),q=scoutQuality(sc,'current',a),stage=stageForEvidence(k.evidence);
+ const baseSpread={unknown:18,discovered:14,observed:10,scouted:6.5,extensive:3.5,programme:2.5}[stage.id]||12;
+ const spread=clamp(baseSpread*ageUncertainty(a)*(1.18-q/350)*(1.08-resultConsistency(a)*.16)*scoutingDifficulty().spread,1.5,18)
+
+===== MATCH =====
+
+en watched.
+ const stalePenalty=field==='current'?Math.max(0,ageSince-18)*.42:Math.max(0,ageSince-52)*.12;
+ k.stale=ageSince>26;
+ return clamp(fieldEvidence*.66+resultFactor+quality*.19+consistency*8-(field==='potential'&&a.age<=18?8:0)-stalePenalty+scoutingDifficulty().score,0,100)
+}
+function currentEstimate(a,sc=headScout(),org=organisation()){
+ const k=knowledge(a,org);if(!a||!k)return null;const score=evidenceScore(a,k,sc,'current'),conf=confidenceFor(score),q=scoutQuality(sc,'current',a),stage=stageForEvidence(k.evidence);
+ const baseSpread={unknown:18,discovered:14,observed:10,scouted:6.5,extensive:3.5,programme:2.5}[stage.id]||12;
+ const spread=clamp(baseSpread*ageUncertainty(a)*(1.18-q/350)*(1.08-resultConsistency(a)*.16)*scoutingDifficulty().spread,1.5,18),err=signed(`${sc?.id}:${a.id}:ability`)*spread*(.88-score/165),center
+
+===== MATCH =====
+
+vidence*.66+resultFactor+quality*.19+consistency*8-(field==='potential'&&a.age<=18?8:0)-stalePenalty+scoutingDifficulty().score,0,100)
+}
+function currentEstimate(a,sc=headScout(),org=organisation()){
+ const k=knowledge(a,org);if(!a||!k)return null;const score=evidenceScore(a,k,sc,'current'),conf=confidenceFor(score),q=scoutQuality(sc,'current',a),stage=stageForEvidence(k.evidence);
+ const baseSpread={unknown:18,discovered:14,observed:10,scouted:6.5,extensive:3.5,programme:2.5}[stage.id]||12;
+ const spread=clamp(baseSpread*ageUncertainty(a)*(1.18-q/350)*(1.08-resultConsistency(a)*.16)*scoutingDifficulty().spread,1.5,18),err=signed(`${sc?.id}:${a.id}:ability`)*spread*(.88-score/165),center=clamp(Number(a.overall||65)+err,45,99),lo=Math.floor(clamp(center-spread,40,99)),hi=Math.ceil(clamp(center+spread,40,99));
+ return {low:Math.min(lo,
+
+===== MATCH =====
+
+.score,0,100)
+}
+function currentEstimate(a,sc=headScout(),org=organisation()){
+ const k=knowledge(a,org);if(!a||!k)return null;const score=evidenceScore(a,k,sc,'current'),conf=confidenceFor(score),q=scoutQuality(sc,'current',a),stage=stageForEvidence(k.evidence);
+ const baseSpread={unknown:18,discovered:14,observed:10,scouted:6.5,extensive:3.5,programme:2.5}[stage.id]||12;
+ const spread=clamp(baseSpread*ageUncertainty(a)*(1.18-q/350)*(1.08-resultConsistency(a)*.16)*scoutingDifficulty().spread,1.5,18),err=signed(`${sc?.id}:${a.id}:ability`)*spread*(.88-score/165),center=clamp(Number(a.overall||65)+err,45,99),lo=Math.floor(clamp(center-spread,40,99)),hi=Math.ceil(clamp(center+spread,40,99));
+ return {low:Math.min(lo,hi),high:Math.max(lo,hi),mid:+center.toFixed(1),confidence:conf,confidenceScore:+score.toFixed(1),stage:stage.label,scout
+
+===== MATCH =====
+
+re(a,k,sc,'current'),conf=confidenceFor(score),q=scoutQuality(sc,'current',a),stage=stageForEvidence(k.evidence);
+ const baseSpread={unknown:18,discovered:14,observed:10,scouted:6.5,extensive:3.5,programme:2.5}[stage.id]||12;
+ const spread=clamp(baseSpread*ageUncertainty(a)*(1.18-q/350)*(1.08-resultConsistency(a)*.16)*scoutingDifficulty().spread,1.5,18),err=signed(`${sc?.id}:${a.id}:ability`)*spread*(.88-score/165),center=clamp(Number(a.overall||65)+err,45,99),lo=Math.floor(clamp(center-spread,40,99)),hi=Math.ceil(clamp(center+spread,40,99));
+ return {low:Math.min(lo,hi),high:Math.max(lo,hi),mid:+center.toFixed(1),confidence:conf,confidenceScore:+score.toFixed(1),stage:stage.label,scoutId:sc?.id||null};
+}
+function potentialEstimate(a,sc=headScout(),org=organisation()){
+ const k=knowledge(a,org);if(!a||!k)return null;const score=evide
+
+===== MATCH =====
+
+sc?.id}:${a.id}:ability`)*spread*(.88-score/165),center=clamp(Number(a.overall||65)+err,45,99),lo=Math.floor(clamp(center-spread,40,99)),hi=Math.ceil(clamp(center+spread,40,99));
+ return {low:Math.min(lo,hi),high:Math.max(lo,hi),mid:+center.toFixed(1),confidence:conf,confidenceScore:+score.toFixed(1),stage:stage.label,scoutId:sc?.id||null};
+}
+function potentialEstimate(a,sc=headScout(),org=organisation()){
+ const k=knowledge(a,org);if(!a||!k)return null;const score=evidenceScore(a,k,sc,'potential'),conf=confidenceFor(score),q=scoutQuality(sc,'potential',a),young=ageUncertainty(a),baseSpread=clamp((13-score*.085)*young*scoutingDifficulty().spread,2.5,16),error=signed(`${sc?.id}:${a.id}:potential`)*baseSpread*(1.2-q/210),center=clamp(Number(a.potential||a.overall||70)+error,50,99),spread=clamp(baseSpread*(1.15-q/300),2,14);
+ return {gr
+
+===== MATCH =====
+
+(Number(a.overall||65)+err,45,99),lo=Math.floor(clamp(center-spread,40,99)),hi=Math.ceil(clamp(center+spread,40,99));
+ return {low:Math.min(lo,hi),high:Math.max(lo,hi),mid:+center.toFixed(1),confidence:conf,confidenceScore:+score.toFixed(1),stage:stage.label,scoutId:sc?.id||null};
+}
+function potentialEstimate(a,sc=headScout(),org=organisation()){
+ const k=knowledge(a,org);if(!a||!k)return null;const score=evidenceScore(a,k,sc,'potential'),conf=confidenceFor(score),q=scoutQuality(sc,'potential',a),young=ageUncertainty(a),baseSpread=clamp((13-score*.085)*young*scoutingDifficulty().spread,2.5,16),error=signed(`${sc?.id}:${a.id}:potential`)*baseSpread*(1.2-q/210),center=clamp(Number(a.potential||a.overall||70)+error,50,99),spread=clamp(baseSpread*(1.15-q/300),2,14);
+ return {grade:gradeRange(center,spread),centerGrade:gradeFor(center),lo
+
+===== MATCH =====
+
+:Math.max(lo,hi),mid:+center.toFixed(1),confidence:conf,confidenceScore:+score.toFixed(1),stage:stage.label,scoutId:sc?.id||null};
+}
+function potentialEstimate(a,sc=headScout(),org=organisation()){
+ const k=knowledge(a,org);if(!a||!k)return null;const score=evidenceScore(a,k,sc,'potential'),conf=confidenceFor(score),q=scoutQuality(sc,'potential',a),young=ageUncertainty(a),baseSpread=clamp((13-score*.085)*young*scoutingDifficulty().spread,2.5,16),error=signed(`${sc?.id}:${a.id}:potential`)*baseSpread*(1.2-q/210),center=clamp(Number(a.potential||a.overall||70)+error,50,99),spread=clamp(baseSpread*(1.15-q/300),2,14);
+ return {grade:gradeRange(center,spread),centerGrade:gradeFor(center),lowGrade:gradeFor(center-spread),highGrade:gradeFor(center+spread),confidence:conf,confidenceScore:+score.toFixed(1),numericCenter:+center.toFixed(1),spr
+
+===== MATCH =====
+
+e:stage.label,scoutId:sc?.id||null};
+}
+function potentialEstimate(a,sc=headScout(),org=organisation()){
+ const k=knowledge(a,org);if(!a||!k)return null;const score=evidenceScore(a,k,sc,'potential'),conf=confidenceFor(score),q=scoutQuality(sc,'potential',a),young=ageUncertainty(a),baseSpread=clamp((13-score*.085)*young*scoutingDifficulty().spread,2.5,16),error=signed(`${sc?.id}:${a.id}:potential`)*baseSpread*(1.2-q/210),center=clamp(Number(a.potential||a.overall||70)+error,50,99),spread=clamp(baseSpread*(1.15-q/300),2,14);
+ return {grade:gradeRange(center,spread),centerGrade:gradeFor(center),lowGrade:gradeFor(center-spread),highGrade:gradeFor(center+spread),confidence:conf,confidenceScore:+score.toFixed(1),numericCenter:+center.toFixed(1),spread:+spread.toFixed(1),scoutId:sc?.id||null};
+}
+function attributeProfile(a){
+ const attrs=a?.
+
+===== MATCH =====
+
+||a.overall||70)+error,50,99),spread=clamp(baseSpread*(1.15-q/300),2,14);
+ return {grade:gradeRange(center,spread),centerGrade:gradeFor(center),lowGrade:gradeFor(center-spread),highGrade:gradeFor(center+spread),confidence:conf,confidenceScore:+score.toFixed(1),numericCenter:+center.toFixed(1),spread:+spread.toFixed(1),scoutId:sc?.id||null};
+}
+function attributeProfile(a){
+ const attrs=a?.trainingV2?.attributes||a?.trainingV2?.qualities||null;if(!attrs||typeof attrs!=='object')return null;
+ const rows=Object.entries(attrs).filter(([,v])=>Number.isFinite(Number(v))).map(([name,value])=>({name:String(name).replace(/([a-z])([A-Z])/g,'$1 $2'),value:Number(value)}));
+ if(rows.length<2)return null;const avg=rows.reduce((n,x)=>n+x.value,0)/rows.length;return {strengths:rows.filter(x=>x.value>=avg+1).sort((a,b)=>b.value-a.value).slice(0,3).ma
+
+===== MATCH =====
+
+.injury>0)rows.push('Current Injury');if((a?.fatigue||0)>=65)rows.push('High Fatigue');if(competitionCount(a)<3)rows.push('Limited Competition Evidence');if(resultConsistency(a)<.45)rows.push('Inconsistent Results');return [...new Set(rows)].slice(0,3)}
+function estimatedSquadAbility(x,org=organisation()){const sc=headScout(org),est=currentEstimate(x,sc,org);return Number(est?.mid)||65}
+function squadDepth(a){const org=organisation(),own=(nowState()?.athletes||[]).filter(x=>x.nation===nation()&&!x.retired&&x.disc===a.disc&&x.inSquad!==false);return own.sort((x,y)=>estimatedSquadAbility(y,org)-estimatedSquadAbility(x,org))}
+
+function squadNeed(a){
+ const org=organisation(),same=(nowState()?.athletes||[]).filter(x=>x.nation===nation()&&!x.retired&&x.disc===a.disc&&x.inSquad!==false),ages=same.map(x=>x.age),ratings=same.map(x=>estimated
+
+===== MATCH =====
+
+wledge(a)){const v=verdict(a,est,pot),confidence=Math.min(est?.confidenceScore||0,pot?.confidenceScore||0),need=squadNeed(a),settings=organisation()?.settings||{},philosophy=settings.philosophy||'Balanced';if(a?.injury>0)return 'Wait for return to competition';if(k?.stage==='discovered'||confidence<38)return 'Continue Scouting';if((v==='Potential Squad Upgrade'||v==='Squad Level')&&est.confidenceScore>=52)return 'Consider Call-Up';if((v==='Exceptional Prospect'||v==='Highly Promising')&&testCount(a)===0)return 'Invite for Testing';if(philosophy==='Win Now'&&est.mid>=78&&need.score>=55)return 'Consider Call-Up';if(philosophy==='Youth First'&&a.age<=20&&gradeIndex(pot.centerGrade)>=3)return 'Add to Watchlist';if(philosophy==='High Potential'&&gradeIndex(pot.centerGrade)>=4)return confidence<58?'Continue Scouting':'Add to Watchlist';if(
+
+===== MATCH =====
+
+estCount(a)===0)return 'Invite for Testing';if(philosophy==='Win Now'&&est.mid>=78&&need.score>=55)return 'Consider Call-Up';if(philosophy==='Youth First'&&a.age<=20&&gradeIndex(pot.centerGrade)>=3)return 'Add to Watchlist';if(philosophy==='High Potential'&&gradeIndex(pot.centerGrade)>=4)return confidence<58?'Continue Scouting':'Add to Watchlist';if(philosophy==='Low Risk'&&confidence<65)return 'Continue Scouting';if(v==='Exceptional Prospect'||v==='Highly Promising'||v==='Worth Monitoring'||need.score>=65)return 'Add to Watchlist';return 'No Further Action'}
+
+function scoutNote(a,sc,est,pot,ver,rec){const str=strengths(a)[0]||'profile',con=concerns(a)[0],tr=trend(a),persona=sc?.personality||'Data Focused';let lead;if(ver==='Exceptional Prospect')lead='There is enough here to take this athlete very seriously.';else if(ver==='Potentia
+
+===== MATCH =====
+
+.score>=55)return 'Consider Call-Up';if(philosophy==='Youth First'&&a.age<=20&&gradeIndex(pot.centerGrade)>=3)return 'Add to Watchlist';if(philosophy==='High Potential'&&gradeIndex(pot.centerGrade)>=4)return confidence<58?'Continue Scouting':'Add to Watchlist';if(philosophy==='Low Risk'&&confidence<65)return 'Continue Scouting';if(v==='Exceptional Prospect'||v==='Highly Promising'||v==='Worth Monitoring'||need.score>=65)return 'Add to Watchlist';return 'No Further Action'}
+
+function scoutNote(a,sc,est,pot,ver,rec){const str=strengths(a)[0]||'profile',con=concerns(a)[0],tr=trend(a),persona=sc?.personality||'Data Focused';let lead;if(ver==='Exceptional Prospect')lead='There is enough here to take this athlete very seriously.';else if(ver==='Potential Squad Upgrade')lead='This athlete is close enough to our current squad level to merit 
+
+===== MATCH =====
+
+&&gradeIndex(pot.centerGrade)>=4)return confidence<58?'Continue Scouting':'Add to Watchlist';if(philosophy==='Low Risk'&&confidence<65)return 'Continue Scouting';if(v==='Exceptional Prospect'||v==='Highly Promising'||v==='Worth Monitoring'||need.score>=65)return 'Add to Watchlist';return 'No Further Action'}
+
+function scoutNote(a,sc,est,pot,ver,rec){const str=strengths(a)[0]||'profile',con=concerns(a)[0],tr=trend(a),persona=sc?.personality||'Data Focused';let lead;if(ver==='Exceptional Prospect')lead='There is enough here to take this athlete very seriously.';else if(ver==='Potential Squad Upgrade')lead='This athlete is close enough to our current squad level to merit a decision.';else if(ver==='Highly Promising')lead='I like the long-term picture, but I would still build the evidence before making a major call.';else lead='There is 
+
+===== MATCH =====
+
+<65)return 'Continue Scouting';if(v==='Exceptional Prospect'||v==='Highly Promising'||v==='Worth Monitoring'||need.score>=65)return 'Add to Watchlist';return 'No Further Action'}
+
+function scoutNote(a,sc,est,pot,ver,rec){const str=strengths(a)[0]||'profile',con=concerns(a)[0],tr=trend(a),persona=sc?.personality||'Data Focused';let lead;if(ver==='Exceptional Prospect')lead='There is enough here to take this athlete very seriously.';else if(ver==='Potential Squad Upgrade')lead='This athlete is close enough to our current squad level to merit a decision.';else if(ver==='Highly Promising')lead='I like the long-term picture, but I would still build the evidence before making a major call.';else lead='There is something worth following, but I would not overstate what we know yet.';
+ if(persona==='Conservative'&&pot.confidenceScore<65)lead=
+
+===== MATCH =====
+
+ but I would not overstate what we know yet.';
+ if(persona==='Conservative'&&pot.confidenceScore<65)lead='I would like more evidence before making a strong judgement.';if(persona==='Risk Taker'&&gradeIndex(pot.centerGrade)>=4)lead='There is enough upside here that I would rather be early than late.';if(persona==='Data Focused'&&tr==='Rapidly Improving')lead='The progression trend is the main reason I want us to keep watching.';
+ return `${lead} ${str} stands out${con?`, while ${con.toLowerCase()} remains the main concern`:''}. Recommended: ${rec.toLowerCase()}.`}
+function buildOpinion(a,sc=headScout(),org=organisation()){
+ const k=knowledge(a,org),current=currentEstimate(a,sc,org),potential=potentialEstimate(a,sc,org),ver=verdict(a,current,potential),rec=recommendation(a,current,potential,k);return {scoutId:sc?.id||null,athleteId:a.i
+
+===== MATCH =====
+
+e early than late.';if(persona==='Data Focused'&&tr==='Rapidly Improving')lead='The progression trend is the main reason I want us to keep watching.';
+ return `${lead} ${str} stands out${con?`, while ${con.toLowerCase()} remains the main concern`:''}. Recommended: ${rec.toLowerCase()}.`}
+function buildOpinion(a,sc=headScout(),org=organisation()){
+ const k=knowledge(a,org),current=currentEstimate(a,sc,org),potential=potentialEstimate(a,sc,org),ver=verdict(a,current,potential),rec=recommendation(a,current,potential,k);return {scoutId:sc?.id||null,athleteId:a.id,stage:stageForEvidence(k.evidence).label,current,potential,verdict:ver,recommendation:rec,recommendationReasons:recommendationReasons(a,current,potential,k),strengths:strengths(a),concerns:concerns(a),riskFlags:riskFlags(a),headlines:headlines(a),trend:trend(a),programmeFit:prog
+
+===== MATCH =====
+
+werCase()} remains the main concern`:''}. Recommended: ${rec.toLowerCase()}.`}
+function buildOpinion(a,sc=headScout(),org=organisation()){
+ const k=knowledge(a,org),current=currentEstimate(a,sc,org),potential=potentialEstimate(a,sc,org),ver=verdict(a,current,potential),rec=recommendation(a,current,potential,k);return {scoutId:sc?.id||null,athleteId:a.id,stage:stageForEvidence(k.evidence).label,current,potential,verdict:ver,recommendation:rec,recommendationReasons:recommendationReasons(a,current,potential,k),strengths:strengths(a),concerns:concerns(a),riskFlags:riskFlags(a),headlines:headlines(a),trend:trend(a),programmeFit:programmeFit(a),squadNeed:squadNeed(a),physicalProfile:physicalProfile(a),technicalProfile:technicalProfile(a),eventSuitability:eventSuitability(a),note:scoutNote(a,sc,current,potential,ver,rec),createdSeason:seaso
+
+===== MATCH =====
+
+ons:recommendationReasons(a,current,potential,k),strengths:strengths(a),concerns:concerns(a),riskFlags:riskFlags(a),headlines:headlines(a),trend:trend(a),programmeFit:programmeFit(a),squadNeed:squadNeed(a),physicalProfile:physicalProfile(a),technicalProfile:technicalProfile(a),eventSuitability:eventSuitability(a),note:scoutNote(a,sc,current,potential,ver,rec),createdSeason:season(),createdWeek:week(),createdCareerWeek:cw()}
+}
+
+function snapshotReport(aOrId,{scoutId=null,reason='Scout assessment',observationType='athlete',source='Direct athlete assessment',live=true,addObservation=true}={}){
+ const org=organisation(),a=typeof aOrId==='object'?aOrId:athlete(aOrId);if(!org||!a)return null;const sc=scoutId?org.staff[scoutId]:headScout(org),previous=[...org.reports].reverse().find(r=>String(r.athleteId)===String(a.id)&&r.scoutId===(sc?.id
+
+===== MATCH =====
+
+nd:trend(a),programmeFit:programmeFit(a),squadNeed:squadNeed(a),physicalProfile:physicalProfile(a),technicalProfile:technicalProfile(a),eventSuitability:eventSuitability(a),note:scoutNote(a,sc,current,potential,ver,rec),createdSeason:season(),createdWeek:week(),createdCareerWeek:cw()}
+}
+
+function snapshotReport(aOrId,{scoutId=null,reason='Scout assessment',observationType='athlete',source='Direct athlete assessment',live=true,addObservation=true}={}){
+ const org=organisation(),a=typeof aOrId==='object'?aOrId:athlete(aOrId);if(!org||!a)return null;const sc=scoutId?org.staff[scoutId]:headScout(org),previous=[...org.reports].reverse().find(r=>String(r.athleteId)===String(a.id)&&r.scoutId===(sc?.id||null));if(addObservation)observe(a,{type:observationType,source,scoutId:sc?.id,live});const opinion=buildOpinion(a,sc,org),id=`sr-${a.id}-${
+
+===== MATCH =====
+
+Fit:programmeFit(a),squadNeed:squadNeed(a),physicalProfile:physicalProfile(a),technicalProfile:technicalProfile(a),eventSuitability:eventSuitability(a),note:scoutNote(a,sc,current,potential,ver,rec),createdSeason:season(),createdWeek:week(),createdCareerWeek:cw()}
+}
+
+function snapshotReport(aOrId,{scoutId=null,reason='Scout assessment',observationType='athlete',source='Direct athlete assessment',live=true,addObservation=true}={}){
+ const org=organisation(),a=typeof aOrId==='object'?aOrId:athlete(aOrId);if(!org||!a)return null;const sc=scoutId?org.staff[scoutId]:headScout(org),previous=[...org.reports].reverse().find(r=>String(r.athleteId)===String(a.id)&&r.scoutId===(sc?.id||null));if(addObservation)observe(a,{type:observationType,source,scoutId:sc?.id,live});const opinion=buildOpinion(a,sc,org),id=`sr-${a.id}-${cw()}-${org.reports.l
+
+===== MATCH =====
+
+,createdWeek:week(),createdCareerWeek:cw()}
+}
+
+function snapshotReport(aOrId,{scoutId=null,reason='Scout assessment',observationType='athlete',source='Direct athlete assessment',live=true,addObservation=true}={}){
+ const org=organisation(),a=typeof aOrId==='object'?aOrId:athlete(aOrId);if(!org||!a)return null;const sc=scoutId?org.staff[scoutId]:headScout(org),previous=[...org.reports].reverse().find(r=>String(r.athleteId)===String(a.id)&&r.scoutId===(sc?.id||null));if(addObservation)observe(a,{type:observationType,source,scoutId:sc?.id,live});const opinion=buildOpinion(a,sc,org),id=`sr-${a.id}-${cw()}-${org.reports.length+1}`;
+ if(previous?.snapshot){
+  const before=previous.snapshot,abilityDelta=(Number(opinion.current.mid)||0)-(Number(before.current?.mid)||0),potBefore=gradeIndex(before.potential?.centerGrade),potNow=gradeIndex(opi
+
+===== MATCH =====
+
+),createdCareerWeek:cw()}
+}
+
+function snapshotReport(aOrId,{scoutId=null,reason='Scout assessment',observationType='athlete',source='Direct athlete assessment',live=true,addObservation=true}={}){
+ const org=organisation(),a=typeof aOrId==='object'?aOrId:athlete(aOrId);if(!org||!a)return null;const sc=scoutId?org.staff[scoutId]:headScout(org),previous=[...org.reports].reverse().find(r=>String(r.athleteId)===String(a.id)&&r.scoutId===(sc?.id||null));if(addObservation)observe(a,{type:observationType,source,scoutId:sc?.id,live});const opinion=buildOpinion(a,sc,org),id=`sr-${a.id}-${cw()}-${org.reports.length+1}`;
+ if(previous?.snapshot){
+  const before=previous.snapshot,abilityDelta=(Number(opinion.current.mid)||0)-(Number(before.current?.mid)||0),potBefore=gradeIndex(before.potential?.centerGrade),potNow=gradeIndex(opinion.potential?.ce
+
+===== MATCH =====
+
+erWeek:cw()}
+}
+
+function snapshotReport(aOrId,{scoutId=null,reason='Scout assessment',observationType='athlete',source='Direct athlete assessment',live=true,addObservation=true}={}){
+ const org=organisation(),a=typeof aOrId==='object'?aOrId:athlete(aOrId);if(!org||!a)return null;const sc=scoutId?org.staff[scoutId]:headScout(org),previous=[...org.reports].reverse().find(r=>String(r.athleteId)===String(a.id)&&r.scoutId===(sc?.id||null));if(addObservation)observe(a,{type:observationType,source,scoutId:sc?.id,live});const opinion=buildOpinion(a,sc,org),id=`sr-${a.id}-${cw()}-${org.reports.length+1}`;
+ if(previous?.snapshot){
+  const before=previous.snapshot,abilityDelta=(Number(opinion.current.mid)||0)-(Number(before.current?.mid)||0),potBefore=gradeIndex(before.potential?.centerGrade),potNow=gradeIndex(opinion.potential?.centerGrade);
+ 
+
+===== MATCH =====
+
+tionType='athlete',source='Direct athlete assessment',live=true,addObservation=true}={}){
+ const org=organisation(),a=typeof aOrId==='object'?aOrId:athlete(aOrId);if(!org||!a)return null;const sc=scoutId?org.staff[scoutId]:headScout(org),previous=[...org.reports].reverse().find(r=>String(r.athleteId)===String(a.id)&&r.scoutId===(sc?.id||null));if(addObservation)observe(a,{type:observationType,source,scoutId:sc?.id,live});const opinion=buildOpinion(a,sc,org),id=`sr-${a.id}-${cw()}-${org.reports.length+1}`;
+ if(previous?.snapshot){
+  const before=previous.snapshot,abilityDelta=(Number(opinion.current.mid)||0)-(Number(before.current?.mid)||0),potBefore=gradeIndex(before.potential?.centerGrade),potNow=gradeIndex(opinion.potential?.centerGrade);
+  let memory='';
+  if(Math.abs(abilityDelta)>=2)memory=abilityDelta>0?'The current-ability pic
+
+===== MATCH =====
+
+}={}){
+ const org=organisation(),a=typeof aOrId==='object'?aOrId:athlete(aOrId);if(!org||!a)return null;const sc=scoutId?org.staff[scoutId]:headScout(org),previous=[...org.reports].reverse().find(r=>String(r.athleteId)===String(a.id)&&r.scoutId===(sc?.id||null));if(addObservation)observe(a,{type:observationType,source,scoutId:sc?.id,live});const opinion=buildOpinion(a,sc,org),id=`sr-${a.id}-${cw()}-${org.reports.length+1}`;
+ if(previous?.snapshot){
+  const before=previous.snapshot,abilityDelta=(Number(opinion.current.mid)||0)-(Number(before.current?.mid)||0),potBefore=gradeIndex(before.potential?.centerGrade),potNow=gradeIndex(opinion.potential?.centerGrade);
+  let memory='';
+  if(Math.abs(abilityDelta)>=2)memory=abilityDelta>0?'The current-ability picture is stronger than when I last assessed them.':'The current-ability picture is w
+
+===== MATCH =====
+
+rend has moved from ${String(before.trend||'unclear').toLowerCase()} to ${String(opinion.trend||'unclear').toLowerCase()}.`;
+  else memory='This follow-up broadly supports my previous view rather than changing it.';
+  opinion.followUp=memory;opinion.note=`${memory} ${opinion.note}`;
+ }
+ const report={id,athleteId:a.id,scoutId:sc?.id||null,scoutName:sc?.name||'Scout',reason,season:season(),week:week(),careerWeek:cw(),athleteSnapshot:{name:String(a.name||'Athlete'),age:Number(a.age||0),disc:String(a.disc||''),pb:Number(a.pb),tier:String(a.tier||''),inSquad:a.inSquad!==false},snapshot:JSON.parse(JSON.stringify(opinion)),read:false};org.reports.push(report);if(org.reports.length>500)org.reports.splice(0,org.reports.length-500);const k=knowledge(a,org);k.reportIds.push(id);k.scoutOpinions[sc?.id||'head']=JSON.parse(JSON.stringify(opinion)
+
+===== MATCH =====
+
+{String(before.trend||'unclear').toLowerCase()} to ${String(opinion.trend||'unclear').toLowerCase()}.`;
+  else memory='This follow-up broadly supports my previous view rather than changing it.';
+  opinion.followUp=memory;opinion.note=`${memory} ${opinion.note}`;
+ }
+ const report={id,athleteId:a.id,scoutId:sc?.id||null,scoutName:sc?.name||'Scout',reason,season:season(),week:week(),careerWeek:cw(),athleteSnapshot:{name:String(a.name||'Athlete'),age:Number(a.age||0),disc:String(a.disc||''),pb:Number(a.pb),tier:String(a.tier||''),inSquad:a.inSquad!==false},snapshot:JSON.parse(JSON.stringify(opinion)),read:false};org.reports.push(report);if(org.reports.length>500)org.reports.splice(0,org.reports.length-500);const k=knowledge(a,org);k.reportIds.push(id);k.scoutOpinions[sc?.id||'head']=JSON.parse(JSON.stringify(opinion));
+ const changed=!pr
+
+===== MATCH =====
+
+|'unclear').toLowerCase()} to ${String(opinion.trend||'unclear').toLowerCase()}.`;
+  else memory='This follow-up broadly supports my previous view rather than changing it.';
+  opinion.followUp=memory;opinion.note=`${memory} ${opinion.note}`;
+ }
+ const report={id,athleteId:a.id,scoutId:sc?.id||null,scoutName:sc?.name||'Scout',reason,season:season(),week:week(),careerWeek:cw(),athleteSnapshot:{name:String(a.name||'Athlete'),age:Number(a.age||0),disc:String(a.disc||''),pb:Number(a.pb),tier:String(a.tier||''),inSquad:a.inSquad!==false},snapshot:JSON.parse(JSON.stringify(opinion)),read:false};org.reports.push(report);if(org.reports.length>500)org.reports.splice(0,org.reports.length-500);const k=knowledge(a,org);k.reportIds.push(id);k.scoutOpinions[sc?.id||'head']=JSON.parse(JSON.stringify(opinion));
+ const changed=!previous||previous.snap
+
+===== MATCH =====
+
+lete'),age:Number(a.age||0),disc:String(a.disc||''),pb:Number(a.pb),tier:String(a.tier||''),inSquad:a.inSquad!==false},snapshot:JSON.parse(JSON.stringify(opinion)),read:false};org.reports.push(report);if(org.reports.length>500)org.reports.splice(0,org.reports.length-500);const k=knowledge(a,org);k.reportIds.push(id);k.scoutOpinions[sc?.id||'head']=JSON.parse(JSON.stringify(opinion));
+ const changed=!previous||previous.snapshot?.verdict!==opinion.verdict||previous.snapshot?.recommendation!==opinion.recommendation||previous.snapshot?.trend!==opinion.trend||previous.snapshot?.potential?.centerGrade!==opinion.potential.centerGrade;org.alerts.push({id:`sc-alert-${id}`,type:reason==='New talent identified'?'discovery':'report',reportId:id,athleteId:a.id,scoutId:sc?.id||null,careerWeek:cw(),season:season(),week:week(),changed,handled:false}
+
+===== MATCH =====
+
+t!==opinion.verdict||previous.snapshot?.recommendation!==opinion.recommendation||previous.snapshot?.trend!==opinion.trend||previous.snapshot?.potential?.centerGrade!==opinion.potential.centerGrade;org.alerts.push({id:`sc-alert-${id}`,type:reason==='New talent identified'?'discovery':'report',reportId:id,athleteId:a.id,scoutId:sc?.id||null,careerWeek:cw(),season:season(),week:week(),changed,handled:false});
+ sc?.recommendations?.push?.({athleteId:a.id,season:season(),week:week(),verdict:opinion.verdict,recommendation:opinion.recommendation});const rr=root();if(rr?.analytics){rr.analytics.recommendations??=[];rr.analytics.reportAccuracy??=[];rr.analytics.recommendations.push({reportId:id,athleteId:a.id,scoutId:sc?.id||null,season:season(),week:week(),careerWeek:cw(),verdict:opinion.verdict,recommendation:opinion.recommendation,truthAtR
+
+===== MATCH =====
+
+ed,handled:false});
+ sc?.recommendations?.push?.({athleteId:a.id,season:season(),week:week(),verdict:opinion.verdict,recommendation:opinion.recommendation});const rr=root();if(rr?.analytics){rr.analytics.recommendations??=[];rr.analytics.reportAccuracy??=[];rr.analytics.recommendations.push({reportId:id,athleteId:a.id,scoutId:sc?.id||null,season:season(),week:week(),careerWeek:cw(),verdict:opinion.verdict,recommendation:opinion.recommendation,truthAtReport:{overall:Number(a.overall),potential:Number(a.potential)},estimateAtReport:{currentMid:opinion.current.mid,potentialCenter:opinion.potential.numericCenter},confidence:{current:opinion.current.confidence,potential:opinion.potential.confidence}});rr.analytics.reportAccuracy.push({reportId:id,athleteId:a.id,currentError:+Math.abs(opinion.current.mid-Number(a.overall)).toFixed(2),poten
+
+===== MATCH =====
+
+opinion.current.confidence,potential:opinion.potential.confidence}});rr.analytics.reportAccuracy.push({reportId:id,athleteId:a.id,currentError:+Math.abs(opinion.current.mid-Number(a.overall)).toFixed(2),potentialError:+Math.abs(opinion.potential.numericCenter-Number(a.potential)).toFixed(2),season:season(),week:week(),scoutId:sc?.id||null});if(rr.analytics.recommendations.length>1000)rr.analytics.recommendations.splice(0,rr.analytics.recommendations.length-1000);if(rr.analytics.reportAccuracy.length>1000)rr.analytics.reportAccuracy.splice(0,rr.analytics.reportAccuracy.length-1000)}return report;
+}
+function addWatchlist(aOrId,priority='Normal',autoFollow=false,addedBy='Manager'){const org=organisation(),a=typeof aOrId==='object'?aOrId:athlete(aOrId);if(!org||!a)return null;knowledge(a,org);org.watchlist[String(a.id)]={athleteId:String
+
+===== MATCH =====
+
+.includes(priority)?priority:'Normal',autoFollow:!!autoFollow,addedSeason:season(),addedWeek:week(),addedCareerWeek:cw(),addedBy,lastFollowCW:cw()};return org.watchlist[String(a.id)]}
+function removeWatchlist(id){const org=organisation();if(org)delete org.watchlist[String(id)]}
+function requestAthleteAssessment(aOrId,{scoutId=null,mode='live',priority='Normal'}={}){
+ const org=organisation(),a=typeof aOrId==='object'?aOrId:athlete(aOrId);if(!org||!a)return null;const sc=scoutId?org.staff[scoutId]:headScout(org),active=org.assignments.filter(x=>x.status==='active'&&x.scoutId===sc?.id).length;if(active>=Number(sc?.capacity||3))return {error:'Scout at capacity'};const duration=mode==='remote'?1:2,id=`assess-${a.id}-${cw()}-${org.assignments.length+1}`,item={id,type:'athlete',athleteId:a.id,scoutId:sc?.id||null,mode,priority,status:'acti
+
+===== MATCH =====
+
+org.watchlist[String(a.id)]}
+function removeWatchlist(id){const org=organisation();if(org)delete org.watchlist[String(id)]}
+function requestAthleteAssessment(aOrId,{scoutId=null,mode='live',priority='Normal'}={}){
+ const org=organisation(),a=typeof aOrId==='object'?aOrId:athlete(aOrId);if(!org||!a)return null;const sc=scoutId?org.staff[scoutId]:headScout(org),active=org.assignments.filter(x=>x.status==='active'&&x.scoutId===sc?.id).length;if(active>=Number(sc?.capacity||3))return {error:'Scout at capacity'};const duration=mode==='remote'?1:2,id=`assess-${a.id}-${cw()}-${org.assignments.length+1}`,item={id,type:'athlete',athleteId:a.id,scoutId:sc?.id||null,mode,priority,status:'active',startedCW:cw(),dueCW:cw()+duration,startedSeason:season(),startedWeek:week()};org.assignments.push(item);return item;
+}
+function completeAssessment(ite
+
+===== MATCH =====
+
+ng(a.id)]}
+function removeWatchlist(id){const org=organisation();if(org)delete org.watchlist[String(id)]}
+function requestAthleteAssessment(aOrId,{scoutId=null,mode='live',priority='Normal'}={}){
+ const org=organisation(),a=typeof aOrId==='object'?aOrId:athlete(aOrId);if(!org||!a)return null;const sc=scoutId?org.staff[scoutId]:headScout(org),active=org.assignments.filter(x=>x.status==='active'&&x.scoutId===sc?.id).length;if(active>=Number(sc?.capacity||3))return {error:'Scout at capacity'};const duration=mode==='remote'?1:2,id=`assess-${a.id}-${cw()}-${org.assignments.length+1}`,item={id,type:'athlete',athleteId:a.id,scoutId:sc?.id||null,mode,priority,status:'active',startedCW:cw(),dueCW:cw()+duration,startedSeason:season(),startedWeek:week()};org.assignments.push(item);return item;
+}
+function completeAssessment(item){const org=organ
+
+===== MATCH =====
+
+nction removeWatchlist(id){const org=organisation();if(org)delete org.watchlist[String(id)]}
+function requestAthleteAssessment(aOrId,{scoutId=null,mode='live',priority='Normal'}={}){
+ const org=organisation(),a=typeof aOrId==='object'?aOrId:athlete(aOrId);if(!org||!a)return null;const sc=scoutId?org.staff[scoutId]:headScout(org),active=org.assignments.filter(x=>x.status==='active'&&x.scoutId===sc?.id).length;if(active>=Number(sc?.capacity||3))return {error:'Scout at capacity'};const duration=mode==='remote'?1:2,id=`assess-${a.id}-${cw()}-${org.assignments.length+1}`,item={id,type:'athlete',athleteId:a.id,scoutId:sc?.id||null,mode,priority,status:'active',startedCW:cw(),dueCW:cw()+duration,startedSeason:season(),startedWeek:week()};org.assignments.push(item);return item;
+}
+function completeAssessment(item){const org=organisation(),a=a
+
+===== MATCH =====
+
+(id){const org=organisation();if(org)delete org.watchlist[String(id)]}
+function requestAthleteAssessment(aOrId,{scoutId=null,mode='live',priority='Normal'}={}){
+ const org=organisation(),a=typeof aOrId==='object'?aOrId:athlete(aOrId);if(!org||!a)return null;const sc=scoutId?org.staff[scoutId]:headScout(org),active=org.assignments.filter(x=>x.status==='active'&&x.scoutId===sc?.id).length;if(active>=Number(sc?.capacity||3))return {error:'Scout at capacity'};const duration=mode==='remote'?1:2,id=`assess-${a.id}-${cw()}-${org.assignments.length+1}`,item={id,type:'athlete',athleteId:a.id,scoutId:sc?.id||null,mode,priority,status:'active',startedCW:cw(),dueCW:cw()+duration,startedSeason:season(),startedWeek:week()};org.assignments.push(item);return item;
+}
+function completeAssessment(item){const org=organisation(),a=athlete(item.athleteId);
+
+===== MATCH =====
+
+rg.watchlist[String(id)]}
+function requestAthleteAssessment(aOrId,{scoutId=null,mode='live',priority='Normal'}={}){
+ const org=organisation(),a=typeof aOrId==='object'?aOrId:athlete(aOrId);if(!org||!a)return null;const sc=scoutId?org.staff[scoutId]:headScout(org),active=org.assignments.filter(x=>x.status==='active'&&x.scoutId===sc?.id).length;if(active>=Number(sc?.capacity||3))return {error:'Scout at capacity'};const duration=mode==='remote'?1:2,id=`assess-${a.id}-${cw()}-${org.assignments.length+1}`,item={id,type:'athlete',athleteId:a.id,scoutId:sc?.id||null,mode,priority,status:'active',startedCW:cw(),dueCW:cw()+duration,startedSeason:season(),startedWeek:week()};org.assignments.push(item);return item;
+}
+function completeAssessment(item){const org=organisation(),a=athlete(item.athleteId);if(!org||!a||item.status!=='active')return n
+
+===== MATCH =====
+
+null,mode='live',priority='Normal'}={}){
+ const org=organisation(),a=typeof aOrId==='object'?aOrId:athlete(aOrId);if(!org||!a)return null;const sc=scoutId?org.staff[scoutId]:headScout(org),active=org.assignments.filter(x=>x.status==='active'&&x.scoutId===sc?.id).length;if(active>=Number(sc?.capacity||3))return {error:'Scout at capacity'};const duration=mode==='remote'?1:2,id=`assess-${a.id}-${cw()}-${org.assignments.length+1}`,item={id,type:'athlete',athleteId:a.id,scoutId:sc?.id||null,mode,priority,status:'active',startedCW:cw(),dueCW:cw()+duration,startedSeason:season(),startedWeek:week()};org.assignments.push(item);return item;
+}
+function completeAssessment(item){const org=organisation(),a=athlete(item.athleteId);if(!org||!a||item.status!=='active')return null;if(a.retired){item.status='cancelled';item.outcome='Athlete retired';re
+
+===== MATCH =====
+
+ect'?aOrId:athlete(aOrId);if(!org||!a)return null;const sc=scoutId?org.staff[scoutId]:headScout(org),active=org.assignments.filter(x=>x.status==='active'&&x.scoutId===sc?.id).length;if(active>=Number(sc?.capacity||3))return {error:'Scout at capacity'};const duration=mode==='remote'?1:2,id=`assess-${a.id}-${cw()}-${org.assignments.length+1}`,item={id,type:'athlete',athleteId:a.id,scoutId:sc?.id||null,mode,priority,status:'active',startedCW:cw(),dueCW:cw()+duration,startedSeason:season(),startedWeek:week()};org.assignments.push(item);return item;
+}
+function completeAssessment(item){const org=organisation(),a=athlete(item.athleteId);if(!org||!a||item.status!=='active')return null;if(a.retired){item.status='cancelled';item.outcome='Athlete retired';return null}if(a.injury>0){item.dueCW=cw()+1;item.outcome='Delayed — athlete unavailable';r
+
+===== MATCH =====
+
+utId?org.staff[scoutId]:headScout(org),active=org.assignments.filter(x=>x.status==='active'&&x.scoutId===sc?.id).length;if(active>=Number(sc?.capacity||3))return {error:'Scout at capacity'};const duration=mode==='remote'?1:2,id=`assess-${a.id}-${cw()}-${org.assignments.length+1}`,item={id,type:'athlete',athleteId:a.id,scoutId:sc?.id||null,mode,priority,status:'active',startedCW:cw(),dueCW:cw()+duration,startedSeason:season(),startedWeek:week()};org.assignments.push(item);return item;
+}
+function completeAssessment(item){const org=organisation(),a=athlete(item.athleteId);if(!org||!a||item.status!=='active')return null;if(a.retired){item.status='cancelled';item.outcome='Athlete retired';return null}if(a.injury>0){item.dueCW=cw()+1;item.outcome='Delayed — athlete unavailable';return null}const report=snapshotReport(a,{scoutId:item.scoutI
+
+===== MATCH =====
+
+ssignments.filter(x=>x.status==='active'&&x.scoutId===sc?.id).length;if(active>=Number(sc?.capacity||3))return {error:'Scout at capacity'};const duration=mode==='remote'?1:2,id=`assess-${a.id}-${cw()}-${org.assignments.length+1}`,item={id,type:'athlete',athleteId:a.id,scoutId:sc?.id||null,mode,priority,status:'active',startedCW:cw(),dueCW:cw()+duration,startedSeason:season(),startedWeek:week()};org.assignments.push(item);return item;
+}
+function completeAssessment(item){const org=organisation(),a=athlete(item.athleteId);if(!org||!a||item.status!=='active')return null;if(a.retired){item.status='cancelled';item.outcome='Athlete retired';return null}if(a.injury>0){item.dueCW=cw()+1;item.outcome='Delayed — athlete unavailable';return null}const report=snapshotReport(a,{scoutId:item.scoutId,reason:item.mode==='remote'?'Remote follow-up rep
+
+===== MATCH =====
+
+tive'&&x.scoutId===sc?.id).length;if(active>=Number(sc?.capacity||3))return {error:'Scout at capacity'};const duration=mode==='remote'?1:2,id=`assess-${a.id}-${cw()}-${org.assignments.length+1}`,item={id,type:'athlete',athleteId:a.id,scoutId:sc?.id||null,mode,priority,status:'active',startedCW:cw(),dueCW:cw()+duration,startedSeason:season(),startedWeek:week()};org.assignments.push(item);return item;
+}
+function completeAssessment(item){const org=organisation(),a=athlete(item.athleteId);if(!org||!a||item.status!=='active')return null;if(a.retired){item.status='cancelled';item.outcome='Athlete retired';return null}if(a.injury>0){item.dueCW=cw()+1;item.outcome='Delayed — athlete unavailable';return null}const report=snapshotReport(a,{scoutId:item.scoutId,reason:item.mode==='remote'?'Remote follow-up report':'Scout assessment complete',ob
+
+===== MATCH =====
+
+id).length;if(active>=Number(sc?.capacity||3))return {error:'Scout at capacity'};const duration=mode==='remote'?1:2,id=`assess-${a.id}-${cw()}-${org.assignments.length+1}`,item={id,type:'athlete',athleteId:a.id,scoutId:sc?.id||null,mode,priority,status:'active',startedCW:cw(),dueCW:cw()+duration,startedSeason:season(),startedWeek:week()};org.assignments.push(item);return item;
+}
+function completeAssessment(item){const org=organisation(),a=athlete(item.athleteId);if(!org||!a||item.status!=='active')return null;if(a.retired){item.status='cancelled';item.outcome='Athlete retired';return null}if(a.injury>0){item.dueCW=cw()+1;item.outcome='Delayed — athlete unavailable';return null}const report=snapshotReport(a,{scoutId:item.scoutId,reason:item.mode==='remote'?'Remote follow-up report':'Scout assessment complete',observationType:item.mode
+
+===== MATCH =====
+
+mber(sc?.capacity||3))return {error:'Scout at capacity'};const duration=mode==='remote'?1:2,id=`assess-${a.id}-${cw()}-${org.assignments.length+1}`,item={id,type:'athlete',athleteId:a.id,scoutId:sc?.id||null,mode,priority,status:'active',startedCW:cw(),dueCW:cw()+duration,startedSeason:season(),startedWeek:week()};org.assignments.push(item);return item;
+}
+function completeAssessment(item){const org=organisation(),a=athlete(item.athleteId);if(!org||!a||item.status!=='active')return null;if(a.retired){item.status='cancelled';item.outcome='Athlete retired';return null}if(a.injury>0){item.dueCW=cw()+1;item.outcome='Delayed — athlete unavailable';return null}const report=snapshotReport(a,{scoutId:item.scoutId,reason:item.mode==='remote'?'Remote follow-up report':'Scout assessment complete',observationType:item.mode==='remote'?'remote':'ath
+
+===== MATCH =====
+
+teAssessment(item){const org=organisation(),a=athlete(item.athleteId);if(!org||!a||item.status!=='active')return null;if(a.retired){item.status='cancelled';item.outcome='Athlete retired';return null}if(a.injury>0){item.dueCW=cw()+1;item.outcome='Delayed — athlete unavailable';return null}const report=snapshotReport(a,{scoutId:item.scoutId,reason:item.mode==='remote'?'Remote follow-up report':'Scout assessment complete',observationType:item.mode==='remote'?'remote':'athlete',source:item.mode==='remote'?'Remote performance review':'Direct scout observation',live:item.mode!=='remote'});item.status='completed';item.completedCW=cw();item.reportId=report?.id||null;return report}
+function processScoutingWeek(){const org=organisation();if(!org)return;for(const item of org.assignments.filter(x=>x.status==='active'&&x.dueCW<=cw()))completeAsse
+
+===== MATCH =====
+
+item){const org=organisation(),a=athlete(item.athleteId);if(!org||!a||item.status!=='active')return null;if(a.retired){item.status='cancelled';item.outcome='Athlete retired';return null}if(a.injury>0){item.dueCW=cw()+1;item.outcome='Delayed — athlete unavailable';return null}const report=snapshotReport(a,{scoutId:item.scoutId,reason:item.mode==='remote'?'Remote follow-up report':'Scout assessment complete',observationType:item.mode==='remote'?'remote':'athlete',source:item.mode==='remote'?'Remote performance review':'Direct scout observation',live:item.mode!=='remote'});item.status='completed';item.completedCW=cw();item.reportId=report?.id||null;return report}
+function processScoutingWeek(){const org=organisation();if(!org)return;for(const item of org.assignments.filter(x=>x.status==='active'&&x.dueCW<=cw()))completeAssessment(item);
+
+===== MATCH =====
+
+g||!a||item.status!=='active')return null;if(a.retired){item.status='cancelled';item.outcome='Athlete retired';return null}if(a.injury>0){item.dueCW=cw()+1;item.outcome='Delayed — athlete unavailable';return null}const report=snapshotReport(a,{scoutId:item.scoutId,reason:item.mode==='remote'?'Remote follow-up report':'Scout assessment complete',observationType:item.mode==='remote'?'remote':'athlete',source:item.mode==='remote'?'Remote performance review':'Direct scout observation',live:item.mode!=='remote'});item.status='completed';item.completedCW=cw();item.reportId=report?.id||null;return report}
+function processScoutingWeek(){const org=organisation();if(!org)return;for(const item of org.assignments.filter(x=>x.status==='active'&&x.dueCW<=cw()))completeAssessment(item);for(const [id,w] of Object.entries(org.watchlist)){const a=athl
+
+===== MATCH =====
+
+W=cw()+1;item.outcome='Delayed — athlete unavailable';return null}const report=snapshotReport(a,{scoutId:item.scoutId,reason:item.mode==='remote'?'Remote follow-up report':'Scout assessment complete',observationType:item.mode==='remote'?'remote':'athlete',source:item.mode==='remote'?'Remote performance review':'Direct scout observation',live:item.mode!=='remote'});item.status='completed';item.completedCW=cw();item.reportId=report?.id||null;return report}
+function processScoutingWeek(){const org=organisation();if(!org)return;for(const item of org.assignments.filter(x=>x.status==='active'&&x.dueCW<=cw()))completeAssessment(item);for(const [id,w] of Object.entries(org.watchlist)){const a=athlete(id);if(!a||a.retired){delete org.watchlist[id];continue}if(w.autoFollow&&cw()-Number(w.lastFollowCW||0)>=8&&!org.assignments.some(x=>x.status==
+
+===== MATCH =====
+
+ollow-up report':'Scout assessment complete',observationType:item.mode==='remote'?'remote':'athlete',source:item.mode==='remote'?'Remote performance review':'Direct scout observation',live:item.mode!=='remote'});item.status='completed';item.completedCW=cw();item.reportId=report?.id||null;return report}
+function processScoutingWeek(){const org=organisation();if(!org)return;for(const item of org.assignments.filter(x=>x.status==='active'&&x.dueCW<=cw()))completeAssessment(item);for(const [id,w] of Object.entries(org.watchlist)){const a=athlete(id);if(!a||a.retired){delete org.watchlist[id];continue}if(w.autoFollow&&cw()-Number(w.lastFollowCW||0)>=8&&!org.assignments.some(x=>x.status==='active'&&x.athleteId===id)){const result=requestAthleteAssessment(a,{mode:'remote',priority:w.priority});if(!result?.error)w.lastFollowCW=cw()}}
+ for(con
+
+===== MATCH =====
+
+ote'?'remote':'athlete',source:item.mode==='remote'?'Remote performance review':'Direct scout observation',live:item.mode!=='remote'});item.status='completed';item.completedCW=cw();item.reportId=report?.id||null;return report}
+function processScoutingWeek(){const org=organisation();if(!org)return;for(const item of org.assignments.filter(x=>x.status==='active'&&x.dueCW<=cw()))completeAssessment(item);for(const [id,w] of Object.entries(org.watchlist)){const a=athlete(id);if(!a||a.retired){delete org.watchlist[id];continue}if(w.autoFollow&&cw()-Number(w.lastFollowCW||0)>=8&&!org.assignments.some(x=>x.status==='active'&&x.athleteId===id)){const result=requestAthleteAssessment(a,{mode:'remote',priority:w.priority});if(!result?.error)w.lastFollowCW=cw()}}
+ for(const [id,k] of Object.entries(org.knowledge)){const a=athlete(id);if(!a||a.retir
+
+===== MATCH =====
+
+ org=organisation();if(!org)return;for(const item of org.assignments.filter(x=>x.status==='active'&&x.dueCW<=cw()))completeAssessment(item);for(const [id,w] of Object.entries(org.watchlist)){const a=athlete(id);if(!a||a.retired){delete org.watchlist[id];continue}if(w.autoFollow&&cw()-Number(w.lastFollowCW||0)>=8&&!org.assignments.some(x=>x.status==='active'&&x.athleteId===id)){const result=requestAthleteAssessment(a,{mode:'remote',priority:w.priority});if(!result?.error)w.lastFollowCW=cw()}}
+ for(const [id,k] of Object.entries(org.knowledge)){const a=athlete(id);if(!a||a.retired)continue;const age=cw()-Number(k.lastObservedCW||cw()),fast=a.age<=20||trend(a)==='Rapidly Improving';k.stale=age>=(fast?30:52)}
+}
+function coverage(org=organisation()){const groups={sprints:[],distance:[],jumps:[],throws:[],combined:[]};for(const a of ownAthl
+
+===== MATCH =====
+
+e:squad.length?squad.reduce((n,x)=>n+x.age,0)/squad.length:99,young:young.length,knowledge:known.length?known.reduce((x,y)=>x+y,0)/known.length:0})}return rows.sort((a,b)=>(a.squad-b.squad)||(b.avgAge-a.avgAge)||(a.knowledge-b.knowledge))[0]||null}
+function diagnostics(id){const org=organisation(),a=athlete(id),sc=headScout(org);if(!a)return null;return {truth:{overall:a.overall,potential:a.potential,attributes:a.trainingV2?.attributes||null},knowledge:knowledge(a,org),scout:sc?.id,estimate:{current:currentEstimate(a,sc,org),potential:potentialEstimate(a,sc,org)},opinion:buildOpinion(a,sc,org)}}
+
+function installHooks(){
+ try{if(typeof save==='function'){const previousSave=save;save=function(){organisation();return previousSave.apply(this,arguments)}}}catch(_){ }
+ try{if(typeof window.processWeek==='function'){const previous=window.p
+
+===== MATCH =====
+
+ rows.sort((a,b)=>(a.squad-b.squad)||(b.avgAge-a.avgAge)||(a.knowledge-b.knowledge))[0]||null}
+function diagnostics(id){const org=organisation(),a=athlete(id),sc=headScout(org);if(!a)return null;return {truth:{overall:a.overall,potential:a.potential,attributes:a.trainingV2?.attributes||null},knowledge:knowledge(a,org),scout:sc?.id,estimate:{current:currentEstimate(a,sc,org),potential:potentialEstimate(a,sc,org)},opinion:buildOpinion(a,sc,org)}}
+
+function installHooks(){
+ try{if(typeof save==='function'){const previousSave=save;save=function(){organisation();return previousSave.apply(this,arguments)}}}catch(_){ }
+ try{if(typeof window.processWeek==='function'){const previous=window.processWeek;window.processWeek=function(){const out=previous.apply(this,arguments);processScoutingWeek();return out}}}catch(_){ }
+}
+
+const API={VERSION,STA
+
+===== MATCH =====
+
+t(org);if(!a)return null;return {truth:{overall:a.overall,potential:a.potential,attributes:a.trainingV2?.attributes||null},knowledge:knowledge(a,org),scout:sc?.id,estimate:{current:currentEstimate(a,sc,org),potential:potentialEstimate(a,sc,org)},opinion:buildOpinion(a,sc,org)}}
+
+function installHooks(){
+ try{if(typeof save==='function'){const previousSave=save;save=function(){organisation();return previousSave.apply(this,arguments)}}}catch(_){ }
+ try{if(typeof window.processWeek==='function'){const previous=window.processWeek;window.processWeek=function(){const out=previous.apply(this,arguments);processScoutingWeek();return out}}}catch(_){ }
+}
+
+const API={VERSION,STAGES,CONFIDENCE,GROUP_LABELS,PHILOSOPHIES,PRIORITIES,root,organisation,headScout,scoutAge,scoutQuality,knowledge,observe,currentEstimate,potentialEstimate,buildOpinion,sn
+
+===== MATCH =====
+
+truth:{overall:a.overall,potential:a.potential,attributes:a.trainingV2?.attributes||null},knowledge:knowledge(a,org),scout:sc?.id,estimate:{current:currentEstimate(a,sc,org),potential:potentialEstimate(a,sc,org)},opinion:buildOpinion(a,sc,org)}}
+
+function installHooks(){
+ try{if(typeof save==='function'){const previousSave=save;save=function(){organisation();return previousSave.apply(this,arguments)}}}catch(_){ }
+ try{if(typeof window.processWeek==='function'){const previous=window.processWeek;window.processWeek=function(){const out=previous.apply(this,arguments);processScoutingWeek();return out}}}catch(_){ }
+}
+
+const API={VERSION,STAGES,CONFIDENCE,GROUP_LABELS,PHILOSOPHIES,PRIORITIES,root,organisation,headScout,scoutAge,scoutQuality,knowledge,observe,currentEstimate,potentialEstimate,buildOpinion,snapshotReport,addWatchlist,removeW
+
+===== MATCH =====
+
+:{overall:a.overall,potential:a.potential,attributes:a.trainingV2?.attributes||null},knowledge:knowledge(a,org),scout:sc?.id,estimate:{current:currentEstimate(a,sc,org),potential:potentialEstimate(a,sc,org)},opinion:buildOpinion(a,sc,org)}}
+
+function installHooks(){
+ try{if(typeof save==='function'){const previousSave=save;save=function(){organisation();return previousSave.apply(this,arguments)}}}catch(_){ }
+ try{if(typeof window.processWeek==='function'){const previous=window.processWeek;window.processWeek=function(){const out=previous.apply(this,arguments);processScoutingWeek();return out}}}catch(_){ }
+}
+
+const API={VERSION,STAGES,CONFIDENCE,GROUP_LABELS,PHILOSOPHIES,PRIORITIES,root,organisation,headScout,scoutAge,scoutQuality,knowledge,observe,currentEstimate,potentialEstimate,buildOpinion,snapshotReport,addWatchlist,removeWatchl
+
+===== MATCH =====
+
+rall:a.overall,potential:a.potential,attributes:a.trainingV2?.attributes||null},knowledge:knowledge(a,org),scout:sc?.id,estimate:{current:currentEstimate(a,sc,org),potential:potentialEstimate(a,sc,org)},opinion:buildOpinion(a,sc,org)}}
+
+function installHooks(){
+ try{if(typeof save==='function'){const previousSave=save;save=function(){organisation();return previousSave.apply(this,arguments)}}}catch(_){ }
+ try{if(typeof window.processWeek==='function'){const previous=window.processWeek;window.processWeek=function(){const out=previous.apply(this,arguments);processScoutingWeek();return out}}}catch(_){ }
+}
+
+const API={VERSION,STAGES,CONFIDENCE,GROUP_LABELS,PHILOSOPHIES,PRIORITIES,root,organisation,headScout,scoutAge,scoutQuality,knowledge,observe,currentEstimate,potentialEstimate,buildOpinion,snapshotReport,addWatchlist,removeWatchlist,r
+
+===== MATCH =====
+
+s:a.trainingV2?.attributes||null},knowledge:knowledge(a,org),scout:sc?.id,estimate:{current:currentEstimate(a,sc,org),potential:potentialEstimate(a,sc,org)},opinion:buildOpinion(a,sc,org)}}
+
+function installHooks(){
+ try{if(typeof save==='function'){const previousSave=save;save=function(){organisation();return previousSave.apply(this,arguments)}}}catch(_){ }
+ try{if(typeof window.processWeek==='function'){const previous=window.processWeek;window.processWeek=function(){const out=previous.apply(this,arguments);processScoutingWeek();return out}}}catch(_){ }
+}
+
+const API={VERSION,STAGES,CONFIDENCE,GROUP_LABELS,PHILOSOPHIES,PRIORITIES,root,organisation,headScout,scoutAge,scoutQuality,knowledge,observe,currentEstimate,potentialEstimate,buildOpinion,snapshotReport,addWatchlist,removeWatchlist,requestAthleteAssessment,completeAssessment,pro
+
+===== MATCH =====
+
+nstallHooks(){
+ try{if(typeof save==='function'){const previousSave=save;save=function(){organisation();return previousSave.apply(this,arguments)}}}catch(_){ }
+ try{if(typeof window.processWeek==='function'){const previous=window.processWeek;window.processWeek=function(){const out=previous.apply(this,arguments);processScoutingWeek();return out}}}catch(_){ }
+}
+
+const API={VERSION,STAGES,CONFIDENCE,GROUP_LABELS,PHILOSOPHIES,PRIORITIES,root,organisation,headScout,scoutAge,scoutQuality,knowledge,observe,currentEstimate,potentialEstimate,buildOpinion,snapshotReport,addWatchlist,removeWatchlist,requestAthleteAssessment,completeAssessment,processScoutingWeek,coverage,depthConcern,trend,resultConsistency,programmeFit,squadNeed,physicalProfile,technicalProfile,eventSuitability,riskFlags,headlines,recommendationReasons,verdict,recommendation,d
+
+===== MATCH =====
+
+ments)}}}catch(_){ }
+ try{if(typeof window.processWeek==='function'){const previous=window.processWeek;window.processWeek=function(){const out=previous.apply(this,arguments);processScoutingWeek();return out}}}catch(_){ }
+}
+
+const API={VERSION,STAGES,CONFIDENCE,GROUP_LABELS,PHILOSOPHIES,PRIORITIES,root,organisation,headScout,scoutAge,scoutQuality,knowledge,observe,currentEstimate,potentialEstimate,buildOpinion,snapshotReport,addWatchlist,removeWatchlist,requestAthleteAssessment,completeAssessment,processScoutingWeek,coverage,depthConcern,trend,resultConsistency,programmeFit,squadNeed,physicalProfile,technicalProfile,eventSuitability,riskFlags,headlines,recommendationReasons,verdict,recommendation,diagnostics,groupFor,gradeFor,gradeRange,stageForEvidence,confidenceFor,scoutingDifficulty};
+window.AMScoutingV2=API;
+organisation();install
+
+===== MATCH =====
+
+}}}catch(_){ }
+ try{if(typeof window.processWeek==='function'){const previous=window.processWeek;window.processWeek=function(){const out=previous.apply(this,arguments);processScoutingWeek();return out}}}catch(_){ }
+}
+
+const API={VERSION,STAGES,CONFIDENCE,GROUP_LABELS,PHILOSOPHIES,PRIORITIES,root,organisation,headScout,scoutAge,scoutQuality,knowledge,observe,currentEstimate,potentialEstimate,buildOpinion,snapshotReport,addWatchlist,removeWatchlist,requestAthleteAssessment,completeAssessment,processScoutingWeek,coverage,depthConcern,trend,resultConsistency,programmeFit,squadNeed,physicalProfile,technicalProfile,eventSuitability,riskFlags,headlines,recommendationReasons,verdict,recommendation,diagnostics,groupFor,gradeFor,gradeRange,stageForEvidence,confidenceFor,scoutingDifficulty};
+window.AMScoutingV2=API;
+organisation();installHooks(
+
+===== MATCH =====
+
+_){ }
+ try{if(typeof window.processWeek==='function'){const previous=window.processWeek;window.processWeek=function(){const out=previous.apply(this,arguments);processScoutingWeek();return out}}}catch(_){ }
+}
+
+const API={VERSION,STAGES,CONFIDENCE,GROUP_LABELS,PHILOSOPHIES,PRIORITIES,root,organisation,headScout,scoutAge,scoutQuality,knowledge,observe,currentEstimate,potentialEstimate,buildOpinion,snapshotReport,addWatchlist,removeWatchlist,requestAthleteAssessment,completeAssessment,processScoutingWeek,coverage,depthConcern,trend,resultConsistency,programmeFit,squadNeed,physicalProfile,technicalProfile,eventSuitability,riskFlags,headlines,recommendationReasons,verdict,recommendation,diagnostics,groupFor,gradeFor,gradeRange,stageForEvidence,confidenceFor,scoutingDifficulty};
+window.AMScoutingV2=API;
+organisation();installHooks();
+})();
+
+
+===== MATCH =====
+
+gWeek();return out}}}catch(_){ }
+}
+
+const API={VERSION,STAGES,CONFIDENCE,GROUP_LABELS,PHILOSOPHIES,PRIORITIES,root,organisation,headScout,scoutAge,scoutQuality,knowledge,observe,currentEstimate,potentialEstimate,buildOpinion,snapshotReport,addWatchlist,removeWatchlist,requestAthleteAssessment,completeAssessment,processScoutingWeek,coverage,depthConcern,trend,resultConsistency,programmeFit,squadNeed,physicalProfile,technicalProfile,eventSuitability,riskFlags,headlines,recommendationReasons,verdict,recommendation,diagnostics,groupFor,gradeFor,gradeRange,stageForEvidence,confidenceFor,scoutingDifficulty};
+window.AMScoutingV2=API;
+organisation();installHooks();
+})();
+
+
+/* Athletics Manager — Scouting V2 assignments, workload and discovery */
+(function(){
+'use strict';
+if(window.__amScoutingV2Assignments)return;
+window.__amScoutingV2Assig
+
+===== MATCH =====
+
+requestAthleteAssessment,completeAssessment,processScoutingWeek,coverage,depthConcern,trend,resultConsistency,programmeFit,squadNeed,physicalProfile,technicalProfile,eventSuitability,riskFlags,headlines,recommendationReasons,verdict,recommendation,diagnostics,groupFor,gradeFor,gradeRange,stageForEvidence,confidenceFor,scoutingDifficulty};
+window.AMScoutingV2=API;
+organisation();installHooks();
+})();
+
+
+/* Athletics Manager — Scouting V2 assignments, workload and discovery */
+(function(){
+'use strict';
+if(window.__amScoutingV2Assignments)return;
+window.__amScoutingV2Assignments=1;
+const A=window.AMScoutingV2;if(!A)return;
+const MISSIONS={
+ future:{label:'Find Future Prospects',group:'all',ageMax:23,duration:6,goal:'future'},
+ youth:{label:'Find Young Talent',group:'all',ageMax:20,duration:6,goal:'future'},
+ upgrade:{label:'Find Squad U
+
+===== MATCH =====
+
+eteAssessment,processScoutingWeek,coverage,depthConcern,trend,resultConsistency,programmeFit,squadNeed,physicalProfile,technicalProfile,eventSuitability,riskFlags,headlines,recommendationReasons,verdict,recommendation,diagnostics,groupFor,gradeFor,gradeRange,stageForEvidence,confidenceFor,scoutingDifficulty};
+window.AMScoutingV2=API;
+organisation();installHooks();
+})();
+
+
+/* Athletics Manager — Scouting V2 assignments, workload and discovery */
+(function(){
+'use strict';
+if(window.__amScoutingV2Assignments)return;
+window.__amScoutingV2Assignments=1;
+const A=window.AMScoutingV2;if(!A)return;
+const MISSIONS={
+ future:{label:'Find Future Prospects',group:'all',ageMax:23,duration:6,goal:'future'},
+ youth:{label:'Find Young Talent',group:'all',ageMax:20,duration:6,goal:'future'},
+ upgrade:{label:'Find Squad Upgrade',group:'all',ageMax:34,
+
+===== MATCH =====
+
+y,programmeFit,squadNeed,physicalProfile,technicalProfile,eventSuitability,riskFlags,headlines,recommendationReasons,verdict,recommendation,diagnostics,groupFor,gradeFor,gradeRange,stageForEvidence,confidenceFor,scoutingDifficulty};
+window.AMScoutingV2=API;
+organisation();installHooks();
+})();
+
+
+/* Athletics Manager — Scouting V2 assignments, workload and discovery */
+(function(){
+'use strict';
+if(window.__amScoutingV2Assignments)return;
+window.__amScoutingV2Assignments=1;
+const A=window.AMScoutingV2;if(!A)return;
+const MISSIONS={
+ future:{label:'Find Future Prospects',group:'all',ageMax:23,duration:6,goal:'future'},
+ youth:{label:'Find Young Talent',group:'all',ageMax:20,duration:6,goal:'future'},
+ upgrade:{label:'Find Squad Upgrade',group:'all',ageMax:34,duration:4,goal:'upgrade'},
+ sprints:{label:'Scout Sprints',group:'sprints',ag
+
+===== MATCH =====
+
+it,squadNeed,physicalProfile,technicalProfile,eventSuitability,riskFlags,headlines,recommendationReasons,verdict,recommendation,diagnostics,groupFor,gradeFor,gradeRange,stageForEvidence,confidenceFor,scoutingDifficulty};
+window.AMScoutingV2=API;
+organisation();installHooks();
+})();
+
+
+/* Athletics Manager — Scouting V2 assignments, workload and discovery */
+(function(){
+'use strict';
+if(window.__amScoutingV2Assignments)return;
+window.__amScoutingV2Assignments=1;
+const A=window.AMScoutingV2;if(!A)return;
+const MISSIONS={
+ future:{label:'Find Future Prospects',group:'all',ageMax:23,duration:6,goal:'future'},
+ youth:{label:'Find Young Talent',group:'all',ageMax:20,duration:6,goal:'future'},
+ upgrade:{label:'Find Squad Upgrade',group:'all',ageMax:34,duration:4,goal:'upgrade'},
+ sprints:{label:'Scout Sprints',group:'sprints',ageMax:28,durat
+
+===== MATCH =====
+
+es,recommendationReasons,verdict,recommendation,diagnostics,groupFor,gradeFor,gradeRange,stageForEvidence,confidenceFor,scoutingDifficulty};
+window.AMScoutingV2=API;
+organisation();installHooks();
+})();
+
+
+/* Athletics Manager — Scouting V2 assignments, workload and discovery */
+(function(){
+'use strict';
+if(window.__amScoutingV2Assignments)return;
+window.__amScoutingV2Assignments=1;
+const A=window.AMScoutingV2;if(!A)return;
+const MISSIONS={
+ future:{label:'Find Future Prospects',group:'all',ageMax:23,duration:6,goal:'future'},
+ youth:{label:'Find Young Talent',group:'all',ageMax:20,duration:6,goal:'future'},
+ upgrade:{label:'Find Squad Upgrade',group:'all',ageMax:34,duration:4,goal:'upgrade'},
+ sprints:{label:'Scout Sprints',group:'sprints',ageMax:28,duration:6,goal:'balanced'},
+ distance:{label:'Scout Distance',group:'distance',ageM
+
+===== MATCH =====
+
+ndationReasons,verdict,recommendation,diagnostics,groupFor,gradeFor,gradeRange,stageForEvidence,confidenceFor,scoutingDifficulty};
+window.AMScoutingV2=API;
+organisation();installHooks();
+})();
+
+
+/* Athletics Manager — Scouting V2 assignments, workload and discovery */
+(function(){
+'use strict';
+if(window.__amScoutingV2Assignments)return;
+window.__amScoutingV2Assignments=1;
+const A=window.AMScoutingV2;if(!A)return;
+const MISSIONS={
+ future:{label:'Find Future Prospects',group:'all',ageMax:23,duration:6,goal:'future'},
+ youth:{label:'Find Young Talent',group:'all',ageMax:20,duration:6,goal:'future'},
+ upgrade:{label:'Find Squad Upgrade',group:'all',ageMax:34,duration:4,goal:'upgrade'},
+ sprints:{label:'Scout Sprints',group:'sprints',ageMax:28,duration:6,goal:'balanced'},
+ distance:{label:'Scout Distance',group:'distance',ageMax:28,durat
+
+===== MATCH =====
+
+dation,diagnostics,groupFor,gradeFor,gradeRange,stageForEvidence,confidenceFor,scoutingDifficulty};
+window.AMScoutingV2=API;
+organisation();installHooks();
+})();
+
+
+/* Athletics Manager — Scouting V2 assignments, workload and discovery */
+(function(){
+'use strict';
+if(window.__amScoutingV2Assignments)return;
+window.__amScoutingV2Assignments=1;
+const A=window.AMScoutingV2;if(!A)return;
+const MISSIONS={
+ future:{label:'Find Future Prospects',group:'all',ageMax:23,duration:6,goal:'future'},
+ youth:{label:'Find Young Talent',group:'all',ageMax:20,duration:6,goal:'future'},
+ upgrade:{label:'Find Squad Upgrade',group:'all',ageMax:34,duration:4,goal:'upgrade'},
+ sprints:{label:'Scout Sprints',group:'sprints',ageMax:28,duration:6,goal:'balanced'},
+ distance:{label:'Scout Distance',group:'distance',ageMax:28,duration:6,goal:'balanced'},
+ jumps
+
+===== MATCH =====
+
+gnostics,groupFor,gradeFor,gradeRange,stageForEvidence,confidenceFor,scoutingDifficulty};
+window.AMScoutingV2=API;
+organisation();installHooks();
+})();
+
+
+/* Athletics Manager — Scouting V2 assignments, workload and discovery */
+(function(){
+'use strict';
+if(window.__amScoutingV2Assignments)return;
+window.__amScoutingV2Assignments=1;
+const A=window.AMScoutingV2;if(!A)return;
+const MISSIONS={
+ future:{label:'Find Future Prospects',group:'all',ageMax:23,duration:6,goal:'future'},
+ youth:{label:'Find Young Talent',group:'all',ageMax:20,duration:6,goal:'future'},
+ upgrade:{label:'Find Squad Upgrade',group:'all',ageMax:34,duration:4,goal:'upgrade'},
+ sprints:{label:'Scout Sprints',group:'sprints',ageMax:28,duration:6,goal:'balanced'},
+ distance:{label:'Scout Distance',group:'distance',ageMax:28,duration:6,goal:'balanced'},
+ jumps:{label:'Sc
+
+===== MATCH =====
+
+Range,stageForEvidence,confidenceFor,scoutingDifficulty};
+window.AMScoutingV2=API;
+organisation();installHooks();
+})();
+
+
+/* Athletics Manager — Scouting V2 assignments, workload and discovery */
+(function(){
+'use strict';
+if(window.__amScoutingV2Assignments)return;
+window.__amScoutingV2Assignments=1;
+const A=window.AMScoutingV2;if(!A)return;
+const MISSIONS={
+ future:{label:'Find Future Prospects',group:'all',ageMax:23,duration:6,goal:'future'},
+ youth:{label:'Find Young Talent',group:'all',ageMax:20,duration:6,goal:'future'},
+ upgrade:{label:'Find Squad Upgrade',group:'all',ageMax:34,duration:4,goal:'upgrade'},
+ sprints:{label:'Scout Sprints',group:'sprints',ageMax:28,duration:6,goal:'balanced'},
+ distance:{label:'Scout Distance',group:'distance',ageMax:28,duration:6,goal:'balanced'},
+ jumps:{label:'Scout Jumps',group:'jumps',ageMax
+
+===== MATCH =====
+
+.AMScoutingV2;if(!A)return;
+const MISSIONS={
+ future:{label:'Find Future Prospects',group:'all',ageMax:23,duration:6,goal:'future'},
+ youth:{label:'Find Young Talent',group:'all',ageMax:20,duration:6,goal:'future'},
+ upgrade:{label:'Find Squad Upgrade',group:'all',ageMax:34,duration:4,goal:'upgrade'},
+ sprints:{label:'Scout Sprints',group:'sprints',ageMax:28,duration:6,goal:'balanced'},
+ distance:{label:'Scout Distance',group:'distance',ageMax:28,duration:6,goal:'balanced'},
+ jumps:{label:'Scout Jumps',group:'jumps',ageMax:28,duration:6,goal:'balanced'},
+ throws:{label:'Scout Throws',group:'throws',ageMax:28,duration:6,goal:'balanced'},
+ weak:{label:'Find Talent in Weak Events',group:'need',ageMax:25,duration:6,goal:'need'}
+};
+const REGIONS={
+ 'GREAT BRITAIN':['Scotland','Wales','North West','North East','Midlands','London','South Ea
+
+===== MATCH =====
+
+p:'all',ageMax:23,duration:6,goal:'future'},
+ youth:{label:'Find Young Talent',group:'all',ageMax:20,duration:6,goal:'future'},
+ upgrade:{label:'Find Squad Upgrade',group:'all',ageMax:34,duration:4,goal:'upgrade'},
+ sprints:{label:'Scout Sprints',group:'sprints',ageMax:28,duration:6,goal:'balanced'},
+ distance:{label:'Scout Distance',group:'distance',ageMax:28,duration:6,goal:'balanced'},
+ jumps:{label:'Scout Jumps',group:'jumps',ageMax:28,duration:6,goal:'balanced'},
+ throws:{label:'Scout Throws',group:'throws',ageMax:28,duration:6,goal:'balanced'},
+ weak:{label:'Find Talent in Weak Events',group:'need',ageMax:25,duration:6,goal:'need'}
+};
+const REGIONS={
+ 'GREAT BRITAIN':['Scotland','Wales','North West','North East','Midlands','London','South East','South West','East'],
+ USA:['West','South West','Midwest','South','North East'],
+ JA
+
+===== MATCH =====
+
+ll',ageMax:20,duration:6,goal:'future'},
+ upgrade:{label:'Find Squad Upgrade',group:'all',ageMax:34,duration:4,goal:'upgrade'},
+ sprints:{label:'Scout Sprints',group:'sprints',ageMax:28,duration:6,goal:'balanced'},
+ distance:{label:'Scout Distance',group:'distance',ageMax:28,duration:6,goal:'balanced'},
+ jumps:{label:'Scout Jumps',group:'jumps',ageMax:28,duration:6,goal:'balanced'},
+ throws:{label:'Scout Throws',group:'throws',ageMax:28,duration:6,goal:'balanced'},
+ weak:{label:'Find Talent in Weak Events',group:'need',ageMax:25,duration:6,goal:'need'}
+};
+const REGIONS={
+ 'GREAT BRITAIN':['Scotland','Wales','North West','North East','Midlands','London','South East','South West','East'],
+ USA:['West','South West','Midwest','South','North East'],
+ JAMAICA:['Kingston','Surrey','Middlesex','Cornwall'],
+ GERMANY:['North','West','Central',
+
+===== MATCH =====
+
+p:'all',ageMax:34,duration:4,goal:'upgrade'},
+ sprints:{label:'Scout Sprints',group:'sprints',ageMax:28,duration:6,goal:'balanced'},
+ distance:{label:'Scout Distance',group:'distance',ageMax:28,duration:6,goal:'balanced'},
+ jumps:{label:'Scout Jumps',group:'jumps',ageMax:28,duration:6,goal:'balanced'},
+ throws:{label:'Scout Throws',group:'throws',ageMax:28,duration:6,goal:'balanced'},
+ weak:{label:'Find Talent in Weak Events',group:'need',ageMax:25,duration:6,goal:'need'}
+};
+const REGIONS={
+ 'GREAT BRITAIN':['Scotland','Wales','North West','North East','Midlands','London','South East','South West','East'],
+ USA:['West','South West','Midwest','South','North East'],
+ JAMAICA:['Kingston','Surrey','Middlesex','Cornwall'],
+ GERMANY:['North','West','Central','South','East']
+};
+const state=()=>typeof s!=='undefined'?s:null;
+const nation=()=
+
+===== MATCH =====
+
+,group:'distance',ageMax:28,duration:6,goal:'balanced'},
+ jumps:{label:'Scout Jumps',group:'jumps',ageMax:28,duration:6,goal:'balanced'},
+ throws:{label:'Scout Throws',group:'throws',ageMax:28,duration:6,goal:'balanced'},
+ weak:{label:'Find Talent in Weak Events',group:'need',ageMax:25,duration:6,goal:'need'}
+};
+const REGIONS={
+ 'GREAT BRITAIN':['Scotland','Wales','North West','North East','Midlands','London','South East','South West','East'],
+ USA:['West','South West','Midwest','South','North East'],
+ JAMAICA:['Kingston','Surrey','Middlesex','Cornwall'],
+ GERMANY:['North','West','Central','South','East']
+};
+const state=()=>typeof s!=='undefined'?s:null;
+const nation=()=>typeof managedNation==='function'?managedNation():'GREAT BRITAIN';
+const season=()=>Number(state()?.game?.season||0),week=()=>Number(state()?.game?.week||1),cw=()=>ty
+
+===== MATCH =====
+
+{let h=2166136261;for(const c of String(value)){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
+function roll(seed){return (hash(seed)%100000)/100000}
+function pick(seed,list){return list[hash(seed)%Math.max(1,list.length)]}
+function org(){const o=A.organisation();o.hiddenTalent??=[];o.discoveryHistory??=[];o.regionalKnowledge??={};for(const r of regions())if(!Number.isFinite(o.regionalKnowledge[r]))o.regionalKnowledge[r]=25;return o}
+function regions(n=nation()){return REGIONS[n]||['North','South','East','West','Central']}
+function activeAssignments(scId=null){return org().assignments.filter(x=>x.status==='active'&&(!scId||x.scoutId===scId))}
+function availableCapacity(scId=null){const sc=scId?org().staff[scId]:A.headScout(org());return Math.max(0,Number(sc?.capacity||3)-activeAssignments(sc?.id).length)}
+function discsForGr
+
+===== MATCH =====
+
+g(value)){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
+function roll(seed){return (hash(seed)%100000)/100000}
+function pick(seed,list){return list[hash(seed)%Math.max(1,list.length)]}
+function org(){const o=A.organisation();o.hiddenTalent??=[];o.discoveryHistory??=[];o.regionalKnowledge??={};for(const r of regions())if(!Number.isFinite(o.regionalKnowledge[r]))o.regionalKnowledge[r]=25;return o}
+function regions(n=nation()){return REGIONS[n]||['North','South','East','West','Central']}
+function activeAssignments(scId=null){return org().assignments.filter(x=>x.status==='active'&&(!scId||x.scoutId===scId))}
+function availableCapacity(scId=null){const sc=scId?org().staff[scId]:A.headScout(org());return Math.max(0,Number(sc?.capacity||3)-activeAssignments(sc?.id).length)}
+function discsForGroup(group){const keys=Object.keys(type
+
+===== MATCH =====
+
+ath.imul(h,16777619)}return h>>>0}
+function roll(seed){return (hash(seed)%100000)/100000}
+function pick(seed,list){return list[hash(seed)%Math.max(1,list.length)]}
+function org(){const o=A.organisation();o.hiddenTalent??=[];o.discoveryHistory??=[];o.regionalKnowledge??={};for(const r of regions())if(!Number.isFinite(o.regionalKnowledge[r]))o.regionalKnowledge[r]=25;return o}
+function regions(n=nation()){return REGIONS[n]||['North','South','East','West','Central']}
+function activeAssignments(scId=null){return org().assignments.filter(x=>x.status==='active'&&(!scId||x.scoutId===scId))}
+function availableCapacity(scId=null){const sc=scId?org().staff[scId]:A.headScout(org());return Math.max(0,Number(sc?.capacity||3)-activeAssignments(sc?.id).length)}
+function discsForGroup(group){const keys=Object.keys(typeof DISCIPLINES!=='undefined'?DIS
+
+===== MATCH =====
+
+urn h>>>0}
+function roll(seed){return (hash(seed)%100000)/100000}
+function pick(seed,list){return list[hash(seed)%Math.max(1,list.length)]}
+function org(){const o=A.organisation();o.hiddenTalent??=[];o.discoveryHistory??=[];o.regionalKnowledge??={};for(const r of regions())if(!Number.isFinite(o.regionalKnowledge[r]))o.regionalKnowledge[r]=25;return o}
+function regions(n=nation()){return REGIONS[n]||['North','South','East','West','Central']}
+function activeAssignments(scId=null){return org().assignments.filter(x=>x.status==='active'&&(!scId||x.scoutId===scId))}
+function availableCapacity(scId=null){const sc=scId?org().staff[scId]:A.headScout(org());return Math.max(0,Number(sc?.capacity||3)-activeAssignments(sc?.id).length)}
+function discsForGroup(group){const keys=Object.keys(typeof DISCIPLINES!=='undefined'?DISCIPLINES:{});if(group===
+
+===== MATCH =====
+
+(seed)%100000)/100000}
+function pick(seed,list){return list[hash(seed)%Math.max(1,list.length)]}
+function org(){const o=A.organisation();o.hiddenTalent??=[];o.discoveryHistory??=[];o.regionalKnowledge??={};for(const r of regions())if(!Number.isFinite(o.regionalKnowledge[r]))o.regionalKnowledge[r]=25;return o}
+function regions(n=nation()){return REGIONS[n]||['North','South','East','West','Central']}
+function activeAssignments(scId=null){return org().assignments.filter(x=>x.status==='active'&&(!scId||x.scoutId===scId))}
+function availableCapacity(scId=null){const sc=scId?org().staff[scId]:A.headScout(org());return Math.max(0,Number(sc?.capacity||3)-activeAssignments(sc?.id).length)}
+function discsForGroup(group){const keys=Object.keys(typeof DISCIPLINES!=='undefined'?DISCIPLINES:{});if(group==='all'||!group)return keys;return keys.filte
+
+===== MATCH =====
+
+tion pick(seed,list){return list[hash(seed)%Math.max(1,list.length)]}
+function org(){const o=A.organisation();o.hiddenTalent??=[];o.discoveryHistory??=[];o.regionalKnowledge??={};for(const r of regions())if(!Number.isFinite(o.regionalKnowledge[r]))o.regionalKnowledge[r]=25;return o}
+function regions(n=nation()){return REGIONS[n]||['North','South','East','West','Central']}
+function activeAssignments(scId=null){return org().assignments.filter(x=>x.status==='active'&&(!scId||x.scoutId===scId))}
+function availableCapacity(scId=null){const sc=scId?org().staff[scId]:A.headScout(org());return Math.max(0,Number(sc?.capacity||3)-activeAssignments(sc?.id).length)}
+function discsForGroup(group){const keys=Object.keys(typeof DISCIPLINES!=='undefined'?DISCIPLINES:{});if(group==='all'||!group)return keys;return keys.filter(d=>A.groupFor({disc:d})==
+
+===== MATCH =====
+
+function org(){const o=A.organisation();o.hiddenTalent??=[];o.discoveryHistory??=[];o.regionalKnowledge??={};for(const r of regions())if(!Number.isFinite(o.regionalKnowledge[r]))o.regionalKnowledge[r]=25;return o}
+function regions(n=nation()){return REGIONS[n]||['North','South','East','West','Central']}
+function activeAssignments(scId=null){return org().assignments.filter(x=>x.status==='active'&&(!scId||x.scoutId===scId))}
+function availableCapacity(scId=null){const sc=scId?org().staff[scId]:A.headScout(org());return Math.max(0,Number(sc?.capacity||3)-activeAssignments(sc?.id).length)}
+function discsForGroup(group){const keys=Object.keys(typeof DISCIPLINES!=='undefined'?DISCIPLINES:{});if(group==='all'||!group)return keys;return keys.filter(d=>A.groupFor({disc:d})===group)}
+function weakGroup(){const concern=A.depthConcern(org()),a=co
+
+===== MATCH =====
+
+n();o.hiddenTalent??=[];o.discoveryHistory??=[];o.regionalKnowledge??={};for(const r of regions())if(!Number.isFinite(o.regionalKnowledge[r]))o.regionalKnowledge[r]=25;return o}
+function regions(n=nation()){return REGIONS[n]||['North','South','East','West','Central']}
+function activeAssignments(scId=null){return org().assignments.filter(x=>x.status==='active'&&(!scId||x.scoutId===scId))}
+function availableCapacity(scId=null){const sc=scId?org().staff[scId]:A.headScout(org());return Math.max(0,Number(sc?.capacity||3)-activeAssignments(sc?.id).length)}
+function discsForGroup(group){const keys=Object.keys(typeof DISCIPLINES!=='undefined'?DISCIPLINES:{});if(group==='all'||!group)return keys;return keys.filter(d=>A.groupFor({disc:d})===group)}
+function weakGroup(){const concern=A.depthConcern(org()),a=concern?{disc:concern.disc}:null;retur
+
+===== MATCH =====
+
+ionalKnowledge??={};for(const r of regions())if(!Number.isFinite(o.regionalKnowledge[r]))o.regionalKnowledge[r]=25;return o}
+function regions(n=nation()){return REGIONS[n]||['North','South','East','West','Central']}
+function activeAssignments(scId=null){return org().assignments.filter(x=>x.status==='active'&&(!scId||x.scoutId===scId))}
+function availableCapacity(scId=null){const sc=scId?org().staff[scId]:A.headScout(org());return Math.max(0,Number(sc?.capacity||3)-activeAssignments(sc?.id).length)}
+function discsForGroup(group){const keys=Object.keys(typeof DISCIPLINES!=='undefined'?DISCIPLINES:{});if(group==='all'||!group)return keys;return keys.filter(d=>A.groupFor({disc:d})===group)}
+function weakGroup(){const concern=A.depthConcern(org()),a=concern?{disc:concern.disc}:null;return a?A.groupFor(a):'all'}
+function scoutFor(id){retur
+
+===== MATCH =====
+
+ionalKnowledge[r]=25;return o}
+function regions(n=nation()){return REGIONS[n]||['North','South','East','West','Central']}
+function activeAssignments(scId=null){return org().assignments.filter(x=>x.status==='active'&&(!scId||x.scoutId===scId))}
+function availableCapacity(scId=null){const sc=scId?org().staff[scId]:A.headScout(org());return Math.max(0,Number(sc?.capacity||3)-activeAssignments(sc?.id).length)}
+function discsForGroup(group){const keys=Object.keys(typeof DISCIPLINES!=='undefined'?DISCIPLINES:{});if(group==='all'||!group)return keys;return keys.filter(d=>A.groupFor({disc:d})===group)}
+function weakGroup(){const concern=A.depthConcern(org()),a=concern?{disc:concern.disc}:null;return a?A.groupFor(a):'all'}
+function scoutFor(id){return org().staff[id]||A.headScout(org())}
+function scoutDiscoveryQuality(sc,group){const dummy={d
+
+===== MATCH =====
+
+eturn REGIONS[n]||['North','South','East','West','Central']}
+function activeAssignments(scId=null){return org().assignments.filter(x=>x.status==='active'&&(!scId||x.scoutId===scId))}
+function availableCapacity(scId=null){const sc=scId?org().staff[scId]:A.headScout(org());return Math.max(0,Number(sc?.capacity||3)-activeAssignments(sc?.id).length)}
+function discsForGroup(group){const keys=Object.keys(typeof DISCIPLINES!=='undefined'?DISCIPLINES:{});if(group==='all'||!group)return keys;return keys.filter(d=>A.groupFor({disc:d})===group)}
+function weakGroup(){const concern=A.depthConcern(org()),a=concern?{disc:concern.disc}:null;return a?A.groupFor(a):'all'}
+function scoutFor(id){return org().staff[id]||A.headScout(org())}
+function scoutDiscoveryQuality(sc,group){const dummy={disc:discsForGroup(group==='need'?weakGroup():group)[0]||'M100'
+
+===== MATCH =====
+
+cId=null){return org().assignments.filter(x=>x.status==='active'&&(!scId||x.scoutId===scId))}
+function availableCapacity(scId=null){const sc=scId?org().staff[scId]:A.headScout(org());return Math.max(0,Number(sc?.capacity||3)-activeAssignments(sc?.id).length)}
+function discsForGroup(group){const keys=Object.keys(typeof DISCIPLINES!=='undefined'?DISCIPLINES:{});if(group==='all'||!group)return keys;return keys.filter(d=>A.groupFor({disc:d})===group)}
+function weakGroup(){const concern=A.depthConcern(org()),a=concern?{disc:concern.disc}:null;return a?A.groupFor(a):'all'}
+function scoutFor(id){return org().staff[id]||A.headScout(org())}
+function scoutDiscoveryQuality(sc,group){const dummy={disc:discsForGroup(group==='need'?weakGroup():group)[0]||'M100'};return A.scoutQuality(sc,'discovery',dummy)}
+
+function createHiddenAthlete(group='all',targ
+
+===== MATCH =====
+
+ignments.filter(x=>x.status==='active'&&(!scId||x.scoutId===scId))}
+function availableCapacity(scId=null){const sc=scId?org().staff[scId]:A.headScout(org());return Math.max(0,Number(sc?.capacity||3)-activeAssignments(sc?.id).length)}
+function discsForGroup(group){const keys=Object.keys(typeof DISCIPLINES!=='undefined'?DISCIPLINES:{});if(group==='all'||!group)return keys;return keys.filter(d=>A.groupFor({disc:d})===group)}
+function weakGroup(){const concern=A.depthConcern(org()),a=concern?{disc:concern.disc}:null;return a?A.groupFor(a):'all'}
+function scoutFor(id){return org().staff[id]||A.headScout(org())}
+function scoutDiscoveryQuality(sc,group){const dummy={disc:discsForGroup(group==='need'?weakGroup():group)[0]||'M100'};return A.scoutQuality(sc,'discovery',dummy)}
+
+function createHiddenAthlete(group='all',targetNation=nation()){
+ const
+
+===== MATCH =====
+
+ction discsForGroup(group){const keys=Object.keys(typeof DISCIPLINES!=='undefined'?DISCIPLINES:{});if(group==='all'||!group)return keys;return keys.filter(d=>A.groupFor({disc:d})===group)}
+function weakGroup(){const concern=A.depthConcern(org()),a=concern?{disc:concern.disc}:null;return a?A.groupFor(a):'all'}
+function scoutFor(id){return org().staff[id]||A.headScout(org())}
+function scoutDiscoveryQuality(sc,group){const dummy={disc:discsForGroup(group==='need'?weakGroup():group)[0]||'M100'};return A.scoutQuality(sc,'discovery',dummy)}
+
+function createHiddenAthlete(group='all',targetNation=nation()){
+ const o=org(),actualGroup=group==='need'?weakGroup():group,discs=discsForGroup(actualGroup);if(!discs.length)return null;const disc=pick(`${targetNation}:${cw()}:${o.hiddenTalent.length}:disc`,discs);let a=null;
+ try{
+  if(typeof newPros
+
+===== MATCH =====
+
+t.keys(typeof DISCIPLINES!=='undefined'?DISCIPLINES:{});if(group==='all'||!group)return keys;return keys.filter(d=>A.groupFor({disc:d})===group)}
+function weakGroup(){const concern=A.depthConcern(org()),a=concern?{disc:concern.disc}:null;return a?A.groupFor(a):'all'}
+function scoutFor(id){return org().staff[id]||A.headScout(org())}
+function scoutDiscoveryQuality(sc,group){const dummy={disc:discsForGroup(group==='need'?weakGroup():group)[0]||'M100'};return A.scoutQuality(sc,'discovery',dummy)}
+
+function createHiddenAthlete(group='all',targetNation=nation()){
+ const o=org(),actualGroup=group==='need'?weakGroup():group,discs=discsForGroup(actualGroup);if(!discs.length)return null;const disc=pick(`${targetNation}:${cw()}:${o.hiddenTalent.length}:disc`,discs);let a=null;
+ try{
+  if(typeof newProspect==='function'){
+   /* Scout investment 
+
+===== MATCH =====
+
+ES!=='undefined'?DISCIPLINES:{});if(group==='all'||!group)return keys;return keys.filter(d=>A.groupFor({disc:d})===group)}
+function weakGroup(){const concern=A.depthConcern(org()),a=concern?{disc:concern.disc}:null;return a?A.groupFor(a):'all'}
+function scoutFor(id){return org().staff[id]||A.headScout(org())}
+function scoutDiscoveryQuality(sc,group){const dummy={disc:discsForGroup(group==='need'?weakGroup():group)[0]||'M100'};return A.scoutQuality(sc,'discovery',dummy)}
+
+function createHiddenAthlete(group='all',targetNation=nation()){
+ const o=org(),actualGroup=group==='need'?weakGroup():group,discs=discsForGroup(actualGroup);if(!discs.length)return null;const disc=pick(`${targetNation}:${cw()}:${o.hiddenTalent.length}:disc`,discs);let a=null;
+ try{
+  if(typeof newProspect==='function'){
+   /* Scout investment changes what we find, n
+
+===== MATCH =====
+
+p)}
+function weakGroup(){const concern=A.depthConcern(org()),a=concern?{disc:concern.disc}:null;return a?A.groupFor(a):'all'}
+function scoutFor(id){return org().staff[id]||A.headScout(org())}
+function scoutDiscoveryQuality(sc,group){const dummy={disc:discsForGroup(group==='need'?weakGroup():group)[0]||'M100'};return A.scoutQuality(sc,'discovery',dummy)}
+
+function createHiddenAthlete(group='all',targetNation=nation()){
+ const o=org(),actualGroup=group==='need'?weakGroup():group,discs=discsForGroup(actualGroup);if(!discs.length)return null;const disc=pick(`${targetNation}:${cw()}:${o.hiddenTalent.length}:disc`,discs);let a=null;
+ try{
+  if(typeof newProspect==='function'){
+   /* Scout investment changes what we find, not the athlete who exists. National pathway modifiers inside newProspect may still shape the talent pool. */
+   a=newPr
+
+===== MATCH =====
+
+createHiddenAthlete(group='all',targetNation=nation()){
+ const o=org(),actualGroup=group==='need'?weakGroup():group,discs=discsForGroup(actualGroup);if(!discs.length)return null;const disc=pick(`${targetNation}:${cw()}:${o.hiddenTalent.length}:disc`,discs);let a=null;
+ try{
+  if(typeof newProspect==='function'){
+   /* Scout investment changes what we find, not the athlete who exists. National pathway modifiers inside newProspect may still shape the talent pool. */
+   a=newProspect(targetNation,disc,2);
+   const idx=state().athletes.findIndex(x=>x===a||x.id===a.id);if(idx>=0)state().athletes.splice(idx,1);
+  }
+ }catch(_){ }
+ if(!a){
+  const id=`hidden-${targetNation.replace(/\W/g,'')}-${cw()}-${o.hiddenTalent.length+1}-${hash(Math.random())}`;
+  a={id,name:`Emerging Athlete ${o.hiddenTalent.length+1}`,nation:targetNation,disc,age:17+(
+
+===== MATCH =====
+
+a={id,name:`Emerging Athlete ${o.hiddenTalent.length+1}`,nation:targetNation,disc,age:17+(hash(id)%8),overall:58+(hash(id+':a')%18),potential:74+(hash(id+':p')%21),fitness:88,form:75,fatigue:8,pb:0,tier:'Prospect',points:0,injury:0,medals:{g:0,s:0,b:0},training:'Balanced',inSquad:false};
+ }
+ a.source='Hidden Talent';a.scoutingHidden=true;delete a.discoveredSeason;delete a.discoveredWeek;delete a.discoveredAge;a.assessmentIntroduced=false;
+ const rs=regions(targetNation);a.scoutingRegion=pick(`${a.id}:region`,rs);a.hiddenEnteredSeason=season();a.hiddenEnteredWeek=week();a.hiddenVisibility=clamp(22+(Number(a.overall)||60)-58+(a.age<=20?5:0)+(hash(a.id+':vis')%18),15,88);o.hiddenTalent.push(a);return a;
+}
+function seedHiddenTalent(count=12){const o=org();if(o.hiddenSeeded)return;o.hiddenSeeded=true;for(let i=0;i<count;i++){const groups=
+
+===== MATCH =====
+
+otential:74+(hash(id+':p')%21),fitness:88,form:75,fatigue:8,pb:0,tier:'Prospect',points:0,injury:0,medals:{g:0,s:0,b:0},training:'Balanced',inSquad:false};
+ }
+ a.source='Hidden Talent';a.scoutingHidden=true;delete a.discoveredSeason;delete a.discoveredWeek;delete a.discoveredAge;a.assessmentIntroduced=false;
+ const rs=regions(targetNation);a.scoutingRegion=pick(`${a.id}:region`,rs);a.hiddenEnteredSeason=season();a.hiddenEnteredWeek=week();a.hiddenVisibility=clamp(22+(Number(a.overall)||60)-58+(a.age<=20?5:0)+(hash(a.id+':vis')%18),15,88);o.hiddenTalent.push(a);return a;
+}
+function seedHiddenTalent(count=12){const o=org();if(o.hiddenSeeded)return;o.hiddenSeeded=true;for(let i=0;i<count;i++){const groups=['sprints','distance','jumps','throws'];createHiddenAthlete(groups[i%groups.length])}}
+function replenishHiddenTalent(){const o=org(),
+
+===== MATCH =====
+
+')%21),fitness:88,form:75,fatigue:8,pb:0,tier:'Prospect',points:0,injury:0,medals:{g:0,s:0,b:0},training:'Balanced',inSquad:false};
+ }
+ a.source='Hidden Talent';a.scoutingHidden=true;delete a.discoveredSeason;delete a.discoveredWeek;delete a.discoveredAge;a.assessmentIntroduced=false;
+ const rs=regions(targetNation);a.scoutingRegion=pick(`${a.id}:region`,rs);a.hiddenEnteredSeason=season();a.hiddenEnteredWeek=week();a.hiddenVisibility=clamp(22+(Number(a.overall)||60)-58+(a.age<=20?5:0)+(hash(a.id+':vis')%18),15,88);o.hiddenTalent.push(a);return a;
+}
+function seedHiddenTalent(count=12){const o=org();if(o.hiddenSeeded)return;o.hiddenSeeded=true;for(let i=0;i<count;i++){const groups=['sprints','distance','jumps','throws'];createHiddenAthlete(groups[i%groups.length])}}
+function replenishHiddenTalent(){const o=org(),active=o.hiddenTalent.f
+
+===== MATCH =====
+
+itness:88,form:75,fatigue:8,pb:0,tier:'Prospect',points:0,injury:0,medals:{g:0,s:0,b:0},training:'Balanced',inSquad:false};
+ }
+ a.source='Hidden Talent';a.scoutingHidden=true;delete a.discoveredSeason;delete a.discoveredWeek;delete a.discoveredAge;a.assessmentIntroduced=false;
+ const rs=regions(targetNation);a.scoutingRegion=pick(`${a.id}:region`,rs);a.hiddenEnteredSeason=season();a.hiddenEnteredWeek=week();a.hiddenVisibility=clamp(22+(Number(a.overall)||60)-58+(a.age<=20?5:0)+(hash(a.id+':vis')%18),15,88);o.hiddenTalent.push(a);return a;
+}
+function seedHiddenTalent(count=12){const o=org();if(o.hiddenSeeded)return;o.hiddenSeeded=true;for(let i=0;i<count;i++){const groups=['sprints','distance','jumps','throws'];createHiddenAthlete(groups[i%groups.length])}}
+function replenishHiddenTalent(){const o=org(),active=o.hiddenTalent.filter(a=>
+
+===== MATCH =====
+
+igue:8,pb:0,tier:'Prospect',points:0,injury:0,medals:{g:0,s:0,b:0},training:'Balanced',inSquad:false};
+ }
+ a.source='Hidden Talent';a.scoutingHidden=true;delete a.discoveredSeason;delete a.discoveredWeek;delete a.discoveredAge;a.assessmentIntroduced=false;
+ const rs=regions(targetNation);a.scoutingRegion=pick(`${a.id}:region`,rs);a.hiddenEnteredSeason=season();a.hiddenEnteredWeek=week();a.hiddenVisibility=clamp(22+(Number(a.overall)||60)-58+(a.age<=20?5:0)+(hash(a.id+':vis')%18),15,88);o.hiddenTalent.push(a);return a;
+}
+function seedHiddenTalent(count=12){const o=org();if(o.hiddenSeeded)return;o.hiddenSeeded=true;for(let i=0;i<count;i++){const groups=['sprints','distance','jumps','throws'];createHiddenAthlete(groups[i%groups.length])}}
+function replenishHiddenTalent(){const o=org(),active=o.hiddenTalent.filter(a=>!a.retired);if(active
+
+===== MATCH =====
+
+on()&&week()<=3){o.lastIntakeSeason=season();for(let i=0;i<6;i++)createHiddenAthlete(['sprints','distance','jumps','throws'][i%4])}}
+function candidateMatch(a,item){if(!a||a.nation!==nation())return 0;const group=item.group==='need'?weakGroup():item.group;if(group&&group!=='all'&&A.groupFor(a)!==group)return 0;if(item.region&&item.region!=='National'&&a.scoutingRegion!==item.region)return 0;if(item.gender==='Women'&&!String(a.disc).startsWith('W'))return 0;if(item.gender==='Men'&&String(a.disc).startsWith('W'))return 0;if(item.ageMax&&a.age>item.ageMax)return 0;let score=1;if(item.goal==='future')score*=a.age<=20?1.22:a.age<=23?1.08:.78;if(item.goal==='upgrade'){const squad=(state().athletes||[]).filter(x=>x.nation===nation()&&x.inSquad!==false&&x.disc===a.disc&&!x.retired),head=A.headScout(org()),floor=squad.length?Math.min(...squad.
+
+===== MATCH =====
+
+=3){o.lastIntakeSeason=season();for(let i=0;i<6;i++)createHiddenAthlete(['sprints','distance','jumps','throws'][i%4])}}
+function candidateMatch(a,item){if(!a||a.nation!==nation())return 0;const group=item.group==='need'?weakGroup():item.group;if(group&&group!=='all'&&A.groupFor(a)!==group)return 0;if(item.region&&item.region!=='National'&&a.scoutingRegion!==item.region)return 0;if(item.gender==='Women'&&!String(a.disc).startsWith('W'))return 0;if(item.gender==='Men'&&String(a.disc).startsWith('W'))return 0;if(item.ageMax&&a.age>item.ageMax)return 0;let score=1;if(item.goal==='future')score*=a.age<=20?1.22:a.age<=23?1.08:.78;if(item.goal==='upgrade'){const squad=(state().athletes||[]).filter(x=>x.nation===nation()&&x.inSquad!==false&&x.disc===a.disc&&!x.retired),head=A.headScout(org()),floor=squad.length?Math.min(...squad.map(x=>Number
+
+===== MATCH =====
+
+season();for(let i=0;i<6;i++)createHiddenAthlete(['sprints','distance','jumps','throws'][i%4])}}
+function candidateMatch(a,item){if(!a||a.nation!==nation())return 0;const group=item.group==='need'?weakGroup():item.group;if(group&&group!=='all'&&A.groupFor(a)!==group)return 0;if(item.region&&item.region!=='National'&&a.scoutingRegion!==item.region)return 0;if(item.gender==='Women'&&!String(a.disc).startsWith('W'))return 0;if(item.gender==='Men'&&String(a.disc).startsWith('W'))return 0;if(item.ageMax&&a.age>item.ageMax)return 0;let score=1;if(item.goal==='future')score*=a.age<=20?1.22:a.age<=23?1.08:.78;if(item.goal==='upgrade'){const squad=(state().athletes||[]).filter(x=>x.nation===nation()&&x.inSquad!==false&&x.disc===a.disc&&!x.retired),head=A.headScout(org()),floor=squad.length?Math.min(...squad.map(x=>Number(A.currentEstimate(x,h
+
+===== MATCH =====
+
+;for(let i=0;i<6;i++)createHiddenAthlete(['sprints','distance','jumps','throws'][i%4])}}
+function candidateMatch(a,item){if(!a||a.nation!==nation())return 0;const group=item.group==='need'?weakGroup():item.group;if(group&&group!=='all'&&A.groupFor(a)!==group)return 0;if(item.region&&item.region!=='National'&&a.scoutingRegion!==item.region)return 0;if(item.gender==='Women'&&!String(a.disc).startsWith('W'))return 0;if(item.gender==='Men'&&String(a.disc).startsWith('W'))return 0;if(item.ageMax&&a.age>item.ageMax)return 0;let score=1;if(item.goal==='future')score*=a.age<=20?1.22:a.age<=23?1.08:.78;if(item.goal==='upgrade'){const squad=(state().athletes||[]).filter(x=>x.nation===nation()&&x.inSquad!==false&&x.disc===a.disc&&!x.retired),head=A.headScout(org()),floor=squad.length?Math.min(...squad.map(x=>Number(A.currentEstimate(x,head,org()
+
+===== MATCH =====
+
+<6;i++)createHiddenAthlete(['sprints','distance','jumps','throws'][i%4])}}
+function candidateMatch(a,item){if(!a||a.nation!==nation())return 0;const group=item.group==='need'?weakGroup():item.group;if(group&&group!=='all'&&A.groupFor(a)!==group)return 0;if(item.region&&item.region!=='National'&&a.scoutingRegion!==item.region)return 0;if(item.gender==='Women'&&!String(a.disc).startsWith('W'))return 0;if(item.gender==='Men'&&String(a.disc).startsWith('W'))return 0;if(item.ageMax&&a.age>item.ageMax)return 0;let score=1;if(item.goal==='future')score*=a.age<=20?1.22:a.age<=23?1.08:.78;if(item.goal==='upgrade'){const squad=(state().athletes||[]).filter(x=>x.nation===nation()&&x.inSquad!==false&&x.disc===a.disc&&!x.retired),head=A.headScout(org()),floor=squad.length?Math.min(...squad.map(x=>Number(A.currentEstimate(x,head,org())?.mid)||70)):
+
+===== MATCH =====
+
+throws'][i%4])}}
+function candidateMatch(a,item){if(!a||a.nation!==nation())return 0;const group=item.group==='need'?weakGroup():item.group;if(group&&group!=='all'&&A.groupFor(a)!==group)return 0;if(item.region&&item.region!=='National'&&a.scoutingRegion!==item.region)return 0;if(item.gender==='Women'&&!String(a.disc).startsWith('W'))return 0;if(item.gender==='Men'&&String(a.disc).startsWith('W'))return 0;if(item.ageMax&&a.age>item.ageMax)return 0;let score=1;if(item.goal==='future')score*=a.age<=20?1.22:a.age<=23?1.08:.78;if(item.goal==='upgrade'){const squad=(state().athletes||[]).filter(x=>x.nation===nation()&&x.inSquad!==false&&x.disc===a.disc&&!x.retired),head=A.headScout(org()),floor=squad.length?Math.min(...squad.map(x=>Number(A.currentEstimate(x,head,org())?.mid)||70)):70,publicLevel=Number(a.hiddenVisibility||35);score*=clam
+
+===== MATCH =====
+
+!==nation())return 0;const group=item.group==='need'?weakGroup():item.group;if(group&&group!=='all'&&A.groupFor(a)!==group)return 0;if(item.region&&item.region!=='National'&&a.scoutingRegion!==item.region)return 0;if(item.gender==='Women'&&!String(a.disc).startsWith('W'))return 0;if(item.gender==='Men'&&String(a.disc).startsWith('W'))return 0;if(item.ageMax&&a.age>item.ageMax)return 0;let score=1;if(item.goal==='future')score*=a.age<=20?1.22:a.age<=23?1.08:.78;if(item.goal==='upgrade'){const squad=(state().athletes||[]).filter(x=>x.nation===nation()&&x.inSquad!==false&&x.disc===a.disc&&!x.retired),head=A.headScout(org()),floor=squad.length?Math.min(...squad.map(x=>Number(A.currentEstimate(x,head,org())?.mid)||70)):70,publicLevel=Number(a.hiddenVisibility||35);score*=clamp(.72+(publicLevel-45)*.012+(a.age<=23?.08:0),.5,1.35);if(floor>
+
+===== MATCH =====
+
+=='Men'&&String(a.disc).startsWith('W'))return 0;if(item.ageMax&&a.age>item.ageMax)return 0;let score=1;if(item.goal==='future')score*=a.age<=20?1.22:a.age<=23?1.08:.78;if(item.goal==='upgrade'){const squad=(state().athletes||[]).filter(x=>x.nation===nation()&&x.inSquad!==false&&x.disc===a.disc&&!x.retired),head=A.headScout(org()),floor=squad.length?Math.min(...squad.map(x=>Number(A.currentEstimate(x,head,org())?.mid)||70)):70,publicLevel=Number(a.hiddenVisibility||35);score*=clamp(.72+(publicLevel-45)*.012+(a.age<=23?.08:0),.5,1.35);if(floor>=80)score*=.92}return score}
+function discoveryChance(a,item,sc){const group=A.groupFor(a),quality=scoutDiscoveryQuality(sc,group),regional=Number(org().regionalKnowledge[a.scoutingRegion]||25),visibility=Number(a.hiddenVisibility||35),match=candidateMatch(a,item);if(!match)return 0;let chance=.
+
+===== MATCH =====
+
+g()),floor=squad.length?Math.min(...squad.map(x=>Number(A.currentEstimate(x,head,org())?.mid)||70)):70,publicLevel=Number(a.hiddenVisibility||35);score*=clamp(.72+(publicLevel-45)*.012+(a.age<=23?.08:0),.5,1.35);if(floor>=80)score*=.92}return score}
+function discoveryChance(a,item,sc){const group=A.groupFor(a),quality=scoutDiscoveryQuality(sc,group),regional=Number(org().regionalKnowledge[a.scoutingRegion]||25),visibility=Number(a.hiddenVisibility||35),match=candidateMatch(a,item);if(!match)return 0;let chance=.035+quality*.0016+regional*.0007+visibility*.0012;chance*=match;if(item.priority==='High')chance*=1.12;if(item.mode==='competition')chance*=1.3;if(item.mode==='remote')chance*=.82;if((a.overall||0)>=82)chance=Math.max(chance,.72);return clamp(chance,.04,.88)}
+function discover(a,item,reason=null){const o=org(),idx=o.hiddenTale
+
+===== MATCH =====
+
+(...squad.map(x=>Number(A.currentEstimate(x,head,org())?.mid)||70)):70,publicLevel=Number(a.hiddenVisibility||35);score*=clamp(.72+(publicLevel-45)*.012+(a.age<=23?.08:0),.5,1.35);if(floor>=80)score*=.92}return score}
+function discoveryChance(a,item,sc){const group=A.groupFor(a),quality=scoutDiscoveryQuality(sc,group),regional=Number(org().regionalKnowledge[a.scoutingRegion]||25),visibility=Number(a.hiddenVisibility||35),match=candidateMatch(a,item);if(!match)return 0;let chance=.035+quality*.0016+regional*.0007+visibility*.0012;chance*=match;if(item.priority==='High')chance*=1.12;if(item.mode==='competition')chance*=1.3;if(item.mode==='remote')chance*=.82;if((a.overall||0)>=82)chance=Math.max(chance,.72);return clamp(chance,.04,.88)}
+function discover(a,item,reason=null){const o=org(),idx=o.hiddenTalent.findIndex(x=>x.id===a.id);if(i
+
+===== MATCH =====
+
+r(A.currentEstimate(x,head,org())?.mid)||70)):70,publicLevel=Number(a.hiddenVisibility||35);score*=clamp(.72+(publicLevel-45)*.012+(a.age<=23?.08:0),.5,1.35);if(floor>=80)score*=.92}return score}
+function discoveryChance(a,item,sc){const group=A.groupFor(a),quality=scoutDiscoveryQuality(sc,group),regional=Number(org().regionalKnowledge[a.scoutingRegion]||25),visibility=Number(a.hiddenVisibility||35),match=candidateMatch(a,item);if(!match)return 0;let chance=.035+quality*.0016+regional*.0007+visibility*.0012;chance*=match;if(item.priority==='High')chance*=1.12;if(item.mode==='competition')chance*=1.3;if(item.mode==='remote')chance*=.82;if((a.overall||0)>=82)chance=Math.max(chance,.72);return clamp(chance,.04,.88)}
+function discover(a,item,reason=null){const o=org(),idx=o.hiddenTalent.findIndex(x=>x.id===a.id);if(idx>=0)o.hiddenTalent.s
+
+===== MATCH =====
+
+x,head,org())?.mid)||70)):70,publicLevel=Number(a.hiddenVisibility||35);score*=clamp(.72+(publicLevel-45)*.012+(a.age<=23?.08:0),.5,1.35);if(floor>=80)score*=.92}return score}
+function discoveryChance(a,item,sc){const group=A.groupFor(a),quality=scoutDiscoveryQuality(sc,group),regional=Number(org().regionalKnowledge[a.scoutingRegion]||25),visibility=Number(a.hiddenVisibility||35),match=candidateMatch(a,item);if(!match)return 0;let chance=.035+quality*.0016+regional*.0007+visibility*.0012;chance*=match;if(item.priority==='High')chance*=1.12;if(item.mode==='competition')chance*=1.3;if(item.mode==='remote')chance*=.82;if((a.overall||0)>=82)chance=Math.max(chance,.72);return clamp(chance,.04,.88)}
+function discover(a,item,reason=null){const o=org(),idx=o.hiddenTalent.findIndex(x=>x.id===a.id);if(idx>=0)o.hiddenTalent.splice(idx,1);a.scou
+
+===== MATCH =====
+
+rg())?.mid)||70)):70,publicLevel=Number(a.hiddenVisibility||35);score*=clamp(.72+(publicLevel-45)*.012+(a.age<=23?.08:0),.5,1.35);if(floor>=80)score*=.92}return score}
+function discoveryChance(a,item,sc){const group=A.groupFor(a),quality=scoutDiscoveryQuality(sc,group),regional=Number(org().regionalKnowledge[a.scoutingRegion]||25),visibility=Number(a.hiddenVisibility||35),match=candidateMatch(a,item);if(!match)return 0;let chance=.035+quality*.0016+regional*.0007+visibility*.0012;chance*=match;if(item.priority==='High')chance*=1.12;if(item.mode==='competition')chance*=1.3;if(item.mode==='remote')chance*=.82;if((a.overall||0)>=82)chance=Math.max(chance,.72);return clamp(chance,.04,.88)}
+function discover(a,item,reason=null){const o=org(),idx=o.hiddenTalent.findIndex(x=>x.id===a.id);if(idx>=0)o.hiddenTalent.splice(idx,1);a.scoutingHidde
