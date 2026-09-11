@@ -186,6 +186,7 @@ const sourceContracts={
  'scripts/first-time-experience-v2.js':[
   ['window.AMFirstTimeExperienceV2','First-Time Experience V2 public service is missing'],
   ["const OPENING_EVENT_ID='opening-meet-v2'",'Opening-month competition authority is missing'],
+  ['const FIRST_SEASON_SPRING_WEEK=13','First-season Spring Grand Prix must not collide with Summit Series 1 in Week 14'],
   ['function ensureOpeningSchedule()','Opening-month schedule migration is missing'],
   ['function firstSelectionComplete(e)','Explicit first-selection decision gate is missing'],
   ['function showLiveIntro(e,d,start)','First live-event contextual help is missing'],

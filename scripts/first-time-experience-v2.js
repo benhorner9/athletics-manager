@@ -7,6 +7,7 @@ const VERSION='2.0.2';
 const STATE_VERSION=2;
 const OPENING_EVENT_ID='opening-meet-v2';
 const OPENING_WEEK=5;
+const FIRST_SEASON_SPRING_WEEK=13; // Keep Week 14 clear for Summit Series 1.
 const SCOUT_GROUPS={
  Sprints:['M100','W100','M200','W200','M400','W400'],
  Distance:['M800','W800','M1500','W1500','M5000','W5000'],
@@ -117,7 +118,7 @@ function ensureOpeningSchedule(){
  if(camp&&!camp.completed){camp.completed=true;camp.onboardingSuppressed=true}
  const indoor=events.find(e=>e.id==='indoor');if(indoor&&!indoor.completed&&n(indoor.week)<=6)indoor.week=8;
  const winter=events.find(e=>e.id==='winter');if(winter&&!winter.completed&&n(winter.week)<=8)winter.week=10;
- const spring=events.find(e=>e.id==='spring');if(spring&&!spring.completed&&n(spring.week)<=12)spring.week=14;
+ const spring=events.find(e=>e.id==='spring');if(spring&&!spring.completed&&n(spring.week)<=12)spring.week=FIRST_SEASON_SPRING_WEEK;
  events.sort((a,b)=>n(a.week)-n(b.week)||String(a.id).localeCompare(String(b.id)));
  st.scheduleApplied=true;st.openingEventId=OPENING_EVENT_ID;
  log('opening_schedule_applied',{event:OPENING_EVENT_ID,week:OPENING_WEEK});saveSafe();return true;
