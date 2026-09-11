@@ -75,6 +75,9 @@ jobs:
       - name: Commit updated game
         run: |
           MESSAGE="$(cat .am-update/COMMIT_MESSAGE 2>/dev/null || echo 'Apply Athletics Manager update')"
+          if [ -f .am-update/NO_WORKFLOW_CHANGES ]; then
+            git restore -- .github/workflows
+          fi
           rm -rf .am-update
           git config user.name 'ChatGPT Athletics Manager'
           git config user.email 'actions@users.noreply.github.com'
