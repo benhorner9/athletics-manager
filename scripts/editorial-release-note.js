@@ -1,18 +1,19 @@
-/* ===== Editorial Cleanup Release Note ===== */
+/* ===== Text & Language Systems Release Note ===== */
 (function(){
 'use strict';
 if(window.__amEditorialReleaseNote)return;window.__amEditorialReleaseNote=1;
 const update={
- timestamp:'2026-09-10T13:05:00+01:00',
- date:'10 September 2026',
- title:'Game-Wide Writing Cleanup',
+ timestamp:'2026-09-11T18:49:00+01:00',
+ date:'11 September 2026',
+ title:'Text, Language & Narrative Systems',
  items:[
-  'Cut unnecessary instructions and repeated UI text across the game.',
-  'Removed trailer-style and AI-sounding wording from onboarding, selection and system messages.',
-  'Coach, athlete, medical, media and commentary voices stay natural and role-specific.',
-  'Future emails and news now pass through one final editorial layer so older wording is less likely to creep back in.'
+  'Added one language authority across new emails, news, commentary and core UI wording.',
+  'Role-aware editing now removes common filler without changing the gameplay facts underneath it.',
+  'Added formal voice standards for coaches, scouts, medical staff, federation, finance, media and Gavin Potts.',
+  'Added copy QA for generic subjects, broken variables, long emails, repeated wording and vague button labels.',
+  'British English terminology and number-formatting rules are now centralised for future systems.'
  ]
 };
 if(typeof window.addDevelopmentUpdate==='function')window.addDevelopmentUpdate(update);
 })();
-/* ===== End Editorial Cleanup Release Note ===== */
+/* ===== End Text & Language Systems Release Note ===== */
