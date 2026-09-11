@@ -1,6 +1,6 @@
 name: UI Regression Gate
 
-# Live Event Broadcast V4.2 distance phase is validated by this gate.
+# Live Event Broadcast V4.3 field phase is validated by this gate.
 on:
   push:
     branches: [main]
@@ -36,13 +36,17 @@ jobs:
           node-version: '20'
       - name: Validate UI asset graph and migration order
         run: node tools/static-regression.mjs
-      - name: Validate Live Event Broadcast V4.2
+      - name: Validate Live Event Broadcast V4.3
         run: |
           node --check scripts/live-event-broadcast-v4.js
           grep -q 'function distanceGroups(c,state)' scripts/live-event-broadcast-v4.js
           grep -q 'function distanceCameraTarget(c,state)' scripts/live-event-broadcast-v4.js
           grep -q 'function distanceMoment(c)' scripts/live-event-broadcast-v4.js
           grep -q 'function distanceLeadComment(c,state)' scripts/live-event-broadcast-v4.js
+          grep -q 'function fieldRoundInfo(c,q=c.seq\[c.i\]' scripts/live-event-broadcast-v4.js
+          grep -q 'function fieldPreAttemptSpeech(c,q)' scripts/live-event-broadcast-v4.js
+          grep -q 'function fieldBestMarkers(c,family)' scripts/live-event-broadcast-v4.js
+          grep -q "version:'4.3.0'" scripts/live-event-broadcast-v4.js
       - name: Check JavaScript syntax
         shell: bash
         run: |
