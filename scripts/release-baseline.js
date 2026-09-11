@@ -1,6 +1,7 @@
 /* Athletics Manager — canonical shipping baseline
    Product/system versions reset here. Historical source filenames (V2/V3/V4 etc.) describe
-   implementation lineage only and are not shipping version numbers after this baseline. */
+   implementation lineage only and are not shipping version numbers after this baseline.
+   Canonical shippable baseline: Athletics Manager 1.0. */
 (function(){
 'use strict';
 if(window.AMRelease)return;
