@@ -1,13 +1,13 @@
 /* Athletics Manager — Inbox Character Voices V1
    Gives communications an explicit speaker role without changing gameplay facts.
    Existing messages keep their original wording; newly created messages receive role-aware
-   sender identity, concise subjects and light editorial treatment. */
+   sender identity, concise subjects and controlled role-specific writing. */
 (function(){
 'use strict';
 if(window.__amInboxCharacterVoicesV1)return;window.__amInboxCharacterVoicesV1=1;
 if(typeof pushMail!=='function')return;
 
-const VERSION='1.0';
+const VERSION='1.1';
 const VOICES=Object.freeze({
  athlete:{label:'Athlete',tone:'personal, direct'},
  medical:{label:'Medical & Physio',tone:'calm, precise, actionable'},
@@ -34,7 +34,11 @@ function athleteForMail(m){
  for(const a of safe(()=>s?.athletes,[])||[]){const name=text(a?.name).trim();if(name.length>best&&hay.includes(name.toLowerCase())){found=a;best=name.length}}
  return found
 }
-function coachRoleForAthlete(a){const d=text(a?.disc);if(/^.[0-9]*100|100/i.test(d)||/M100|W100/i.test(d))return'sprint';if(/HJ|HIGH/i.test(d))return'jumps';if(/SP|SHOT/i.test(d))return'throws';return null}
+function coachRoleForAthlete(a){
+ if(!a)return null;const d=text(a.disc);
+ if(safe(()=>typeof isSprintDiscipline==='function'&&isSprintDiscipline(d),false)||/100|200|400|SPRINT|HURDLE|RELAY/i.test(d))return'sprint';
+ if(/HJ|HIGH/i.test(d))return'jumps';if(/SP|SHOT|THROW/i.test(d))return'throws';return null
+}
 function coachFor(role,a=null){
  const coaches=safe(()=>s?.coaches,null);if(!coaches)return null;
  let key=null;if(role==='medical')key='physio';else if(role==='scout')key='scout';else if(role==='sportsScience')key='science';else if(role==='specialistCoach')key=coachRoleForAthlete(a);
@@ -100,11 +104,16 @@ function subjectRewrite(value){
 }
 
 function roleContext(role){if(role==='medical')return'medical';if(role==='scout')return'scouting';if(role==='finance')return'finance';if(role==='olympic'||role==='federation')return'federation';return'general'}
-function bodyRewrite(value,role,person=false){
- let v=text(value);const lang=window.AMLanguage;
- if(lang?.cleanProse)v=lang.cleanProse(v,roleContext(role));else v=normalise(v);
+function rewriteKnownPatterns(value,role,person=false){
+ let v=text(value);
+ if(role==='selection'){
+  v=v.replace(/^(.+?) takes place in Week (\d+) in (.+?)\. Select .+? athletes below\. If any athlete is entered, you will be required to attend the event\.$/i,'Selection is due for $1, Week $2 in $3. Submit your team below. Any entry commits you to Event Day.');
+ }
  if(role==='scout'){
-  v=v.replace(/Staff ability range/gi,'Current ability range').replace(/development grade/gi,'development estimate').replace(/Added to your national pool\.?/gi,person?'I have added the athlete to the National Pool for review.':'Added to the National Pool for review.');
+  v=v.replace(/([^.!?]+), age (\d+), ([^.]+)\. Personal best ([^.]+)\. (?:Staff|Current) ability range ([^;]+); (?:development grade|development estimate) ([^(]+) \(([^)]+)\)\. Added to your national pool\.?/gi,(all,name,age,event,pb,ability,grade,confidence)=>`Initial assessment: ${name.trim()}, ${age}, ${event.trim()}. PB ${pb.trim()}. Ability estimate ${ability.trim()}; development estimate ${grade.trim()} (${confidence.trim()}). ${person?'I have added the athlete to the National Pool for review.':'Added to the National Pool for review.'}`);
+ }
+ if(role==='sportsScience'){
+  v=v.replace(/^(.*?)\. Practice marks only; official records and ranking points are unchanged\. The full report is on Calendar\.$/i,'Testing is complete. $1. These are practice marks; records and ranking points are unchanged. Full report: Calendar.');
  }
  if(role==='operations'){
   v=v.replace(/,?\s*ability\s+\d+\/5\.?/gi,'.').replace(/The 52-week contract is paid upfront:\s*/gi,'Contract cost: ');
@@ -112,16 +121,22 @@ function bodyRewrite(value,role,person=false){
  if(role==='specialistCoach'||role==='performance'){
   v=v.replace(/The coaching team believes the block produced a meaningful development gain\.?/gi,'The block produced a clear development gain.').replace(/meaningful development gain/gi,'development gain');
  }
- if(role==='medical'){
-  v=v.replace(/This is encouraging news, although competition readiness will need rebuilding\.?/gi,'Competition readiness will still need rebuilding.');
- }
+ if(role==='medical')v=v.replace(/This is encouraging news, although competition readiness will need rebuilding\.?/gi,'Competition readiness will still need rebuilding.');
+ return v
+}
+function bodyRewrite(value,role,person=false){
+ let v=rewriteKnownPatterns(value,role,person),lang=window.AMLanguage;
+ if(lang?.cleanProse)v=lang.cleanProse(v,roleContext(role));else v=normalise(v);
+ if(role==='scout')v=v.replace(/Staff ability range/gi,'Ability estimate').replace(/development grade/gi,'development estimate');
  return normalise(v)
 }
 
+function namedOrganisation(role){const p=profile(),fed=p.federation||'National Federation';if(role==='finance')return`${fed} Finance`;if(role==='operations')return`${fed} Performance Operations`;return''}
 function applyVoice(m,{rewrite=false,rename=false}={}){
  if(!m||typeof m!=='object')return m;const role=inferRole(m),a=athleteForMail(m),coach=coachFor(role,a),label=coachLabel(coach,role);
  m.voiceRole=role;m.voiceLabel=label;m.voiceVersion=VERSION;
  if(rename&&coach?.name&&role!=='athlete')m.sender=`${coach.name} • ${label}`;
+ else if(rename&&namedOrganisation(role))m.sender=namedOrganisation(role);
  if(rewrite){m.subject=subjectRewrite(m.subject);m.body=bodyRewrite(m.body,role,!!coach?.name)}
  ensureMeta(m,role);return m
 }
@@ -161,6 +176,7 @@ if(typeof window.addDevelopmentUpdate==='function')window.addDevelopmentUpdate({
   'Inbox messages now identify who is actually speaking: coaches, sports science, scouts and medical staff use the current people in your programme where appropriate.',
   'Selection, federation, finance and operations communication now keep separate roles and tone instead of reading like one generic sender.',
   'New message subjects are shorter and more specific, with clearer selection, scouting, medical, camp, contract and Summit Series wording.',
+  'Scouting, testing and selection messages now use role-specific sentence structures rather than one shared system voice.',
   'Existing career emails keep their original wording while gaining speaker-role context, protecting historical decisions from being rewritten.'
  ]
 });
