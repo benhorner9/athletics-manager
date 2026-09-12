@@ -20,7 +20,7 @@ function actionBadge(button,count){
 }
 function syncVisibleCounts(){
  markSuperseded();const actions=core.getUnresolvedActions(),blocks=core.getProgressionBlockers(),advance=$('advanceTop');
- if(blocks.length&&advance){advance.disabled=false;advance.textContent=`${blocks.length} ACTION${blocks.length===1?'S':''} REQUIRED`;advance.title='Resolve required decisions before advancing'}
+ if(blocks.length&&advance){advance.disabled=false;advance.textContent=`${blocks.length} ACTION${blocks.length===1?'':'S'} REQUIRED`;advance.title='Resolve required decisions before advancing'}
  // Action counts have their own badge. #mailBadge is reserved exclusively for unread communications.
  actionBadge(document.querySelector('#railNav [data-view="inbox"]'),actions.length);
  actionBadge(document.querySelector('#bottomNav [data-view="inbox"]'),actions.length);
