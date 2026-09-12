@@ -2,6 +2,9 @@ name: Apply Athletics Manager update
 
 on:
   push:
+    branches-ignore:
+      - main
+      - release/1.0
     paths:
       - '.am-update/READY'
 
@@ -18,7 +21,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install update tooling
-        run: python3 -m pip install --user --disable-pip-version-check Pillow
+        run: python3 -m pip install --user --disable-pip-check Pillow
 
       - name: Apply staged Athletics Manager update
         run: |
