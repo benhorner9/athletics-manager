@@ -15,6 +15,7 @@ const ROUTES={
  inbox:{title:'Inbox',area:'Communications',exit:['home'],critical:true,migration:'candidate'},
  squad:{title:'Squad',area:'Athlete Management',exit:['home','pool'],critical:true},
  pool:{title:'National Pool',area:'Athlete Management',exit:['home','squad'],critical:true},
+ clubs:{title:'Club Athletics',area:'Domestic Athletics',exit:['home','squad','calendar'],critical:false},
  calendar:{title:'Calendar',area:'Season Planning',exit:['home','competition'],critical:true},
  training:{title:'Training',area:'High Performance',exit:['home','squad'],critical:true},
  scouting:{title:'Scouting',area:'Talent ID',exit:['home','pool'],critical:true},

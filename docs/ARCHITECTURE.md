@@ -50,6 +50,7 @@ The current shipping authorities are documented in `RELEASE-1.0.md`. Key route o
 - Inbox — `scripts/inbox-v3.js`
 - Squad / Pool / Athlete Profile — `scripts/squad-athlete-v2.js`
 - Calendar — `scripts/calendar-v2.js`
+- Club Athletics — `scripts/club-world-v1.js`
 - Competition Journey — `scripts/competition-journey-v2.js`
 - Training — `scripts/training-v2-bootstrap.js` with `scripts/training-v3.js`
 - Scouting — `scripts/scouting-v2-bootstrap.js` with `scripts/scouting-v3.js`

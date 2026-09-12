@@ -36,7 +36,7 @@ for(const id of new Set(ids)){
  if(count>1)fail(`Duplicate static DOM id: ${id} ×${count}`);
 }
 
-const routes=['home','inbox','squad','pool','calendar','training','scouting','league','rankings','olympics','staff','finance','news','competition'];
+const routes=['home','inbox','squad','pool','clubs','calendar','training','scouting','league','rankings','olympics','staff','finance','news','competition'];
 for(const route of routes){
  if(!new RegExp(`<section\\s+id=["']${route}["']`).test(html))fail(`Missing route section: ${route}`);
 }
@@ -59,6 +59,7 @@ const requiredScripts=[
  'scripts/scouting-v3.js',
  'scripts/staff-finance-v2.js',
  'scripts/world-season-v2.js',
+ 'scripts/club-world-v1.js',
  'scripts/manager-career-v1.js',
  'scripts/first-time-experience-v2.js',
  'scripts/keyboard-shortcuts-v1.js',
@@ -88,7 +89,8 @@ before('scripts/live-event-broadcast-v4.js','scripts/competition-journey-v2.js')
 before('scripts/competition-journey-v2.js','scripts/competition-journey-route-guard-v1.js');
 before('scripts/scouting-v3.js','scripts/world-season-v2.js');
 before('scripts/staff-finance-v2.js','scripts/world-season-v2.js');
-before('scripts/world-season-v2.js','scripts/manager-career-v1.js');
+before('scripts/world-season-v2.js','scripts/club-world-v1.js');
+before('scripts/club-world-v1.js','scripts/manager-career-v1.js');
 before('scripts/manager-career-v1.js','scripts/first-time-experience-v2.js');
 before('scripts/first-time-experience-v2.js','scripts/release-baseline.js');
 before('scripts/release-baseline.js','scripts/integration-regression-v1.js');
@@ -109,7 +111,7 @@ for(const file of retiredPresentation)if(localRefs.includes(file)||scriptOrder.i
 
 const productionAssets=[
  'styles/ui-platform-v1.css','styles/home-v2.css','styles/inbox-v3.css','styles/squad-athlete-v2.css','styles/calendar-v2.css',
- 'styles/competition-journey-v2.css','styles/live-event-broadcast-v4.css','styles/training-v3.css','styles/scouting-v3.css','styles/staff-finance-v2.css','styles/world-season-v2.css',
+ 'styles/competition-journey-v2.css','styles/live-event-broadcast-v4.css','styles/training-v3.css','styles/scouting-v3.css','styles/staff-finance-v2.css','styles/world-season-v2.css','styles/club-world-v1.css',
  'styles/event-flow-stability.css','styles/manager-profile-v1.css','styles/manager-profile-sidebar-v1.css','styles/first-time-experience-v2.css'
 ];
 for(const file of productionAssets){
@@ -146,10 +148,20 @@ const sourceContracts={
   ["newCareerButton.onclick=()=>showNationPicker()",'64-nation picker must rebind Start New Career to the expanded picker'],
   ['window.AMNationWorld','64-nation world public service is missing']
  ],
+ 'scripts/club-world-v1.js':[
+  ['window.AMClubWorld','Club Athletics public authority is missing'],
+  ['const MEETS=','Club Athletics season calendar is missing'],
+  ['function simulateMeeting','Club Athletics meeting simulation is missing'],
+  ['function standings','Club Athletics championship table is missing'],
+  ['function processCurrentWeek','Club Athletics weekly simulation hook is missing'],
+  ['function openClub','Club profile routing is missing'],
+  ['data-am-ui-screen="club-world-v1"','Club Athletics production screen marker is missing']
+ ],
  'scripts/squad-athlete-v2.js':[
   ['Date of birth','Athlete profile must display date of birth'],
   ['Place of birth','Athlete profile must display place of birth'],
   ['Athletics Club','Athlete profile must display Athletics Club'],
+  ['data-apv2-club','Managed athlete club identity must link to Club Athletics'],
   ['AMPeopleBiography','Athlete profile must use persistent biography data']
  ],
  'scripts/staff-finance-v2.js':[
