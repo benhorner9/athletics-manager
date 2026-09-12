@@ -93,8 +93,8 @@ replace_once('scripts/release-baseline.js',
 
 # Runtime smoke: require the model and prove Overall cannot affect competition judgement.
 replace_once('tools/runtime-smoke.mjs',
-"'AMFirstTimeExperienceV2','AMRelease','__athleticsRegression','AMLiveBroadcastV4','AMPeopleBiography','AMAthleteAttributes','AMAttributeScouting','AMClubWorld'",
-"'AMFirstTimeExperienceV2','AMRelease','__athleticsRegression','AMLiveBroadcastV4','AMPeopleBiography','AMAthleteAttributes','AMAthletePerformance','AMAttributeScouting','AMClubWorld'",
+"'AMFirstTimeExperienceV2','AMRelease','__athleticsRegression','AMLiveBroadcastV4','AMEventAIRealism','AMPeopleBiography','AMAthleteAttributes','AMAttributeScouting','AMClubWorld'",
+"'AMFirstTimeExperienceV2','AMRelease','__athleticsRegression','AMLiveBroadcastV4','AMEventAIRealism','AMPeopleBiography','AMAthleteAttributes','AMAthletePerformance','AMAttributeScouting','AMClubWorld'",
 'performance runtime global')
 marker=" if(w.AMNationWorld){\n"
 block=""" if(w.AMAthletePerformance){
