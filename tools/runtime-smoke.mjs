@@ -160,7 +160,8 @@ try{
    if(attrs.calibration!=='PB + event standards')fail('Athlete Attributes must be calibrated from objective performance standards.');
    const sample=(w.s?.athletes||[])[0];
    if(sample){const model=w.AMAthleteAttributes.get(sample);if(!model||model.attributes?.length!==8)fail('Athlete Attributes preview must produce exactly eight event-specific attributes.');if(model.attributes?.some(x=>x.score<1||x.score>20))fail('Athlete Attributes produced a rating outside the 1–20 scale.');}
-   const audit=w.AMAthleteAttributes.audit(w.s?.athletes||[]);
+   const auditState=typeof w.fresh==='function'?w.fresh('GREAT BRITAIN'):null;
+   const audit=w.AMAthleteAttributes.audit(auditState?.athletes||w.s?.athletes||[]);
    if(!audit||audit.athletes<1)fail('Athlete Attributes calibration audit did not inspect the athlete database.');
    if(audit.maxTwenties>2)fail(`Athlete Attributes elite-rarity rule failed: one athlete has ${audit.maxTwenties} ratings of 20.`);
    const twentyShare=audit.totalScores?audit.twenties/audit.totalScores:0;
