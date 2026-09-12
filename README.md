@@ -1,6 +1,6 @@
 # Athletics Manager
 
-Athletics Manager is a browser-based national athletics management game. The current repository is a static web application with a modular JavaScript/CSS runtime, automated regression checks and production deployment from `main` over FTPS.
+Athletics Manager is a browser-based national athletics management game. The repository uses separate development and production branches, automated regression checks, and independent FTPS deployment paths for the dev and live sites.
 
 ## Production entry points
 
@@ -19,8 +19,9 @@ Athletics Manager is a browser-based national athletics management game. The cur
 - `scripts/scouting-v2/` — compressed production payloads loaded by `scouting-v2-bootstrap.js`.
 - `styles/` — core and feature-specific production styles.
 - `tools/` — static regression, runtime smoke and repository-hygiene checks.
-- `.github/workflows/` — guarded update, regression and live deployment workflows.
+- `.github/workflows/` — guarded update, regression, dev deployment and live deployment workflows.
 - `docs/ARCHITECTURE.md` — detailed runtime, dependency and maintenance map.
+- `docs/DEPLOYMENT-ENVIRONMENTS.md` — branch and deployment policy for dev/live promotion.
 - `RELEASE-1.0.md` — canonical shipping-system authority baseline.
 - `VERSION` — product version.
 
@@ -48,7 +49,7 @@ These files must not be treated as orphaned simply because they are not direct H
 
 ## Development and QA
 
-Changes should be made on a short-lived feature/maintenance branch and merged through a pull request.
+Changes should be made on a short-lived feature/maintenance branch and merged into `dev` through a pull request. After testing on the dev site, the tested `dev` build is promoted to `main` through a separate pull request.
 
 The UI regression workflow validates:
 
@@ -59,13 +60,15 @@ The UI regression workflow validates:
 - repository hygiene and orphan-file detection;
 - browserless runtime smoke behaviour.
 
-`main` is the production branch. `release/1.0` is the documented known-good shipping baseline.
+`dev` is the integration/test branch. `main` is the production branch. `release/1.0` is the documented known-good shipping baseline.
 
 ## Deployment
 
-A successful push to `main` triggers `.github/workflows/deploy-live.yml`, which validates the Live Event authority and deploys the static site to production hosting over FTPS using GitHub Actions secrets.
+A successful push to `dev` triggers `.github/workflows/deploy-dev.yml` and deploys to the development site using dedicated `DEV_FTP_*` GitHub Actions secrets.
 
-Do not commit FTP credentials, passwords, API keys or local `.env` files to the repository.
+A successful push to `main` triggers `.github/workflows/deploy-live.yml` and deploys to production using the existing production FTPS secrets.
+
+Normal development must not be merged directly into `main`; promote the tested `dev` build instead. Do not commit FTP credentials, passwords, API keys or local `.env` files to the repository.
 
 ## Maintenance rule
 
