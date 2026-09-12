@@ -62,42 +62,72 @@ function normalizeMeta(){
  }
  if(changed)saveSafe();return changed
 }
-function syncUnreadBadge(){
- const badge=$('mailBadge'),unread=(s?.emails||[]).filter(m=>m?.unread===true).length;
- if(badge){badge.textContent=unread?String(unread):'';badge.classList.toggle('hidden',!unread);badge.title=unread?`${unread} unread message${unread===1?'':'s'}`:'No unread messages'}
- return unread
+function importantCount(acts=activeActions()){
+ const byEmail=new Map(acts.filter(a=>a?.emailId).map(a=>[String(a.emailId),a]));
+ return (s?.emails||[]).filter(m=>{
+  const a=byEmail.get(String(m.id)),z=state().emailMeta?.[m.id],p=a?.blocks?'critical':a?.priority||z?.priority||inferPriority(m);
+  return p==='critical'||p==='important'
+ }).length
 }
+function attentionSnapshot(){
+ const acts=activeActions(),unread=(s?.emails||[]).filter(m=>m?.unread===true),keys=new Set();
+ unread.forEach(m=>keys.add(`mail:${m.id}`));
+ acts.forEach(a=>keys.add(a?.emailId?`mail:${a.emailId}`:`action:${a?.actionId||a?.entityId||Math.random()}`));
+ return{count:keys.size,unread:unread.length,actions:acts.length,important:importantCount(acts)}
+}
+function removeLegacyIndicators(){
+ document.querySelectorAll('#railNav [data-view="inbox"] .am-action-badge,#bottomNav [data-view="inbox"] .am-action-badge').forEach(x=>x.remove());
+ const root=$('inbox');root?.querySelectorAll(':scope > .am-inbox-summary').forEach(x=>x.remove())
+}
+function bottomBadge(){
+ const button=document.querySelector('#bottomNav [data-view="inbox"]');if(!button)return null;
+ let badge=button.querySelector('.am-inbox-attention-badge');if(!badge){badge=document.createElement('span');badge.className='badge am-inbox-attention-badge hidden';button.appendChild(badge)}return badge
+}
+function setBadge(badge,snap){if(!badge)return;const text=snap.count?String(snap.count):'';if(badge.textContent!==text)badge.textContent=text;badge.classList.toggle('hidden',!snap.count);badge.hidden=!snap.count;badge.title=snap.count?`${snap.count} inbox item${snap.count===1?'':'s'} need attention · ${snap.unread} unread · ${snap.actions} action${snap.actions===1?'':'s'}`:'No inbox items need attention'}
+function syncVisibleCounters(snap=attentionSnapshot()){
+ const root=$('inbox');if(!root)return;
+ root.querySelector('[data-v3-count="actions"] b')?.replaceChildren(String(snap.actions));
+ root.querySelector('[data-v3-count="unread"] b')?.replaceChildren(String(snap.unread));
+ root.querySelector('[data-v3-count="important"] b')?.replaceChildren(String(snap.important));
+ const actionTab=root.querySelector('[data-v3-filter="actions"] b');if(actionTab)actionTab.textContent=String(snap.actions)
+}
+function syncAttentionBadge(){
+ removeLegacyIndicators();const snap=attentionSnapshot();setBadge($('mailBadge'),snap);setBadge(bottomBadge(),snap);syncVisibleCounters(snap);return snap.count
+}
+const syncUnreadBadge=syncAttentionBadge;
 function archiveMail(id){
  const actions=activeActions();
  if(actions.some(a=>String(a.emailId||'')===String(id))){try{toast('Complete this decision before archiving')}catch(_){}return false}
  const i=(s.emails||[]).findIndex(m=>String(m.id)===String(id));if(i<0)return false;
  const [m]=s.emails.splice(i,1),x=state();if(!x.archive.some(a=>String(a.id)===String(id)))x.archive.push({...m,archivedAt:Number(s?.game?.careerWeek||s?.game?.week||1)});
  const z=x.emailMeta?.[m.id];if(z){z.archived=true;z.archivedAt=Number(s?.game?.careerWeek||s?.game?.week||1)}
- openMail=(s.emails||[]).at?.(-1)?.id||null;saveSafe();syncUnreadBadge();if(typeof currentView!=='undefined'&&currentView==='inbox')canonicalDrawInbox();return true
+ openMail=(s.emails||[]).at?.(-1)?.id||null;saveSafe();syncAttentionBadge();if(typeof currentView!=='undefined'&&currentView==='inbox')canonicalDrawInbox();return true
 }
 function renderFailure(err){
  console.error('[Athletics Manager] Canonical Inbox failed',err);const root=$('inbox');if(!root)return;
  root.innerHTML='<div class="am-cutover-error" role="alert"><div><small>COMMUNICATIONS RECOVERY</small><h2>Inbox unavailable</h2><p>The production inbox could not be displayed. Your career data has not been changed.</p><div class="am-cutover-error-actions"><button type="button" class="btn secondary" data-inbox-retry>RETRY</button><button type="button" class="btn ghost" data-inbox-home>RETURN HOME</button></div></div></div>';
  root.querySelector('[data-inbox-retry]')?.addEventListener('click',canonicalDrawInbox);root.querySelector('[data-inbox-home]')?.addEventListener('click',()=>view('home'))
 }
-function canonicalDrawReader(){const reader=window.__athleticsInboxSingleRender;if(!reader?.render)throw new Error('Single-Pass Reader is unavailable');return reader.render()}
+function canonicalDrawReader(){const reader=window.__athleticsInboxSingleRender;if(!reader?.render)throw new Error('Single-Pass Reader is unavailable');const out=reader.render();requestAnimationFrame(syncAttentionBadge);return out}
 function canonicalDrawInbox(){
  normalizeMeta();const inbox=window.__athleticsInboxV3;if(!inbox?.render){renderFailure(new Error('Inbox V3 is unavailable'));return false}
- try{const out=inbox.render();syncUnreadBadge();return out}catch(err){renderFailure(err);return false}
+ try{const out=inbox.render();requestAnimationFrame(syncAttentionBadge);return out}catch(err){renderFailure(err);return false}
 }
 
 // Canonical global entry points used by the rest of the game.
 try{drawReader=canonicalDrawReader}catch(_){}
 try{drawInbox=canonicalDrawInbox}catch(_){}
-try{syncMailBadge=syncUnreadBadge}catch(_){}
+try{syncMailBadge=syncAttentionBadge}catch(_){}
 
-const api={version:1,render:canonicalDrawInbox,renderReader:canonicalDrawReader,archiveMail,normalizeMeta,syncUnreadBadge,debug:()=>({list:'inbox-v3',reader:'inbox-single-render-v1',decisions:window.__athleticsDecisionFinalizer?'decision-system-finalize-v1':'inbox-decision-core-v1',unread:(s?.emails||[]).filter(m=>m?.unread===true).length,actions:activeActions().length,archive:state().archive.length})};
+const api={version:1,render:canonicalDrawInbox,renderReader:canonicalDrawReader,archiveMail,normalizeMeta,syncAttentionBadge,syncUnreadBadge,attentionSnapshot,debug:()=>({list:'inbox-v3',reader:'inbox-single-render-v1',decisions:window.__athleticsDecisionFinalizer?'decision-system-finalize-v1':'inbox-decision-core-v1',...attentionSnapshot(),archive:state().archive.length})};
 window.__athleticsInboxProduction=api;
 if(window.__athleticsInboxV3)window.__athleticsInboxV3.archiveMail=archiveMail;
 // Narrow compatibility bridge for the existing Single-Pass Reader archive button.
 // This is not a renderer and can be removed when that reader references the production API directly.
 window.__athleticsInboxAAA={version:'compat-only',archiveMail};
 
-normalizeMeta();syncUnreadBadge();
+let cleanupQueued=false;const cleanup=()=>{if(cleanupQueued)return;cleanupQueued=true;requestAnimationFrame(()=>{cleanupQueued=false;syncAttentionBadge()})};
+const observer=new MutationObserver(cleanup);for(const node of [$('railNav'),$('bottomNav'),$('inbox')].filter(Boolean))observer.observe(node,{childList:true,subtree:true});
+normalizeMeta();syncAttentionBadge();
 if(typeof currentView!=='undefined'&&currentView==='inbox')requestAnimationFrame(canonicalDrawInbox);
 })();
