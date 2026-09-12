@@ -132,6 +132,9 @@ const sourceContracts={
   ['function ensureCoach','Coach biography migration is missing'],
   ['dateOfBirth','Date-of-birth persistence is missing'],
   ['birthPlace','Place-of-birth persistence is missing'],
+  ['athleticsClubId','Athletics Club stable ID persistence is missing'],
+  ['athleticsClubHome','Athletics Club home-location persistence is missing'],
+  ['function clubFor','Athletics Club deterministic assignment is missing'],
   ['function formatDate','British-English biography date formatter is missing']
  ],
  'scripts/nation-world-v1.js':[
@@ -146,6 +149,7 @@ const sourceContracts={
  'scripts/squad-athlete-v2.js':[
   ['Date of birth','Athlete profile must display date of birth'],
   ['Place of birth','Athlete profile must display place of birth'],
+  ['Athletics Club','Athlete profile must display Athletics Club'],
   ['AMPeopleBiography','Athlete profile must use persistent biography data']
  ],
  'scripts/staff-finance-v2.js':[
