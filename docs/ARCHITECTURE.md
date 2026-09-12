@@ -101,20 +101,24 @@ Startup currently requests `scripts/event-exit-authority-v1.js` and `scripts/hig
 
 ## CI/CD
 
-- `.github/workflows/ui-regression.yml` — runs source, syntax, hygiene and browserless runtime checks on relevant pull requests and `main` changes.
-- `.github/workflows/deploy-live.yml` — validates the live-event authority and deploys `main` to production hosting over FTPS.
-- `.github/workflows/apply-athletics-update.yml` — guarded staged-update mechanism used for large generated patches.
+- `.github/workflows/ui-regression.yml` — runs source, syntax, hygiene and browserless runtime checks on relevant pull requests and changes to both `dev` and `main`.
+- `.github/workflows/deploy-dev.yml` — validates and deploys `dev` to the development site over FTPS using dedicated `DEV_FTP_*` secrets.
+- `.github/workflows/deploy-live.yml` — validates and deploys `main` to production hosting over FTPS using the existing production secrets.
+- `.github/workflows/apply-athletics-update.yml` — guarded staged-update mechanism used for large generated patches. It is blocked from running directly on `main` and `release/1.0`.
 
-Production deployment is from `main`. `release/1.0` is the documented known-good failsafe branch.
+Development deployment is from `dev`. Production deployment is from `main`. `release/1.0` remains the documented known-good failsafe branch.
 
 ## Branch policy
 
 Active long-lived branches should be limited to:
 
-- `main` — current production
-- `release/1.0` — known-good shipping baseline
+- `dev` — integration and tester build; all normal feature/fix work is merged here first
+- `main` — live production; receives only tested promotions from `dev`
+- `release/1.0` — known-good shipping baseline / recovery branch
 
-Historical `backup/*`, `batch/*` and old update branches are archival development artefacts, not active production lines. New work should use short-lived feature or maintenance branches and merge through a reviewed/regression-tested pull request.
+Normal flow is `feature/*` or `fix/*` → pull request to `dev` → dev-site testing → pull request from `dev` to `main` → live deployment. Direct feature/fix merges to `main` are not part of the normal workflow.
+
+Historical `backup/*`, `batch/*` and old update branches are archival development artefacts, not active environment branches.
 
 ## File retirement policy
 
