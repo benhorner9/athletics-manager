@@ -1,0 +1,63 @@
+name: Deploy Athletics Manager Dev
+
+on:
+  push:
+    branches:
+      - dev
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: athletics-manager-dev-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy Dev via FTPS
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out dev build
+        uses: actions/checkout@v4
+
+      - name: Validate Live Event engines
+        run: |
+          node --check scripts/live-event-engine-v3.js
+          node --check scripts/live-event-broadcast-v4.js
+
+      - name: Verify legacy renderers are not active
+        run: |
+          ! grep -Eq 'event-2d|track-race-core|track-live-scoreboard|field-dot-playback|field-scoreboard-authority|scoreboard-instance-ownership|live-event-engine-v2' game.html
+          ! grep -q '<ellipse' scripts/live-event-engine-v3.js
+          grep -q 'scripts/live-event-broadcast-v4.js' game.html
+          grep -q 'styles/live-event-broadcast-v4.css' game.html
+
+      - name: Run repository regression checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tools/repository-hygiene.mjs
+          node tools/static-regression.mjs
+          while IFS= read -r -d '' file; do
+            node --check "$file"
+          done < <(find scripts -type f -name '*.js' -print0)
+
+      - name: Deploy dev build to hosting
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+        with:
+          server: ${{ secrets.DEV_FTP_SERVER }}
+          username: ${{ secrets.DEV_FTP_USERNAME }}
+          password: ${{ secrets.DEV_FTP_PASSWORD }}
+          protocol: ftps
+          port: ${{ secrets.DEV_FTP_PORT || 21 }}
+          server-dir: ${{ secrets.DEV_FTP_REMOTE_DIR || './' }}
+          local-dir: ./
+          log-level: standard
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/.github/**
+            **/README.md
+            **/docs/**
