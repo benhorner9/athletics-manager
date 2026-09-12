@@ -64,7 +64,7 @@ The UI regression workflow validates:
 
 ## Deployment
 
-A successful push to `dev` triggers `.github/workflows/deploy-dev.yml` and deploys to `dev.athleticsmanagergame.com`. It reuses the existing FTPS server/login secrets and always deploys to `./dev/`.
+A successful push to `dev` triggers `.github/workflows/deploy-dev.yml` and deploys to `dev.athleticsmanagergame.com`. It reuses the existing FTPS server/login secrets and always deploys to the hosting `./dev/` folder.
 
 A successful push to `main` triggers `.github/workflows/deploy-live.yml` and deploys to production using the same hosting connection and the live remote directory.
 
