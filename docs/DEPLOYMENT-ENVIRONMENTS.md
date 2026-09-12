@@ -9,7 +9,7 @@ Athletics Manager uses two active deployment environments on the same hosting ac
 - Site: `dev.athleticsmanagergame.com`
 - Workflow: `.github/workflows/deploy-dev.yml`
 - Connection: reuses the existing production FTPS connection secrets (`FTP_SERVER`, `FTP_USERNAME`, `FTP_PASSWORD`, optional `FTP_PORT`)
-- Destination: `./dev/`, the document root for the dev subdomain
+- Destination: `./dev/`, the hosting folder mapped to the dev subdomain
 - Changes arrive from short-lived feature/fix branches through pull requests.
 
 The development and live sites share the same hosting connection but use different remote directories. The dev workflow is hard-wired to `./dev/`, so it cannot fall back to the live document root.
