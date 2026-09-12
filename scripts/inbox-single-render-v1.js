@@ -43,7 +43,22 @@ function openSelection(c,decline=false){
 }
 function staffAction(m){try{return window.__athleticsDecisionFinalizer?.actions?.().find(a=>a.source==='staff'&&String(a.emailId)===String(m.id))||null}catch(_){return null}}
 function confirmStaff(a,decision){let d=$('amSingleReaderConfirm');if(!d){d=document.createElement('dialog');d.id='amSingleReaderConfirm';d.className='amdf-confirm';document.body.appendChild(d)}const renew=decision==='renew';d.innerHTML=`<div class="amdf-confirm-card"><small>CONFIRM DECISION</small><h2>${esc(renew?'Renew contract?':'Let contract expire?')}</h2><p>${esc(renew?'The renewal cost will be paid immediately and the staff contract will be extended for another 52 weeks.':'The contract will end at expiry and interim cover will take over until a replacement is appointed.')}</p><div><button class="btn ghost" type="button" data-cancel>CANCEL</button><button class="btn primary" type="button" data-confirm>${renew?'RENEW CONTRACT':'LET CONTRACT EXPIRE'}</button></div></div>`;d.querySelector('[data-cancel]').onclick=()=>d.close();d.querySelector('[data-confirm]').onclick=()=>{const b=d.querySelector('[data-confirm]');b.disabled=true;const ok=window.__athleticsDecisionFinalizer?.resolveStaff?.(a.entityId,decision);if(ok!==false){d.close();try{render()}catch(_){};if(currentView==='inbox')drawInbox() }else b.disabled=false};if(!d.open)d.showModal()}
-function bindCommon(reader,m){reader.querySelector('[data-reader-back]')?.addEventListener('click',()=>document.body.classList.remove('amv2-reading'));reader.querySelector('[data-reader-archive]')?.addEventListener('click',()=>window.__athleticsInboxAAA?.archiveMail?.(m.id))}
+function bindAthleteRequests(reader){
+ const buttons=[...reader.querySelectorAll('[data-athlete-request][data-athlete-choice]')];if(!buttons.length)return;
+ buttons.forEach(b=>b.addEventListener('click',e=>{
+  e.preventDefault();e.stopPropagation();
+  const id=b.dataset.athleteRequest,choice=b.dataset.athleteChoice;if(!id||!choice)return;
+  if(typeof handleAthleteRequest!=='function'){console.error('[Athletics Manager] Athlete request handler unavailable',id,choice);try{toast('This athlete request could not be processed. Try again.')}catch(_){}return}
+  buttons.forEach(x=>x.disabled=true);
+  try{
+   handleAthleteRequest(id,choice);
+   requestAnimationFrame(()=>{try{window.__athleticsInboxProduction?.syncAttentionBadge?.()}catch(_){};try{window.__athleticsInboxDecisionCore?.getUnresolvedActions?.()}catch(_){}})
+  }catch(err){
+   console.error('[Athletics Manager] Athlete request decision failed',err);buttons.forEach(x=>x.disabled=false);try{toast('This athlete request could not be processed. Try again.')}catch(_){}
+  }
+ }))
+}
+function bindCommon(reader,m){reader.querySelector('[data-reader-back]')?.addEventListener('click',()=>document.body.classList.remove('amv2-reading'));reader.querySelector('[data-reader-archive]')?.addEventListener('click',()=>window.__athleticsInboxAAA?.archiveMail?.(m.id));bindAthleteRequests(reader)}
 function renderOne(){const reader=$('reader');if(!reader)return;const m=(s.emails||[]).find(x=>String(x.id)===String(openMail))||(s.emails||[]).at?.(-1);if(!m){reader.innerHTML='<div class="amv2-reader-empty"><strong>Select a message</strong><span>Choose a message from the inbox.</span></div>';return}openMail=m.id;if(m.unread)m.unread=false;if(m.type==='systems'){try{appointmentTask('systems')}catch(_){saveSafe()}}else saveSafe();try{syncMailBadge()}catch(_){}const z=meta(m),a=actionFor(m),c=m.type==='selection'?selectionContext(m):null,staff=staffAction(m);let body=c?selectionBody(m,c):genericBody(m);body+=threadHTML(m);let actions='';
  if(c){actions=`<button class="btn primary" type="button" data-open-selection>${c.done?'VIEW SELECTION':'OPEN SELECTION'}</button>${!c.done?'<button class="btn ghost" type="button" data-decline-selection>DO NOT ENTER</button>':''}`}
  else if(staff){actions=`<button class="btn ghost" type="button" data-staff-expire>LET CONTRACT EXPIRE</button><button class="btn secondary" type="button" data-open-staff>OPEN STAFF</button><button class="btn primary" type="button" data-staff-renew>RENEW CONTRACT</button>`}
@@ -58,6 +73,6 @@ function renderOne(){const reader=$('reader');if(!reader)return;const m=(s.email
 // This intentionally replaces every previously wrapped reader function. The premium
 // inbox remains the list authority; this function is the one and only message renderer.
 drawReader=renderOne;
-window.__athleticsInboxSingleRender={version:1,render:renderOne,openSelection,debug:()=>({openMail,action:actionFor((s.emails||[]).find(x=>x.id===openMail)||{}),selectionAuthority:window.__athleticsExplicitSelectionV3?'explicit-v3':'fallback-v2',legacyReaderChainBypassed:true})};
+window.__athleticsInboxSingleRender={version:1,render:renderOne,openSelection,debug:()=>({openMail,action:actionFor((s.emails||[]).find(x=>x.id===openMail)||{}),selectionAuthority:window.__athleticsExplicitSelectionV3?'explicit-v3':'fallback-v2',legacyReaderChainBypassed:true,athleteRequestHandler:typeof handleAthleteRequest==='function'})};
 if(currentView==='inbox')requestAnimationFrame(()=>{try{drawInbox()}catch(_){renderOne()}});
 })();
