@@ -20,7 +20,7 @@ const systems=Object.freeze({
  athleteAttributes:system('scripts/athlete-attributes-v1.js',{label:'Athlete Attributes',scale:'1–20',rule:'no player-facing overall rating'}),
  athletePerformance:system('scripts/athlete-performance-v1.js',{label:'Athlete Competition Performance',rule:'attributes + objective evidence + readiness; hidden Overall excluded'}),
  calendar:system('scripts/calendar-v2.js',{label:'Calendar'}),
- training:system('scripts/training-v2-bootstrap.js',{label:'Training',enhancement:'scripts/training-v3.js',rule:'one visible Training Centre'}),
+ training:system('scripts/training-system-v4.js',{label:'Training System 2.0',compatibility:'scripts/training-v2-bootstrap.js + scripts/training-v3.js',rule:'individual 1–20 attributes are the development authority; hidden Overall/Potential excluded from weekly development'}),
  scouting:system('scripts/scouting-v2-bootstrap.js',{label:'Scouting',compatibility:'scripts/scouting-v3.js',rule:'Scouting V2 workflow remains presentation authority'}),
  competition:system('scripts/competition-journey-v2.js',{label:'Competition Journey'}),
  selection:system('scripts/selection-centre-v2.js',{label:'Selection Centre',logic:'scripts/selection-decision-v3.js'}),
