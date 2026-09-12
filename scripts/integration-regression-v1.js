@@ -1,7 +1,7 @@
 /* Athletics Manager — Integration & Regression V1
    Cross-screen flow safety for the staged UI rebuild.
    This layer does not replace gameplay systems and does not mark migration checks as passed.
-   It repairs navigation/presentation state only, then exposes a non-destructive regression snapshot. */
+   It repairs navigation/presentation handoffs through existing canonical system actions, then exposes a non-destructive regression snapshot. */
 (function(){
 'use strict';
 if(window.__amIntegrationRegressionV1)return;window.__amIntegrationRegressionV1=1;
@@ -26,6 +26,7 @@ const CANDIDATES={
  competition:['.cj,.v3event,[data-am-ui-screen="competition-v2"]']
 };
 let scheduled=false,repairing=false,lastRoute=null,lastCareerWeek=null,historyReady=false,suppressHistory=false;
+let liveFinishSince=0,liveFinishKey=null;
 
 function safe(fn,fallback){try{const v=fn();return v==null?fallback:v}catch(_){return fallback}}
 function state(){try{return typeof s!=='undefined'?s:null}catch(_){return null}}
@@ -37,6 +38,27 @@ function activeViews(){return [...document.querySelectorAll('.view.on')].map(x=>
 function core(){return window.__athleticsInboxDecisionCore||null}
 function actions(){return safe(()=>core()?.getUnresolvedActions?.()||[],[])}
 function blockers(){return safe(()=>core()?.getProgressionBlockers?.()||[],[])}
+function liveBroadcast(){return window.AMLiveBroadcastV4||null}
+function visuallyFinishedTrack(allowPaused=false){
+ const api=liveBroadcast(),c=api?.active;if(!c||c.kind!=='track')return null;
+ if(c.paused&&!allowPaused)return null;
+ const phase=safe(()=>api.diagnostics?.().phase,null);if(phase!=='PROVISIONAL')return null;
+ if(Number(c.elapsed)<Number(c.duration))return null;
+ const active=(c.state?.a||[]).filter(x=>!x.status);if(!active.length||active.some(x=>x.finish!==true))return null;
+ return c
+}
+function finaliseFinishedTrack(reason='watchdog',allowPaused=false){
+ const c=visuallyFinishedTrack(allowPaused);if(!c)return false;
+ const skip=$('v4skip');if(!skip)return false;
+ console.warn('[AM regression] completing visually finished track event',reason,c.e?.id,c.d);
+ liveFinishSince=0;liveFinishKey=null;skip.click();return true
+}
+function monitorFinishedTrack(){
+ const c=visuallyFinishedTrack(false);if(!c){liveFinishSince=0;liveFinishKey=null;return}
+ const key=`${c.e?.id||'event'}:${c.d||'discipline'}`;
+ if(key!==liveFinishKey){liveFinishKey=key;liveFinishSince=Date.now();return}
+ if(Date.now()-liveFinishSince>=2200)finaliseFinishedTrack('provisional-timeout',false)
+}
 
 function normalizeViews(){
  const r=route(),views=[...document.querySelectorAll('.view')];if(!views.length)return;
@@ -118,6 +140,13 @@ function interceptAdvance(event){
  const b=event.target?.closest?.('#advanceTop');if(!b)return;const g=blockers();if(!g.length||typeof core()?.showGate!=='function')return;
  event.preventDefault();event.stopImmediatePropagation();core().showGate(g);
 }
+function interceptFinishedCompetitionExit(event){
+ const b=event.target?.closest?.('#v3day');if(!b)return;
+ const c=visuallyFinishedTrack(true);if(!c)return;
+ event.preventDefault();event.stopImmediatePropagation();
+ if(!finaliseFinishedTrack('competition-overview',true))return;
+ requestAnimationFrame(()=>{const next=$('v3day');if(next&&safe(()=>!disciplineRunning,false))next.click()})
+}
 
 function closeTopDialogForBack(){
  const open=[...document.querySelectorAll('dialog[open]')].at(-1);if(!open)return false;
@@ -156,13 +185,13 @@ function auditState(){
  const overlap=squad.filter(a=>pool.some(p=>String(p.id)===String(a.id))).map(a=>a.id);
  const event=st?.uiCompetitionV2?.eventId?(st.events||[]).find(e=>String(e.id)===String(st.uiCompetitionV2.eventId)):null;
  const openDialogs=[...document.querySelectorAll('dialog[open]')].map(d=>({id:d.id,hasExit:!!d.querySelector('button,[data-am-back]')}));
- const platform=safe(()=>window.AthleticsUI?.audit?.(),null);
+ const platform=safe(()=>window.AthleticsUI?.audit?.(),null),liveApi=liveBroadcast(),liveDiag=safe(()=>liveApi?.diagnostics?.(),null);
  return {
   version:1,route:r,careerWeek:careerWeek(),candidate:candidatePresent(r),activeViews:views,
   routeIntegrity:{singleActive:views.length===1&&views[0]===r,hasContent:rootHasContent(r),competitionContext:competitionRouteValid()},
   decisions:{unresolved:act.length,blockers:blk.length,orphanActions:orphanActions.map(a=>a.actionId)},
   athletes:{squad:squad.length,pool:pool.length,squadPoolOverlap:overlap},
-  competition:{eventId:event?.id||null,eventWeek:event?.week||null,eventCompleted:!!event?.completed},
+  competition:{eventId:event?.id||null,eventWeek:event?.week||null,eventCompleted:!!event?.completed,livePhase:liveDiag?.phase||null,liveActive:!!liveApi?.active},
   dialogs:openDialogs,duplicateIds:duplicates,platform,
   releaseReady:false,
   note:'This runtime snapshot is diagnostic only. It does not mark migration checks as passed.'
@@ -195,16 +224,18 @@ function repair(){
 }
 function schedule(){if(scheduled)return;scheduled=true;requestAnimationFrame(()=>requestAnimationFrame(()=>{scheduled=false;repair()}))}
 
-/* Capture only the two known action-routing holes. Existing gameplay handlers remain authoritative everywhere else. */
+/* Capture only known routing/handoff holes. Gameplay authorities remain responsible for outcomes. */
 document.addEventListener('click',interceptActionRouting,true);
 document.addEventListener('click',interceptAdvance,true);
+document.addEventListener('click',interceptFinishedCompetitionExit,true);
 window.addEventListener('popstate',browserBack);
 const htmlObserver=new MutationObserver(schedule);htmlObserver.observe(document.documentElement,{attributes:true,attributeFilter:['data-am-route']});
 const content=document.querySelector('.content');if(content)new MutationObserver(schedule).observe(content,{childList:true,subtree:false,attributes:true,attributeFilter:['class']});
 window.addEventListener('pageshow',schedule);
 window.addEventListener('orientationchange',()=>setTimeout(schedule,120));
+const liveFinishMonitor=setInterval(monitorFinishedTrack,250);
 
-window.__athleticsRegression={version:1,snapshot:auditState,issues:()=>issues(auditState()),run:logAudit,repair,schedule};
+window.__athleticsRegression={version:1,snapshot:auditState,issues:()=>issues(auditState()),run:logAudit,repair,schedule,liveFinishGuard:{check:monitorFinishedTrack,finalise:()=>finaliseFinishedTrack('manual',true),get pending(){return !!liveFinishSince},monitor:liveFinishMonitor}};
 window.AthleticsRegression=window.__athleticsRegression;
 schedule();
 })();
