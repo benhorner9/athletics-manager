@@ -153,6 +153,21 @@ try{
    if(!ftx.steps||!ftx.seen)fail('First-Time Experience V2 state model is incomplete.');
   }catch(err){fail(`First-Time Experience V2 diagnostics threw: ${err?.stack||err}`)}
  }
+ if(w.AMNationWorld){
+  try{
+   if(w.AMNationWorld.count!==64)fail(`64-nation runtime expected 64 playable nations, found ${w.AMNationWorld.count}.`);
+   const newBtn=w.document.getElementById('newBtn');
+   newBtn?.click();
+   await new Promise(resolve=>setTimeout(resolve,10));
+   const modal=w.document.getElementById('nationModal');
+   const search=modal?.querySelector('[data-nation-search]');
+   const region=modal?.querySelector('[data-nation-region]');
+   const count=modal?.querySelector('[data-nation-count]');
+   if(!search||!region||!count)fail('New Career click did not render the 64-nation search/region controls.');
+   if(modal?.classList.contains('hidden'))fail('New Career click did not open the nation picker.');
+   if(typeof w.closeNationPicker==='function')w.closeNationPicker();
+  }catch(err){fail(`64-nation picker runtime check threw: ${err?.stack||err}`)}
+ }
  console.log('[smoke] runtime globals and snapshot checked');
 
  const smokeRoutes=['home','inbox','squad','pool','calendar','training','scouting','league','rankings','olympics','staff','finance','news'];
