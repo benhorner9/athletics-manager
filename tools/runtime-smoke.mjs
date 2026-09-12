@@ -102,7 +102,7 @@ try{
  const w=dom.window;
  const requiredGlobals=[
   'AthleticsUI','__athleticsInboxDecisionCore','__athleticsHomeV2','__athleticsInboxV3','__athleticsSquadAthleteV2',
-  '__athleticsCalendarV2','__athleticsCompetitionJourneyV2','__athleticsScoutingV3','__athleticsStaffFinanceV2','__athleticsWorldSeasonV2','__athleticsManagerCareerV1','AMFirstTimeExperienceV2','AMRelease','__athleticsRegression','AMLiveBroadcastV4','AMPeopleBiography'
+  '__athleticsCalendarV2','__athleticsCompetitionJourneyV2','__athleticsScoutingV3','__athleticsStaffFinanceV2','__athleticsWorldSeasonV2','__athleticsManagerCareerV1','AMFirstTimeExperienceV2','AMClubAthletics','AMRelease','__athleticsRegression','AMLiveBroadcastV4','AMPeopleBiography'
  ];
  for(const key of requiredGlobals)if(!w[key])fail(`Required runtime global missing after page load: ${key}`);
 
@@ -182,9 +182,19 @@ try{
    if(bio.sampleAthlete&&w.AMPeopleBiography.formatDate(bio.sampleAthlete.dateOfBirth)==='—')fail('People Biography date formatter failed.');
   }catch(err){fail(`People Biography diagnostics threw: ${err?.stack||err}`)}
  }
+ if(w.AMClubAthletics){
+  try{
+   const clubs=w.AMClubAthletics.snapshot();
+   if(!clubs||clubs.version!=='1.0')fail('Club Athletics diagnostics are invalid.');
+   if(clubs.clubCount<1)fail('Club Athletics did not build a persistent club registry.');
+   if(clubs.domesticClubs<1)fail('Club Athletics managed nation has no domestic clubs.');
+   if(!Array.isArray(w.AMClubAthletics.meetings)||w.AMClubAthletics.meetings.length!==6)fail('Club Athletics must expose six domestic meetings.');
+   if(!w.document.getElementById('clubs'))fail('Club Athletics route section is missing at runtime.');
+  }catch(err){fail(`Club Athletics diagnostics threw: ${err?.stack||err}`)}
+ }
  console.log('[smoke] runtime globals and snapshot checked');
 
- const smokeRoutes=['home','inbox','squad','pool','calendar','training','scouting','league','rankings','olympics','staff','finance','news'];
+ const smokeRoutes=['home','inbox','squad','pool','clubs','calendar','training','scouting','league','rankings','olympics','staff','finance','news'];
  if(typeof w.view==='function'){
   w.document.getElementById('startup')?.classList.add('hidden');
   for(const target of smokeRoutes){

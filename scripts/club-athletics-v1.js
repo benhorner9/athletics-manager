@@ -46,12 +46,12 @@ function ensureAthleteClub(a,state=typeof s!=='undefined'?s:null){
  }
  return a.athleticsClubId||null;
 }
-function ensureClubRecord(a,root=worldState()){
- const id=ensureAthleteClub(a);if(!id||!root)return null;
+function ensureClubRecord(a,root=worldState(),state=typeof s!=='undefined'?s:null){
+ const id=ensureAthleteClub(a,state);if(!id||!root)return null;
  const existing=root.clubs[id]??={id,name:a.athleticsClub||'Athletics Club',nation:a.athleticsClubNation||a.nation,home:a.athleticsClubHome||a.birthPlace||nationLabel(a.nation),founded:1885+(hash(id)%126),prestige:50+(hash(`${id}|prestige`)%26),honours:{league:0,cup:0,championship:0},createdSeason:gameSeason()};
  existing.name=a.athleticsClub||existing.name;existing.nation=a.athleticsClubNation||a.nation||existing.nation;existing.home=a.athleticsClubHome||a.birthPlace||existing.home;existing.honours??={league:0,cup:0,championship:0};existing.prestige=Math.max(25,Math.min(99,Number(existing.prestige)||55));return existing;
 }
-function syncClubs(state=typeof s!=='undefined'?s:null){const root=worldState(state);if(!root)return null;safe(()=>window.AMPeopleBiography?.ensureState?.(state),null);for(const a of state.athletes||[])ensureClubRecord(a,root);return root}
+function syncClubs(state=typeof s!=='undefined'?s:null){const root=worldState(state);if(!root)return null;safe(()=>window.AMPeopleBiography?.ensureState?.(state),null);for(const a of state.athletes||[])ensureClubRecord(a,root,state);return root}
 function clubsForNation(nation){const root=syncClubs();return Object.values(root?.clubs||{}).filter(c=>c.nation===nation).sort((a,b)=>b.prestige-a.prestige||a.name.localeCompare(b.name))}
 function members(clubId,activeOnly=true){return (s?.athletes||[]).filter(a=>String(a.athleticsClubId)===String(clubId)&&(!activeOnly||!a.retired)).sort((a,b)=>String(a.disc).localeCompare(String(b.disc))||Number(b.overall)-Number(a.overall))}
 function seasonRoot(season=gameSeason()){const root=worldState();root.seasons[season]??={};return root.seasons[season]}
@@ -96,7 +96,7 @@ function updateClubRecord(a,d,row,meeting){
 function clubCareer(a){a.clubCareer??={starts:0,wins:0,podiums:0,points:0,history:[]};a.clubCareer.history??=[];return a.clubCareer}
 function registerClubAppearance(a,d,row,place,points,meeting,historical){
  const cc=clubCareer(a);cc.starts++;cc.points+=points;if(place===1)cc.wins++;if(place<=3)cc.podiums++;
- cc.history.push({season:gameSeason(),week:meeting.week,meeting:meeting.name,clubId:a.athleticsClubId,club:a.athleticsClub,disc:d,perf:row.perf,place,points});cc.history=cc.history.slice(-24);
+ cc.history.push({athleteId:a.id,season:gameSeason(),week:meeting.week,meeting:meeting.name,clubId:a.athleticsClubId,club:a.athleticsClub,disc:d,perf:row.perf,place,points});cc.history=cc.history.slice(-24);
  if(historical)return [];
  a.fatigue=Math.max(0,Math.min(100,Number(a.fatigue||0)+(meeting.kind==='championship'?6:4)));
  let achievements=[];
@@ -139,7 +139,7 @@ function settleNationClubSeason(nation,ns,meeting,historical=false){
 function sendManagedClubReport(def,meeting,ns,notable){
  const own=(s.athletes||[]).filter(a=>a.nation===currentNation()&&a.clubCareer?.history?.some(h=>h.season===gameSeason()&&h.week===def.week));if(!own.length)return;
  const leading=own.map(a=>a.clubCareer.history.filter(h=>h.season===gameSeason()&&h.week===def.week).at(-1)).filter(Boolean).sort((a,b)=>a.place-b.place||b.points-a.points).slice(0,4),leader=standings(currentNation())[0],special=notable.filter(x=>x.achievements?.length).slice(0,3);
- const lines=leading.map(r=>`${athleteById(r.id)?.name||'Athlete'} ${r.place===1?'won':`finished #${r.place}`} ${disciplineLabel(r.disc)} for ${r.club}`).join(' · '),extra=special.length?` ${special.map(x=>`${x.name}: ${x.achievements.join('/')}`).join(' · ')}.`:'';
+ const lines=leading.map(r=>`${athleteById(r.athleteId)?.name||'Athlete'} ${r.place===1?'won':`finished #${r.place}`} ${disciplineLabel(r.disc)} for ${r.club}`).join(' · '),extra=special.length?` ${special.map(x=>`${x.name}: ${x.achievements.join('/')}`).join(' · ')}.`:'';
  safe(()=>newMail(sender('performance'),`Club results: ${def.short}`,`${lines||'The domestic club meeting is complete.'}.${extra} ${leader?`${leader.club.name} lead the club standings on ${Math.round(leader.points)} points.`:''} Club results are available in Club Athletics.`,'review'),null);
 }
 function simulateClubWeek({historical=false,allNations=true}={}){
@@ -211,7 +211,6 @@ function enhanceCalendar(){
  const root=document.getElementById('calendar');if(!root)return;
  for(const def of MEETINGS){const row=root.querySelector(`[data-calv2-week-row="${def.week}"]`),body=row?.querySelector('.calv2-week-body');if(body&&!body.querySelector(`[data-club-calendar="${def.key}"]`)){const item=document.createElement('div');item.className='calv2-item clv1-calendar-item';item.dataset.clubCalendar=def.key;item.innerHTML=`<i class="calv2-dot club"></i><strong>${esc(def.short)}</strong><small>Club Athletics</small>`;body.appendChild(item)}}
  const selected=root.querySelector('[data-calv2-week-row].selected');if(selected){const week=Number(selected.dataset.calv2WeekRow),def=MEETINGS.find(x=>x.week===week),list=root.querySelector('.calv2-detail-list');if(def&&list&&!list.querySelector('[data-club-calendar-open]')){const section=document.createElement('section');section.className='calv2-detail-item clv1-calendar-detail';section.innerHTML=`<div class="calv2-detail-top"><small>Club Athletics</small>${statePill(nationSeason(currentNation()).meetings[def.key].completed?'Complete':week===gameWeek()?'This week':`Week ${week}`,nationSeason(currentNation()).meetings[def.key].completed?'good':week===gameWeek()?'live':'')}</div><h3>${esc(def.name)}</h3><p>Domestic clubs choose eligible athletes automatically. National duty, injury, camps and Summit commitments take priority.</p><div class="calv2-detail-actions"><button class="btn ghost" data-club-calendar-open="${def.key}">OPEN CLUB ATHLETICS</button></div>`;list.appendChild(section);section.querySelector('[data-club-calendar-open]').onclick=()=>{const u=uiState();u.tab='competitions';u.meetingKey=def.key;u.nation=currentNation();view('clubs')}}}
- }
 }
 const legacyDrawCalendar=typeof drawCalendar==='function'?drawCalendar:null;if(legacyDrawCalendar)drawCalendar=function(){const out=legacyDrawCalendar.apply(this,arguments);enhanceCalendar();return out};
 
@@ -225,7 +224,7 @@ const profileDialog=document.getElementById('athleteProfile');if(profileDialog){
 document.addEventListener('click',e=>{const club=e.target.closest('[data-club-open-global]');if(club){const u=uiState();u.clubId=club.dataset.clubOpenGlobal;view('clubs')}},true);
 
 /* ---------- Lifecycle ---------- */
-const legacyFresh=typeof fresh==='function'?fresh:null;if(legacyFresh)fresh=function(){const state=legacyFresh.apply(this,arguments);try{const previous=typeof s!=='undefined'?s:null;s=state;syncClubs(state);s=previous}catch(_){}return state};
+const legacyFresh=typeof fresh==='function'?fresh:null;if(legacyFresh)fresh=function(){const state=legacyFresh.apply(this,arguments);try{syncClubs(state)}catch(_){}return state};
 const legacyLoad=typeof load==='function'?load:null;if(legacyLoad)load=function(){const out=legacyLoad.apply(this,arguments);ensureWorld();return out};
 const legacyOnWeekStart=typeof onWeekStart==='function'?onWeekStart:null;if(legacyOnWeekStart)onWeekStart=function(){const out=legacyOnWeekStart.apply(this,arguments);ensureWorld();simulateClubWeek();if(typeof currentView!=='undefined'&&currentView==='clubs')drawClubAthletics();return out};
 

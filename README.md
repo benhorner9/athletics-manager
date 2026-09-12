@@ -14,7 +14,7 @@ Athletics Manager is a browser-based national athletics management game. The rep
 ## Repository structure
 
 - `assets/` — athlete/staff portraits and game artwork.
-- `scripts/` — simulation, UI, event, inbox, training, scouting and career systems.
+- `scripts/` — simulation, UI, event, inbox, training, scouting, club-athletics and career systems.
 - `scripts/training-v2/` — compressed production payloads loaded by `training-v2-bootstrap.js`.
 - `scripts/scouting-v2/` — compressed production payloads loaded by `scouting-v2-bootstrap.js`.
 - `styles/` — core and feature-specific production styles.

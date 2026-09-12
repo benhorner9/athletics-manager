@@ -31,6 +31,7 @@ const systems=Object.freeze({
  rankings:system('scripts/world-season-v2.js',{label:'Rankings'}),
  qualification:system('scripts/world-season-v2.js',{label:'Qualification',support:'scripts/qualification-compact-v2.js'}),
  worldNews:system('scripts/world-season-v2.js',{label:'World News'}),
+ clubAthletics:system('scripts/club-athletics-v1.js',{label:'Club Athletics',identity:'scripts/people-biography-v1.js',rule:'club duty is subordinate to national programme commitments'}),
  managerProfile:system('scripts/manager-career-v1.js',{label:'Manager Career / My Profile'}),
  firstTimeExperience:system('scripts/first-time-experience-v2.js',{label:'First-Time Player Experience'}),
  language:system('scripts/language-system-v1.js',{label:'Text, Language & Narrative Systems',baseLanguage:'en-GB',rule:'gameplay owns facts; language owns presentation'}),

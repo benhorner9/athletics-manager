@@ -55,6 +55,7 @@ The current shipping authorities are documented in `RELEASE-1.0.md`. Key route o
 - Scouting — `scripts/scouting-v2-bootstrap.js` with `scripts/scouting-v3.js`
 - Staff / Finance — `scripts/staff-finance-v2.js`
 - World / Season — `scripts/world-season-v2.js`
+- Club Athletics — `scripts/club-athletics-v1.js` with persistent athlete club identity from `scripts/people-biography-v1.js`
 - Manager Career / My Profile — `scripts/manager-career-v1.js`
 - First-Time Experience — `scripts/first-time-experience-v2.js`
 
