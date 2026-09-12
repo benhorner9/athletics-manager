@@ -7,7 +7,7 @@
 'use strict';
 if(window.AMAthleteAttributes)return;
 
-const VERSION='0.2-preview';
+const VERSION='0.2.1-preview';
 const SCALE=20;
 const SETS={
  sprint:[
