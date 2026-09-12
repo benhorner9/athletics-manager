@@ -44,6 +44,7 @@ for(const route of routes){
 const requiredScripts=[
  'scripts/game.js',
  'scripts/nation-world-v1.js',
+ 'scripts/people-biography-v1.js',
  'scripts/inbox-decision-core-v1.js',
  'scripts/ui-platform-v1.js',
  'scripts/home-v2.js',
@@ -74,6 +75,9 @@ function before(a,b){
  if(ia>=ib)fail(`Script order invalid: ${a} must load before ${b}`);
 }
 before('scripts/game.js','scripts/nation-world-v1.js');
+before('scripts/nation-world-v1.js','scripts/people-biography-v1.js');
+before('scripts/people-biography-v1.js','scripts/squad-athlete-v2.js');
+before('scripts/people-biography-v1.js','scripts/staff-finance-v2.js');
 before('scripts/nation-world-v1.js','scripts/ui-platform-v1.js');
 before('scripts/inbox-decision-core-v1.js','scripts/home-v2.js');
 before('scripts/inbox-decision-core-v1.js','scripts/inbox-v3.js');
@@ -122,6 +126,14 @@ if(fs.existsSync(integration)){
 
 /* Source contracts for bugs already discovered during the rebuild. */
 const sourceContracts={
+ 'scripts/people-biography-v1.js':[
+  ['window.AMPeopleBiography','People Biography public authority is missing'],
+  ['function ensureAthlete','Athlete biography migration is missing'],
+  ['function ensureCoach','Coach biography migration is missing'],
+  ['dateOfBirth','Date-of-birth persistence is missing'],
+  ['birthPlace','Place-of-birth persistence is missing'],
+  ['function formatDate','British-English biography date formatter is missing']
+ ],
  'scripts/nation-world-v1.js':[
   ['EXPECTED_NATIONS=64','64-nation world count contract is missing'],
   ['function addWorld(list)','64-nation athlete seeding is missing'],
@@ -130,6 +142,16 @@ const sourceContracts={
   ['data-nation-region','64-nation picker region filter is missing'],
   ["newCareerButton.onclick=()=>showNationPicker()",'64-nation picker must rebind Start New Career to the expanded picker'],
   ['window.AMNationWorld','64-nation world public service is missing']
+ ],
+ 'scripts/squad-athlete-v2.js':[
+  ['Date of birth','Athlete profile must display date of birth'],
+  ['Place of birth','Athlete profile must display place of birth'],
+  ['AMPeopleBiography','Athlete profile must use persistent biography data']
+ ],
+ 'scripts/staff-finance-v2.js':[
+  ['Date of birth','Coach profile must display date of birth'],
+  ['Place of birth','Coach profile must display place of birth'],
+  ['AMPeopleBiography','Coach profile must use persistent biography data']
  ],
  'scripts/home-v2.js':[
   ['const c=core();if(c?.openAction)','Home decision routing must verify openAction before returning'],
