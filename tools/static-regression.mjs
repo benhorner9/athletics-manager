@@ -45,6 +45,7 @@ const requiredScripts=[
  'scripts/game.js',
  'scripts/nation-world-v1.js',
  'scripts/people-biography-v1.js',
+ 'scripts/athlete-attributes-v1.js',
  'scripts/inbox-decision-core-v1.js',
  'scripts/ui-platform-v1.js',
  'scripts/home-v2.js',
@@ -77,7 +78,8 @@ function before(a,b){
 }
 before('scripts/game.js','scripts/nation-world-v1.js');
 before('scripts/nation-world-v1.js','scripts/people-biography-v1.js');
-before('scripts/people-biography-v1.js','scripts/squad-athlete-v2.js');
+before('scripts/people-biography-v1.js','scripts/athlete-attributes-v1.js');
+before('scripts/athlete-attributes-v1.js','scripts/squad-athlete-v2.js');
 before('scripts/people-biography-v1.js','scripts/staff-finance-v2.js');
 before('scripts/nation-world-v1.js','scripts/ui-platform-v1.js');
 before('scripts/inbox-decision-core-v1.js','scripts/home-v2.js');
@@ -110,7 +112,7 @@ const retiredPresentation=[
 for(const file of retiredPresentation)if(localRefs.includes(file)||scriptOrder.includes(file))fail(`Retired presentation layer was reintroduced into game.html: ${file}`);
 
 const productionAssets=[
- 'styles/ui-platform-v1.css','styles/home-v2.css','styles/inbox-v3.css','styles/squad-athlete-v2.css','styles/calendar-v2.css',
+ 'styles/ui-platform-v1.css','styles/home-v2.css','styles/inbox-v3.css','styles/squad-athlete-v2.css','styles/athlete-attributes-v1.css','styles/calendar-v2.css',
  'styles/competition-journey-v2.css','styles/live-event-broadcast-v4.css','styles/training-v3.css','styles/scouting-v3.css','styles/staff-finance-v2.css','styles/world-season-v2.css','styles/club-world-v1.css',
  'styles/event-flow-stability.css','styles/manager-profile-v1.css','styles/manager-profile-sidebar-v1.css','styles/first-time-experience-v2.css'
 ];
@@ -139,6 +141,15 @@ const sourceContracts={
   ['function clubFor','Athletics Club deterministic assignment is missing'],
   ['function formatDate','British-English biography date formatter is missing']
  ],
+ 'scripts/athlete-attributes-v1.js':[
+  ['window.AMAthleteAttributes','Athlete Attributes public service is missing'],
+  ["const SCALE=20",'Athlete Attributes must use the 1–20 preview scale'],
+  ['playerFacingOverall:false','Athlete Attributes must explicitly reject a player-facing Overall rating'],
+  ['acceleration','Sprint attribute model is missing'],
+  ['aerobicCapacity','Endurance attribute model is missing'],
+  ['takeOff','Jump attribute model is missing'],
+  ['explosivePower','Throws attribute model is missing']
+ ],
  'scripts/nation-world-v1.js':[
   ['EXPECTED_NATIONS=64','64-nation world count contract is missing'],
   ['function addWorld(list)','64-nation athlete seeding is missing'],
@@ -162,7 +173,10 @@ const sourceContracts={
   ['Place of birth','Athlete profile must display place of birth'],
   ['Athletics Club','Athlete profile must display Athletics Club'],
   ['data-apv2-club','Managed athlete club identity must link to Club Athletics'],
-  ['AMPeopleBiography','Athlete profile must use persistent biography data']
+  ['AMPeopleBiography','Athlete profile must use persistent biography data'],
+  ['AMAthleteAttributes','Athlete profile must use the 1–20 attribute service'],
+  ['Key Attributes','Squad and athlete overview must expose key attributes'],
+  ["['attributes','Attributes']",'Athlete profile Attributes tab is missing']
  ],
  'scripts/staff-finance-v2.js':[
   ['Date of birth','Coach profile must display date of birth'],
@@ -278,6 +292,10 @@ for(const [file,contracts] of Object.entries(sourceContracts)){
  const text=read(file);
  for(const [token,message] of contracts)if(!text.includes(token))fail(`${message} (${file})`);
 }
+
+const squadSource=read('scripts/squad-athlete-v2.js');
+if(squadSource.includes('<small>Staff Ability</small>'))fail('Athlete profile must not expose a combined Staff Ability / Overall score.');
+if(squadSource.includes("sortHead('ability','Ability'"))fail('Squad table must not expose or sort by a combined Ability / Overall rating.');
 
 const selectionDecisionSource=read('scripts/selection-decision-v3.js');
 const reviewActionTokens=(selectionDecisionSource.match(/data-review/g)||[]).length;

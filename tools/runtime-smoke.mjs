@@ -102,7 +102,7 @@ try{
  const w=dom.window;
  const requiredGlobals=[
   'AthleticsUI','__athleticsInboxDecisionCore','__athleticsHomeV2','__athleticsInboxV3','__athleticsSquadAthleteV2',
-  '__athleticsCalendarV2','__athleticsCompetitionJourneyV2','__athleticsScoutingV3','__athleticsStaffFinanceV2','__athleticsWorldSeasonV2','__athleticsManagerCareerV1','AMFirstTimeExperienceV2','AMRelease','__athleticsRegression','AMLiveBroadcastV4','AMPeopleBiography','AMClubWorld'
+  '__athleticsCalendarV2','__athleticsCompetitionJourneyV2','__athleticsScoutingV3','__athleticsStaffFinanceV2','__athleticsWorldSeasonV2','__athleticsManagerCareerV1','AMFirstTimeExperienceV2','AMRelease','__athleticsRegression','AMLiveBroadcastV4','AMPeopleBiography','AMAthleteAttributes','AMClubWorld'
  ];
  for(const key of requiredGlobals)if(!w[key])fail(`Required runtime global missing after page load: ${key}`);
 
@@ -152,6 +152,14 @@ try{
    if(!['recommended','minimal','off'].includes(ftx.guidance))fail('First-Time Experience V2 guidance state is invalid.');
    if(!ftx.steps||!ftx.seen)fail('First-Time Experience V2 state model is incomplete.');
   }catch(err){fail(`First-Time Experience V2 diagnostics threw: ${err?.stack||err}`)}
+ }
+ if(w.AMAthleteAttributes){
+  try{
+   const attrs=w.AMAthleteAttributes.diagnostics();
+   if(!attrs||attrs.scale!==20||attrs.playerFacingOverall!==false)fail('Athlete Attributes preview must expose a 1–20 scale with no player-facing Overall.');
+   const sample=(w.s?.athletes||[])[0];
+   if(sample){const model=w.AMAthleteAttributes.get(sample);if(!model||model.attributes?.length!==8)fail('Athlete Attributes preview must produce exactly eight event-specific attributes.');if(model.attributes?.some(x=>x.score<1||x.score>20))fail('Athlete Attributes produced a rating outside the 1–20 scale.');}
+  }catch(err){fail(`Athlete Attributes diagnostics threw: ${err?.stack||err}`)}
  }
  if(w.AMNationWorld){
   try{

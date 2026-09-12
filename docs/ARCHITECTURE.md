@@ -49,6 +49,7 @@ The current shipping authorities are documented in `RELEASE-1.0.md`. Key route o
 - Home — `scripts/home-v2.js`
 - Inbox — `scripts/inbox-v3.js`
 - Squad / Pool / Athlete Profile — `scripts/squad-athlete-v2.js`
+- Athlete Attributes (1–20 preview) — `scripts/athlete-attributes-v1.js`; no player-facing Overall rating
 - Calendar — `scripts/calendar-v2.js`
 - Club Athletics — `scripts/club-world-v1.js`
 - Competition Journey — `scripts/competition-journey-v2.js`

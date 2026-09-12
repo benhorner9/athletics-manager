@@ -17,6 +17,7 @@ const systems=Object.freeze({
  squad:system('scripts/squad-athlete-v2.js',{label:'Squad'}),
  nationalPool:system('scripts/squad-athlete-v2.js',{label:'National Pool'}),
  athleteProfile:system('scripts/squad-athlete-v2.js',{label:'Athlete Profile'}),
+ athleteAttributes:system('scripts/athlete-attributes-v1.js',{label:'Athlete Attributes',scale:'1–20',rule:'no player-facing overall rating'}),
  calendar:system('scripts/calendar-v2.js',{label:'Calendar'}),
  training:system('scripts/training-v2-bootstrap.js',{label:'Training',enhancement:'scripts/training-v3.js',rule:'one visible Training Centre'}),
  scouting:system('scripts/scouting-v2-bootstrap.js',{label:'Scouting',compatibility:'scripts/scouting-v3.js',rule:'Scouting V2 workflow remains presentation authority'}),
