@@ -47,12 +47,12 @@ jobs:
       - name: Deploy dev build to hosting
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
-          server: ${{ secrets.DEV_FTP_SERVER }}
-          username: ${{ secrets.DEV_FTP_USERNAME }}
-          password: ${{ secrets.DEV_FTP_PASSWORD }}
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftps
-          port: ${{ secrets.DEV_FTP_PORT || 21 }}
-          server-dir: ${{ secrets.DEV_FTP_REMOTE_DIR || './' }}
+          port: ${{ secrets.FTP_PORT || 21 }}
+          server-dir: ${{ secrets.DEV_FTP_REMOTE_DIR }}
           local-dir: ./
           log-level: standard
           exclude: |
