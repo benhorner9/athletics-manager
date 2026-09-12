@@ -52,7 +52,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftps
           port: ${{ secrets.FTP_PORT || 21 }}
-          server-dir: ${{ secrets.DEV_FTP_REMOTE_DIR }}
+          server-dir: ./dev/
           local-dir: ./
           log-level: standard
           exclude: |
