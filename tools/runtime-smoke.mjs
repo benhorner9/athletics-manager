@@ -173,10 +173,12 @@ try{
    w.ensureCoaches?.();
    w.AMPeopleBiography.refresh();
    const bio=w.AMPeopleBiography.diagnostics();
-   if(!bio||bio.version!=='1.0')fail('People Biography diagnostics are invalid.');
+   if(!bio||bio.version!=='1.1')fail('People Biography diagnostics are invalid.');
    if(bio.missingAthletes!==0)fail(`People Biography left ${bio.missingAthletes} athlete biographies incomplete.`);
    if(bio.sampleAthlete&&!/^\d{4}-\d{2}-\d{2}$/.test(bio.sampleAthlete.dateOfBirth||''))fail('People Biography athlete date is not stored as ISO YYYY-MM-DD.');
    if(bio.sampleAthlete&&!bio.sampleAthlete.birthPlace)fail('People Biography athlete place of birth is missing.');
+   if(bio.missingClubs!==0)fail(`People Biography left ${bio.missingClubs} athlete club identities incomplete.`);
+   if(bio.sampleAthlete&&(!bio.sampleAthlete.athleticsClubId||!bio.sampleAthlete.athleticsClub||!bio.sampleAthlete.athleticsClubHome))fail('People Biography athlete athletics club identity is incomplete.');
    if(bio.sampleAthlete&&w.AMPeopleBiography.formatDate(bio.sampleAthlete.dateOfBirth)==='—')fail('People Biography date formatter failed.');
   }catch(err){fail(`People Biography diagnostics threw: ${err?.stack||err}`)}
  }
