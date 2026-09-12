@@ -114,13 +114,13 @@ function performanceRating(a){
  const top=validMark(olympic)?olympic:world;
  if(validMark(eliteMark)&&isBetterValue(a,mark,eliteMark))return 20;
  if(validMark(top)&&isBetterValue(a,mark,top))return Math.round(interpolateMark(a,mark,top,18,eliteMark||top,20));
- if(isBetterValue(a,mark,world))return Math.round(interpolateMark(a,mark,world,17,top||world,18));
- if(isBetterValue(a,mark,international))return Math.round(interpolateMark(a,mark,international,15,world,17));
- if(isBetterValue(a,mark,national))return Math.round(interpolateMark(a,mark,national,13,international,15));
+ if(isBetterValue(a,mark,world))return Math.round(interpolateMark(a,mark,world,16,top||world,18));
+ if(isBetterValue(a,mark,international))return Math.round(interpolateMark(a,mark,international,14,world,16));
+ if(isBetterValue(a,mark,national))return Math.round(interpolateMark(a,mark,national,12,international,14));
  const development=lowerIsBetter(a)?national*1.18:national*.82;
- if(isBetterValue(a,mark,development))return Math.round(interpolateMark(a,mark,development,7,national,13));
+ if(isBetterValue(a,mark,development))return Math.round(interpolateMark(a,mark,development,6,national,12));
  const raw=lowerIsBetter(a)?national*1.35:national*.68;
- if(isBetterValue(a,mark,raw))return Math.round(interpolateMark(a,mark,raw,4,development,7));
+ if(isBetterValue(a,mark,raw))return Math.round(interpolateMark(a,mark,raw,3,development,6));
  return 3;
 }
 function legacyBridgeRating(a){
@@ -128,11 +128,10 @@ function legacyBridgeRating(a){
  return clamp(Math.round(9+(old-50)/5),5,19);
 }
 function calibratedBase(a){
- const performance=performanceRating(a),legacy=legacyBridgeRating(a);
- if(!Number.isFinite(performance))return legacy;
- /* PB/standards own 85% of the bridge. Legacy strength can move the result by roughly one point,
-    but it can no longer manufacture elite attributes unsupported by actual performance. */
- return clamp(Math.round(performance*.85+legacy*.15),3,20);
+ const performance=performanceRating(a);
+ /* Objective performance owns the visible scale. The old hidden rating is fallback data only when
+    an athlete genuinely has no usable PB/standard evidence. */
+ return Number.isFinite(performance)?clamp(Math.round(performance),3,20):legacyBridgeRating(a);
 }
 function ageAdjustment(a,key){
  const age=Number(a?.age)||24;
@@ -147,14 +146,15 @@ function shapeOffsets(a,defs){
 }
 function eliteCaps(performanceLevel){
  const level=Number(performanceLevel)||0;
- if(level>=19)return{max:20,twenties:2,nineteenPlus:4};
- if(level>=18)return{max:20,twenties:1,nineteenPlus:2};
- if(level>=17)return{max:19,twenties:0,nineteenPlus:1};
- if(level>=16)return{max:18,twenties:0,nineteenPlus:0};
- if(level>=14)return{max:17,twenties:0,nineteenPlus:0};
- if(level>=12)return{max:16,twenties:0,nineteenPlus:0};
- if(level>=10)return{max:14,twenties:0,nineteenPlus:0};
- return{max:12,twenties:0,nineteenPlus:0};
+ if(level>=20)return{max:20,twenties:1,nineteenPlus:3};
+ if(level>=19)return{max:19,twenties:0,nineteenPlus:2};
+ if(level>=18)return{max:19,twenties:0,nineteenPlus:1};
+ if(level>=17)return{max:18,twenties:0,nineteenPlus:0};
+ if(level>=16)return{max:17,twenties:0,nineteenPlus:0};
+ if(level>=14)return{max:16,twenties:0,nineteenPlus:0};
+ if(level>=12)return{max:15,twenties:0,nineteenPlus:0};
+ if(level>=9)return{max:13,twenties:0,nineteenPlus:0};
+ return{max:11,twenties:0,nineteenPlus:0};
 }
 function enforceEliteRarity(a,rows,performanceLevel){
  const caps=eliteCaps(performanceLevel);rows.forEach(row=>{row.score=clamp(row.score,1,caps.max)});
@@ -170,8 +170,8 @@ function get(a){
  rows.forEach(row=>{row.band=band(row.score)});
  return{version:VERSION,scale:SCALE,family,familyLabel:familyLabel(family),performanceLevel,base,attributes:rows};
 }
-function band(score){const n=Number(score)||0;if(n>=20)return'elite';if(n>=18)return'excellent';if(n>=16)return'strong';if(n>=13)return'solid';if(n>=10)return'developing';return'limited'}
-function bandLabel(score){const n=Number(score)||0;if(n>=20)return'World Class';if(n>=18)return'Elite International';if(n>=16)return'International';if(n>=13)return'National';if(n>=10)return'Domestic';if(n>=7)return'Developing';return'Raw'}
+function band(score){const n=Number(score)||0;if(n>=20)return'elite';if(n>=18)return'excellent';if(n>=15)return'strong';if(n>=12)return'solid';if(n>=9)return'developing';return'limited'}
+function bandLabel(score){const n=Number(score)||0;if(n>=20)return'Exceptional';if(n>=18)return'Elite International';if(n>=15)return'International';if(n>=12)return'National';if(n>=9)return'Domestic';if(n>=6)return'Developing';return'Raw'}
 function top(a,count=3){return get(a).attributes.slice().sort((x,y)=>y.score-x.score||x.label.localeCompare(y.label)).slice(0,Math.max(1,Number(count)||3))}
 function weakest(a,count=2){return get(a).attributes.slice().sort((x,y)=>x.score-y.score||x.label.localeCompare(y.label)).slice(0,Math.max(1,Number(count)||2))}
 function audit(athletes){
@@ -182,7 +182,7 @@ function audit(athletes){
  leaders.sort((a,b)=>b.average-a.average||b.max-a.max||String(a.name).localeCompare(String(b.name)));
  return{version:VERSION,athletes:list.length,totalScores,average:totalScores?Number((sum/totalScores).toFixed(2)):0,twenties,multipleTwenties,maxTwenties,ratingCounts:counts,leaders:leaders.slice(0,20)};
 }
-function diagnostics(){return{version:VERSION,scale:SCALE,families:Object.keys(SETS),playerFacingOverall:false,calibration:'PB + event standards',eliteRule:'20 is world-class and capped at two attributes per athlete',bands:{20:'World Class','18-19':'Elite International','16-17':'International','13-15':'National','10-12':'Domestic','7-9':'Developing','1-6':'Raw'}}}
+function diagnostics(){return{version:VERSION,scale:SCALE,families:Object.keys(SETS),playerFacingOverall:false,calibration:'PB + event standards',eliteRule:'20 requires exceptional event performance and is capped at one attribute per athlete',bands:{20:'Exceptional','18-19':'Elite International','15-17':'International','12-14':'National','9-11':'Domestic','6-8':'Developing','1-5':'Raw'}}}
 
 window.AMAthleteAttributes=Object.freeze({version:VERSION,scale:SCALE,get,top,weakest,audit,performanceRating,familyFor,familyLabel,band,bandLabel,diagnostics});
 })();

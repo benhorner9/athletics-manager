@@ -163,9 +163,11 @@ try{
    const auditState=typeof w.fresh==='function'?w.fresh('GREAT BRITAIN'):null;
    const audit=w.AMAthleteAttributes.audit(auditState?.athletes||w.s?.athletes||[]);
    if(!audit||audit.athletes<1)fail('Athlete Attributes calibration audit did not inspect the athlete database.');
-   if(audit.maxTwenties>2)fail(`Athlete Attributes elite-rarity rule failed: one athlete has ${audit.maxTwenties} ratings of 20.`);
+   if(audit.maxTwenties>1)fail(`Athlete Attributes elite-rarity rule failed: one athlete has ${audit.maxTwenties} ratings of 20.`);
+   if(audit.multipleTwenties>0)fail(`Athlete Attributes elite-rarity rule failed: ${audit.multipleTwenties} athletes have multiple 20 ratings.`);
    const twentyShare=audit.totalScores?audit.twenties/audit.totalScores:0;
-   if(twentyShare>.04)fail(`Athlete Attributes calibration is too generous: ${(twentyShare*100).toFixed(1)}% of all ratings are 20.`);
+   if(twentyShare>.01)fail(`Athlete Attributes calibration is too generous: ${(twentyShare*100).toFixed(1)}% of all ratings are 20.`);
+   if(audit.average>14.5)fail(`Athlete Attributes database average is too high at ${audit.average}/20.`);
    console.log(`[smoke] attribute audit: ${audit.athletes} athletes · avg ${audit.average}/20 · ${audit.twenties} twenties · ${audit.multipleTwenties} athletes with multiple 20s`);
   }catch(err){fail(`Athlete Attributes diagnostics threw: ${err?.stack||err}`)}
  }
