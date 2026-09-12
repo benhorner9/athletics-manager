@@ -25,3 +25,7 @@ Live competition outcomes use the 1–20 attribute model directly. PB remains th
 
 Track athletes also carry an attribute-derived race shape into the live broadcast: starts, middle phases and finishes are weighted separately. Throws use technique and consistency to influence foul risk and series spread; high jump uses the event profile to influence the competition cap, pressure and clearance execution.
 
+## Competition authority
+
+Competition selection and performance no longer use the legacy hidden Overall value. Athlete fields, World Tour invitations, Summit opposition, league opposition, qualification fallback ordering and non-live competition marks use the event-specific 1–20 attribute model, objective performance evidence and current readiness. Overall remains only as legacy development data until the separate training/progression migration removes it.
+

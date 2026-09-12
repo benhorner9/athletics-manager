@@ -102,7 +102,7 @@ try{
  const w=dom.window;
  const requiredGlobals=[
   'AthleticsUI','__athleticsInboxDecisionCore','__athleticsHomeV2','__athleticsInboxV3','__athleticsSquadAthleteV2',
-  '__athleticsCalendarV2','__athleticsCompetitionJourneyV2','__athleticsScoutingV3','__athleticsStaffFinanceV2','__athleticsWorldSeasonV2','__athleticsManagerCareerV1','AMFirstTimeExperienceV2','AMRelease','__athleticsRegression','AMLiveBroadcastV4','AMEventAIRealism','AMPeopleBiography','AMAthleteAttributes','AMAttributeScouting','AMClubWorld'
+  '__athleticsCalendarV2','__athleticsCompetitionJourneyV2','__athleticsScoutingV3','__athleticsStaffFinanceV2','__athleticsWorldSeasonV2','__athleticsManagerCareerV1','AMFirstTimeExperienceV2','AMRelease','__athleticsRegression','AMLiveBroadcastV4','AMEventAIRealism','AMPeopleBiography','AMAthleteAttributes','AMAthletePerformance','AMAttributeScouting','AMClubWorld'
  ];
  for(const key of requiredGlobals)if(!w[key])fail(`Required runtime global missing after page load: ${key}`);
 
@@ -188,6 +188,21 @@ try{
    if(poolSample){const view=w.AMAthleteAttributes.assess(poolSample);if(view?.exact||view.attributes.every(x=>x.low===x.high))fail('National Pool athlete attributes must remain ranges before sufficient scouting.');}
    if(foreignSample){const view=w.AMAthleteAttributes.assess(foreignSample);if(view?.exact||view.attributes.every(x=>x.low===x.high))fail('Foreign athlete attributes must not leak exact ratings without scouting.');}
   }catch(err){fail(`Athlete Attributes diagnostics threw: ${err?.stack||err}`)}
+ }
+ if(w.AMAthletePerformance){
+  try{
+   const perf=w.AMAthletePerformance,diag=perf.diagnostics();
+   if(!diag||diag.version!=='1.0'||diag.usesOverall!==false)fail('Athlete Performance V1 must exclude hidden Overall.');
+   const state=typeof w.fresh==='function'?w.fresh('GREAT BRITAIN'):w.s,sample=(state?.athletes||[]).find(a=>!a.retired);
+   if(!sample)fail('Athlete Performance V1 could not find a sample athlete.');
+   else{
+    const low={...sample,overall:40},high={...sample,overall:99};
+    const lowScore=perf.selectionScore(low),highScore=perf.selectionScore(high),lowMark=perf.expectedMark(low,low.disc),highMark=perf.expectedMark(high,high.disc);
+    if(Math.abs(lowScore-highScore)>.000001)fail(`Hidden Overall changed competition selection score: ${lowScore} vs ${highScore}.`);
+    if(Math.abs(lowMark-highMark)>.000001)fail(`Hidden Overall changed expected competition performance: ${lowMark} vs ${highMark}.`);
+    if(typeof w.performanceScore==='function'&&Math.abs(w.performanceScore(low)-w.performanceScore(high))>.000001)fail('Legacy performanceScore still responds to hidden Overall.');
+   }
+  }catch(err){fail(`Athlete Performance V1 diagnostics threw: ${err?.stack||err}`)}
  }
  if(w.AMNationWorld){
   try{
