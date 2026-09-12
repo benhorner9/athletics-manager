@@ -102,7 +102,7 @@ try{
  const w=dom.window;
  const requiredGlobals=[
   'AthleticsUI','__athleticsInboxDecisionCore','__athleticsHomeV2','__athleticsInboxV3','__athleticsSquadAthleteV2',
-  '__athleticsCalendarV2','__athleticsCompetitionJourneyV2','__athleticsScoutingV3','__athleticsStaffFinanceV2','__athleticsWorldSeasonV2','__athleticsManagerCareerV1','AMFirstTimeExperienceV2','AMRelease','__athleticsRegression','AMLiveBroadcastV4','AMPeopleBiography','AMAthleteAttributes','AMAttributeScouting','AMClubWorld'
+  '__athleticsCalendarV2','__athleticsCompetitionJourneyV2','__athleticsScoutingV3','__athleticsStaffFinanceV2','__athleticsWorldSeasonV2','__athleticsManagerCareerV1','AMFirstTimeExperienceV2','AMRelease','__athleticsRegression','AMLiveBroadcastV4','AMEventAIRealism','AMPeopleBiography','AMAthleteAttributes','AMAttributeScouting','AMClubWorld'
  ];
  for(const key of requiredGlobals)if(!w[key])fail(`Required runtime global missing after page load: ${key}`);
 
@@ -133,9 +133,23 @@ try{
   try{
    const diag=w.AMLiveBroadcastV4.diagnostics();
    if(!diag||diag.loaded!==true||diag.renderer!=='Broadcast V4.6 Optimised')fail('Broadcast V4.6 diagnostics are not authoritative.');
+   if(diag.attributeRaceShape!==true)fail('Broadcast V4.6 must shape track phases from athlete attributes.');
    const qa=w.AMLiveBroadcastV4.qa();
    if(!qa||qa.ok!==true||!Array.isArray(qa.issues))fail('Broadcast V4.6 QA snapshot is invalid while idle.');
   }catch(err){fail(`Broadcast V4.6 diagnostics threw: ${err?.stack||err}`)}
+ }
+ if(w.AMEventAIRealism){
+  try{
+   const diag=w.AMEventAIRealism.diagnostics();
+   if(!diag||diag.version<2||diag.attributesDriveOutcomes!==true||diag.hiddenOverallAffectsLiveOutcome!==false||diag.raceShapeFromAttributes!==true)fail('Event AI attribute-performance authority is invalid.');
+   const state=typeof w.fresh==='function'?w.fresh('GREAT BRITAIN'):null,track=(state?.athletes||[]).find(a=>w.DISCIPLINES?.[a.disc]?.type==='time');
+   if(track){
+    const profile=w.AMEventAIRealism.attributeProfile(track,track.disc);
+    if(!profile||profile.score<1||profile.score>20||!profile.attributeRace)fail('Event AI did not build a valid track attribute profile.');
+    const low={...track,overall:40},high={...track,overall:99},a=w.AMEventAIRealism.trackAnchor(low,track.disc,track.pb),b=w.AMEventAIRealism.trackAnchor(high,track.disc,track.pb);
+    if(Math.abs(a-b)>.000001)fail('Hidden Overall still changes the live-event attribute anchor.');
+   }
+  }catch(err){fail(`Event AI attribute diagnostics threw: ${err?.stack||err}`)}
  }
  if(w.__athleticsManagerCareerV1){
   try{
