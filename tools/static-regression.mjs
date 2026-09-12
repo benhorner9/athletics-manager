@@ -43,6 +43,7 @@ for(const route of routes){
 
 const requiredScripts=[
  'scripts/game.js',
+ 'scripts/nation-world-v1.js',
  'scripts/inbox-decision-core-v1.js',
  'scripts/ui-platform-v1.js',
  'scripts/home-v2.js',
@@ -72,7 +73,8 @@ function before(a,b){
  if(ia<0||ib<0)return;
  if(ia>=ib)fail(`Script order invalid: ${a} must load before ${b}`);
 }
-before('scripts/game.js','scripts/ui-platform-v1.js');
+before('scripts/game.js','scripts/nation-world-v1.js');
+before('scripts/nation-world-v1.js','scripts/ui-platform-v1.js');
 before('scripts/inbox-decision-core-v1.js','scripts/home-v2.js');
 before('scripts/inbox-decision-core-v1.js','scripts/inbox-v3.js');
 before('scripts/ui-platform-v1.js','scripts/home-v2.js');
@@ -120,6 +122,14 @@ if(fs.existsSync(integration)){
 
 /* Source contracts for bugs already discovered during the rebuild. */
 const sourceContracts={
+ 'scripts/nation-world-v1.js':[
+  ['EXPECTED_NATIONS=64','64-nation world count contract is missing'],
+  ['function addWorld(list)','64-nation athlete seeding is missing'],
+  ['function ensure(st)','64-nation existing-save migration is missing'],
+  ['data-nation-search','64-nation picker search control is missing'],
+  ['data-nation-region','64-nation picker region filter is missing'],
+  ['window.AMNationWorld','64-nation world public service is missing']
+ ],
  'scripts/home-v2.js':[
   ['const c=core();if(c?.openAction)','Home decision routing must verify openAction before returning'],
   ['window.AthleticsUI?.format?.money','Home money formatting must use the window-scoped UI platform']
