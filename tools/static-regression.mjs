@@ -128,6 +128,7 @@ const sourceContracts={
   ['function ensure(st)','64-nation existing-save migration is missing'],
   ['data-nation-search','64-nation picker search control is missing'],
   ['data-nation-region','64-nation picker region filter is missing'],
+  ["newCareerButton.onclick=()=>showNationPicker()",'64-nation picker must rebind Start New Career to the expanded picker'],
   ['window.AMNationWorld','64-nation world public service is missing']
  ],
  'scripts/home-v2.js':[
