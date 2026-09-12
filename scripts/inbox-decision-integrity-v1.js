@@ -14,11 +14,16 @@ function markSuperseded(){
  const actions=core.getUnresolvedActions(),meta=s?.inboxDecisionSystem?.emailMeta;if(!meta)return;
  for(const action of actions){if(!action.emailId)continue;for(const m of s.emails||[]){if(m.id===action.emailId||m.type!=='selection')continue;const same=action.source==='summit'?!!m.summitRegistration:(m.eventId&&String(m.eventId)===String(action.entityId));if(!same)continue;meta[m.id]??={emailId:m.id};meta[m.id].resolution='completed';meta[m.id].resolutionState='completed';meta[m.id].superseded=true;meta[m.id].blocks=false;meta[m.id].blocksProgress=false}}
 }
+function actionBadge(button,count){
+ if(!button)return;let badge=button.querySelector('.am-action-badge');if(!badge){badge=document.createElement('span');badge.className='am-action-badge';button.appendChild(badge)}
+ badge.textContent=count?String(count):'';badge.hidden=!count;badge.title=count?`${count} action${count===1?'':'s'} required`:'No actions required';
+}
 function syncVisibleCounts(){
  markSuperseded();const actions=core.getUnresolvedActions(),blocks=core.getProgressionBlockers(),advance=$('advanceTop');
- if(blocks.length&&advance){advance.disabled=false;advance.textContent=`${blocks.length} ACTION${blocks.length===1?'':'S'} REQUIRED`;advance.title='Resolve required decisions before advancing'}
- const rail=$('mailBadge');if(rail){rail.textContent=actions.length?String(actions.length):'';rail.classList.toggle('hidden',!actions.length)}
- document.querySelectorAll('#bottomNav .am-action-badge').forEach(x=>{x.textContent=actions.length?String(actions.length):'';x.hidden=!actions.length});
+ if(blocks.length&&advance){advance.disabled=false;advance.textContent=`${blocks.length} ACTION${blocks.length===1?'S':''} REQUIRED`;advance.title='Resolve required decisions before advancing'}
+ // Action counts have their own badge. #mailBadge is reserved exclusively for unread communications.
+ actionBadge(document.querySelector('#railNav [data-view="inbox"]'),actions.length);
+ actionBadge(document.querySelector('#bottomNav [data-view="inbox"]'),actions.length);
 }
 const priorAdvance=typeof advanceWeek==='function'?advanceWeek:null;if(priorAdvance)advanceWeek=function(){const g=core.getProgressionBlockers();if(g.length){core.showGate(g);syncVisibleCounts();return false}return priorAdvance.apply(this,arguments)};if($('advanceTop'))$('advanceTop').onclick=()=>advanceWeek();
 const priorRender=typeof render==='function'?render:null;if(priorRender)render=function(){const r=priorRender.apply(this,arguments);requestAnimationFrame(syncVisibleCounts);return r};
