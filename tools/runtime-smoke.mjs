@@ -102,7 +102,7 @@ try{
  const w=dom.window;
  const requiredGlobals=[
   'AthleticsUI','__athleticsInboxDecisionCore','__athleticsHomeV2','__athleticsInboxV3','__athleticsSquadAthleteV2',
-  '__athleticsCalendarV2','__athleticsCompetitionJourneyV2','__athleticsScoutingV3','__athleticsStaffFinanceV2','__athleticsWorldSeasonV2','__athleticsManagerCareerV1','AMFirstTimeExperienceV2','AMRelease','__athleticsRegression','AMLiveBroadcastV4'
+  '__athleticsCalendarV2','__athleticsCompetitionJourneyV2','__athleticsScoutingV3','__athleticsStaffFinanceV2','__athleticsWorldSeasonV2','__athleticsManagerCareerV1','AMFirstTimeExperienceV2','AMRelease','__athleticsRegression','AMLiveBroadcastV4','AMPeopleBiography'
  ];
  for(const key of requiredGlobals)if(!w[key])fail(`Required runtime global missing after page load: ${key}`);
 
@@ -167,6 +167,18 @@ try{
    if(modal?.classList.contains('hidden'))fail('New Career click did not open the nation picker.');
    if(typeof w.closeNationPicker==='function')w.closeNationPicker();
   }catch(err){fail(`64-nation picker runtime check threw: ${err?.stack||err}`)}
+ }
+ if(w.AMPeopleBiography){
+  try{
+   w.ensureCoaches?.();
+   w.AMPeopleBiography.refresh();
+   const bio=w.AMPeopleBiography.diagnostics();
+   if(!bio||bio.version!=='1.0')fail('People Biography diagnostics are invalid.');
+   if(bio.missingAthletes!==0)fail(`People Biography left ${bio.missingAthletes} athlete biographies incomplete.`);
+   if(bio.sampleAthlete&&!/^\d{4}-\d{2}-\d{2}$/.test(bio.sampleAthlete.dateOfBirth||''))fail('People Biography athlete date is not stored as ISO YYYY-MM-DD.');
+   if(bio.sampleAthlete&&!bio.sampleAthlete.birthPlace)fail('People Biography athlete place of birth is missing.');
+   if(bio.sampleAthlete&&w.AMPeopleBiography.formatDate(bio.sampleAthlete.dateOfBirth)==='—')fail('People Biography date formatter failed.');
+  }catch(err){fail(`People Biography diagnostics threw: ${err?.stack||err}`)}
  }
  console.log('[smoke] runtime globals and snapshot checked');
 
