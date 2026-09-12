@@ -9,6 +9,23 @@ def replace(path,old,new,count=1):
         raise SystemExit(f'Anchor not found in {path}: {old[:120]!r}')
     p.write_text(text.replace(old,new,count),encoding='utf-8')
 
+# Tighten the club authority itself before integration.
+replace('scripts/club-athletics-v1.js',
+ "function ensureClubRecord(a,root=worldState()){\n const id=ensureAthleteClub(a);if(!id||!root)return null;",
+ "function ensureClubRecord(a,root=worldState(),state=typeof s!=='undefined'?s:null){\n const id=ensureAthleteClub(a,state);if(!id||!root)return null;")
+replace('scripts/club-athletics-v1.js',
+ " for(const a of state.athletes||[])ensureClubRecord(a,root);return root}",
+ " for(const a of state.athletes||[])ensureClubRecord(a,root,state);return root}")
+replace('scripts/club-athletics-v1.js',
+ " cc.history.push({season:gameSeason(),week:meeting.week,meeting:meeting.name,clubId:a.athleticsClubId,club:a.athleticsClub,disc:d,perf:row.perf,place,points});cc.history=cc.history.slice(-24);",
+ " cc.history.push({athleteId:a.id,season:gameSeason(),week:meeting.week,meeting:meeting.name,clubId:a.athleticsClubId,club:a.athleticsClub,disc:d,perf:row.perf,place,points});cc.history=cc.history.slice(-24);")
+replace('scripts/club-athletics-v1.js',
+ " const lines=leading.map(r=>`${athleteById(r.id)?.name||'Athlete'} ${r.place===1?'won':`finished #${r.place}`} ${disciplineLabel(r.disc)} for ${r.club}`).join(' · '),extra=special.length?` ${special.map(x=>`${x.name}: ${x.achievements.join('/')}`).join(' · ')}.`:'';",
+ " const lines=leading.map(r=>`${athleteById(r.athleteId)?.name||'Athlete'} ${r.place===1?'won':`finished #${r.place}`} ${disciplineLabel(r.disc)} for ${r.club}`).join(' · '),extra=special.length?` ${special.map(x=>`${x.name}: ${x.achievements.join('/')}`).join(' · ')}.`:'';")
+replace('scripts/club-athletics-v1.js',
+ "const legacyFresh=typeof fresh==='function'?fresh:null;if(legacyFresh)fresh=function(){const state=legacyFresh.apply(this,arguments);try{const previous=typeof s!=='undefined'?s:null;s=state;syncClubs(state);s=previous}catch(_){}return state};",
+ "const legacyFresh=typeof fresh==='function'?fresh:null;if(legacyFresh)fresh=function(){const state=legacyFresh.apply(this,arguments);try{syncClubs(state)}catch(_){}return state};")
+
 # game.html — explicit production route, navigation, CSS and runtime load.
 replace('game.html',
  '<link rel="stylesheet" href="styles/world-season-v2.css?v=20260910-worldseason2">\n<link rel="stylesheet" href="styles/manager-profile-v1.css?v=20260911-managercareer1">',
@@ -28,8 +45,8 @@ replace('game.html',
 
 # Release manifest — one explicit authority for the club system.
 replace('scripts/release-baseline.js',
- "  worldNews:system('scripts/world-season-v2.js',{label:'World News'}),\n  managerProfile:system('scripts/manager-career-v1.js',{label:'Manager Career / My Profile'}),",
- "  worldNews:system('scripts/world-season-v2.js',{label:'World News'}),\n  clubAthletics:system('scripts/club-athletics-v1.js',{label:'Club Athletics',identity:'scripts/people-biography-v1.js',rule:'club duty is subordinate to national programme commitments'}),\n  managerProfile:system('scripts/manager-career-v1.js',{label:'Manager Career / My Profile'}),")
+ " worldNews:system('scripts/world-season-v2.js',{label:'World News'}),",
+ " worldNews:system('scripts/world-season-v2.js',{label:'World News'}),\n clubAthletics:system('scripts/club-athletics-v1.js',{label:'Club Athletics',identity:'scripts/people-biography-v1.js',rule:'club duty is subordinate to national programme commitments'}),")
 
 # Static regression contracts.
 replace('tools/static-regression.mjs',
