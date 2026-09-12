@@ -13,7 +13,6 @@ const state=()=>{const x=s.inboxDecisionSystem??={};x.emailMeta??={};x.archive??
 function saveSafe(){try{save()}catch(_){}}
 function activeActions(){try{return core()?.getUnresolvedActions?.()||[]}catch(_){return[]}}
 function category(m){try{return String(mailCategory(m)||'info').toLowerCase()}catch(_){return String(m?.type||'info').toLowerCase()}}
-function senderName(m){return String(m?.sender||'').split('•')[0].trim()}
 function threadKey(m,cat){
  if(m?.eventId&&['selection','competition','medical'].includes(cat))return `event:${m.eventId}`;
  if(cat==='medical'){
@@ -25,6 +24,7 @@ function threadKey(m,cat){
  return null;
 }
 function inferPriority(m){const text=`${m?.subject||''} ${m?.body||''}`;return /urgent|deadline|injury|contract|olympic|championship/i.test(text)?'important':'normal'}
+function setValue(target,key,value){if(target[key]===value)return false;target[key]=value;return true}
 function normalizeMeta(){
  const x=state(),acts=activeActions(),byEmail=new Map(acts.filter(a=>a?.emailId).map(a=>[String(a.emailId),a]));let changed=false;
  for(const m of [...(s.emails||[]),...(x.archive||[])]){
@@ -33,15 +33,32 @@ function normalizeMeta(){
   if(!z.threadKey){const key=threadKey(m,cat);if(key){z.threadKey=key;changed=true}}
   if(!z.priority){z.priority=a?.priority||inferPriority(m);changed=true}
   if(a){
-   if(z.actionId!==a.actionId){z.actionId=a.actionId;changed=true}
-   if(z.interactionType!==(a.blocks?'progress_blocker':'decision_required')){z.interactionType=a.blocks?'progress_blocker':'decision_required';changed=true}
-   if(z.resolutionState!=='awaiting_response'){z.resolutionState='awaiting_response';changed=true}
-   z.responseRequired=true;z.blocksProgress=!!a.blocks;z.deadlineWeek=Number(a.deadline);z.sourceSystem=a.source;z.entityId=a.entityId;z.destination=a.destination;
+   changed=setValue(z,'actionId',a.actionId)||changed;
+   changed=setValue(z,'interactionType',a.blocks?'progress_blocker':'decision_required')||changed;
+   changed=setValue(z,'resolutionState','awaiting_response')||changed;
+   changed=setValue(z,'responseRequired',true)||changed;
+   changed=setValue(z,'blocksProgress',!!a.blocks)||changed;
+   changed=setValue(z,'deadlineWeek',Number(a.deadline))||changed;
+   changed=setValue(z,'sourceSystem',a.source)||changed;
+   changed=setValue(z,'entityId',a.entityId)||changed;
+   changed=setValue(z,'destination',a.destination)||changed;
   }else{
-   if(!z.interactionType){z.interactionType=m.type==='selection'?'decision_required':'information';changed=true}
-   if(!z.resolutionState){z.resolutionState=z.resolution==='completed'||m.selectionSubmitted?'completed':m.type==='selection'?'awaiting_response':'no_response_required';changed=true}
+   const completed=z.resolution==='completed'||m.selectionSubmitted===true;
+   const noResponse=z.resolution==='no_response_required';
+   if(completed){
+    changed=setValue(z,'resolutionState','completed')||changed;
+    changed=setValue(z,'responseRequired',false)||changed;
+    changed=setValue(z,'blocksProgress',false)||changed;
+   }else if(noResponse){
+    changed=setValue(z,'resolutionState','no_response_required')||changed;
+    changed=setValue(z,'responseRequired',false)||changed;
+    changed=setValue(z,'blocksProgress',false)||changed;
+   }else{
+    if(!z.interactionType){z.interactionType=m.type==='selection'?'decision_required':'information';changed=true}
+    if(!z.resolutionState){z.resolutionState=m.type==='selection'?'awaiting_response':'no_response_required';changed=true}
+   }
   }
-  z.read=m.unread?'unread':'read';
+  changed=setValue(z,'read',m.unread?'unread':'read')||changed;
  }
  if(changed)saveSafe();return changed
 }
