@@ -102,7 +102,7 @@ try{
  const w=dom.window;
  const requiredGlobals=[
   'AthleticsUI','__athleticsInboxDecisionCore','__athleticsHomeV2','__athleticsInboxV3','__athleticsSquadAthleteV2',
-  '__athleticsCalendarV2','__athleticsCompetitionJourneyV2','__athleticsScoutingV3','__athleticsStaffFinanceV2','__athleticsWorldSeasonV2','__athleticsManagerCareerV1','AMFirstTimeExperienceV2','AMRelease','__athleticsRegression','AMLiveBroadcastV4','AMEventAIRealism','AMPeopleBiography','AMAthleteAttributes','AMAthletePerformance','AMAttributeScouting','AMClubWorld'
+  '__athleticsCalendarV2','__athleticsCompetitionJourneyV2','__athleticsScoutingV3','__athleticsStaffFinanceV2','__athleticsWorldSeasonV2','__athleticsManagerCareerV1','AMFirstTimeExperienceV2','AMRelease','__athleticsRegression','AMLiveBroadcastV4','AMEventAIRealism','AMPeopleBiography','AMAthleteAttributes','AMAthletePerformance','AMTrainingSystem2','AMAttributeScouting','AMClubWorld'
  ];
  for(const key of requiredGlobals)if(!w[key])fail(`Required runtime global missing after page load: ${key}`);
 
@@ -171,7 +171,7 @@ try{
   try{
    const attrs=w.AMAthleteAttributes.diagnostics();
    if(!attrs||attrs.scale!==20||attrs.playerFacingOverall!==false)fail('Athlete Attributes preview must expose a 1–20 scale with no player-facing Overall.');
-   if(attrs.calibration!=='PB + event standards')fail('Athlete Attributes must be calibrated from objective performance standards.');
+   if(attrs.calibration!=='persistent attributes seeded from PB + event standards'||attrs.persistent!==true)fail('Athlete Attributes must be persistent save data seeded from objective performance standards.');
    const sample=(w.s?.athletes||[])[0];
    if(sample){const model=w.AMAthleteAttributes.get(sample);if(!model||model.attributes?.length!==8)fail('Athlete Attributes preview must produce exactly eight event-specific attributes.');if(model.attributes?.some(x=>x.score<1||x.score>20))fail('Athlete Attributes produced a rating outside the 1–20 scale.');}
    const auditState=typeof w.fresh==='function'?w.fresh('GREAT BRITAIN'):null;
@@ -203,6 +203,25 @@ try{
     if(typeof w.performanceScore==='function'&&Math.abs(w.performanceScore(low)-w.performanceScore(high))>.000001)fail('Legacy performanceScore still responds to hidden Overall.');
    }
   }catch(err){fail(`Athlete Performance V1 diagnostics threw: ${err?.stack||err}`)}
+ }
+ if(w.AMTrainingSystem2){
+  try{
+   const training=w.AMTrainingSystem2,diag=training.diagnostics();
+   if(!diag||diag.version!=='2.0'||diag.usesOverall!==false||diag.usesPotential!==false)fail('Training System 2.0 must use individual attributes without Overall/Potential.');
+   const state=typeof w.fresh==='function'?w.fresh('GREAT BRITAIN'):null,sample=(state?.athletes||[]).find(a=>a.nation===state?.managedNation&&a.inSquad!==false&&!a.retired);
+   if(!sample)fail('Training System 2.0 could not find a managed athlete.');
+   else{
+    const stored=w.AMAthleteAttributes.ensurePersistent(sample),model=w.AMAthleteAttributes.get(sample),row=model.attributes.find(x=>x.score<20)||model.attributes[0],old=row.score,next=Math.min(20,old+1);
+    w.AMAthleteAttributes.setAttribute(sample,row.key,next);
+    if(w.AMAthleteAttributes.get(sample).attributes.find(x=>x.key===row.key)?.score!==next)fail('Persistent athlete attribute mutation did not survive a profile read.');
+    w.AMAthleteAttributes.setAttribute(sample,row.key,old);
+    const low=JSON.parse(JSON.stringify(sample)),high=JSON.parse(JSON.stringify(sample));delete low.attributeDevelopment;delete high.attributeDevelopment;low.overall=40;low.potential=41;high.overall=99;high.potential=99;
+    const lowDev=training.ensureDevelopment(low),highDev=training.ensureDevelopment(high);
+    if(JSON.stringify(lowDev.ceilings)!==JSON.stringify(highDev.ceilings))fail('Hidden Overall/Potential still changes Training System 2.0 development ceilings.');
+    if(!stored||Object.keys(stored).length!==8)fail('Training System 2.0 did not persist eight event-specific athlete ratings.');
+   }
+   training.render();if(!w.document.querySelector('#training .tr4-shell'))fail('Training System 2.0 did not render the canonical Training Centre.');
+  }catch(err){fail(`Training System 2.0 diagnostics threw: ${err?.stack||err}`)}
  }
  if(w.AMNationWorld){
   try{

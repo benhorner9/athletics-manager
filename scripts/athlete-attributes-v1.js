@@ -7,7 +7,7 @@
 'use strict';
 if(window.AMAthleteAttributes)return;
 
-const VERSION='0.3-preview';
+const VERSION='1.0';
 const SCALE=20;
 const SETS={
  sprint:[
@@ -163,13 +163,20 @@ function enforceEliteRarity(a,rows,performanceLevel){
  let nineteenPlus=0;for(const row of priority.sort((x,y)=>y.score-x.score||x.label.localeCompare(y.label)))if(row.score>=19){nineteenPlus++;if(nineteenPlus>caps.nineteenPlus)row.score=18}
  return rows;
 }
-function get(a){
+function generatedProfile(a){
  const family=familyFor(a),defs=SETS[family]||SETS.general,performanceLevel=performanceRating(a),base=calibratedBase(a),offsets=shapeOffsets(a,defs);
  const rows=defs.map(([key,label,abbr],index)=>({key,label,abbr,score:clamp(Math.round(base+offsets[index]+ageAdjustment(a,key)),1,SCALE)}));
  enforceEliteRarity(a,rows,performanceLevel);
  rows.forEach(row=>{row.band=band(row.score)});
  return{version:VERSION,scale:SCALE,family,familyLabel:familyLabel(family),performanceLevel,base,attributes:rows};
 }
+function ensurePersistent(a){
+ if(!a)return null;const seed=generatedProfile(a),stored=(a.attributeRatings&&typeof a.attributeRatings==='object')?a.attributeRatings:(a.attributeRatings={});
+ for(const row of seed.attributes)stored[row.key]=Number.isFinite(Number(stored[row.key]))?clamp(Math.round(Number(stored[row.key])),1,SCALE):row.score;
+ return stored
+}
+function setAttribute(a,key,value){if(!a)return null;const seed=generatedProfile(a);if(!seed.attributes.some(row=>row.key===key))return null;const stored=ensurePersistent(a);stored[key]=clamp(Math.round(Number(value)),1,SCALE);return stored[key]}
+function get(a){const seed=generatedProfile(a);if(!a)return seed;const stored=ensurePersistent(a),rows=seed.attributes.map(row=>({...row,score:clamp(Math.round(Number(stored[row.key]??row.score)),1,SCALE)}));rows.forEach(row=>row.band=band(row.score));const base=rows.length?rows.reduce((n,row)=>n+row.score,0)/rows.length:seed.base;return{...seed,version:VERSION,base:+Number(base).toFixed(2),persistent:true,attributes:rows}}
 function managedNationSafe(){try{return typeof managedNation==='function'?managedNation():s?.managedNation}catch(_){return null}}
 function isManagedSquad(a){return !!a&&a.nation===managedNationSafe()&&a.inSquad!==false&&!a.retired}
 function directIntel(a){try{return window.AMAttributeScouting?.knowledge?.(a)||{reports:0,bestScoutLevel:0,confidenceBonus:0,exact:false}}catch(_){return{reports:0,bestScoutLevel:0,confidenceBonus:0,exact:false}}}
@@ -209,7 +216,7 @@ function audit(athletes){
  leaders.sort((a,b)=>b.average-a.average||b.max-a.max||String(a.name).localeCompare(String(b.name)));
  return{version:VERSION,athletes:list.length,totalScores,average:totalScores?Number((sum/totalScores).toFixed(2)):0,twenties,multipleTwenties,maxTwenties,ratingCounts:counts,leaders:leaders.slice(0,20)};
 }
-function diagnostics(){return{version:VERSION,scale:SCALE,families:Object.keys(SETS),playerFacingOverall:false,calibration:'PB + event standards',eliteRule:'20 requires exceptional event performance and is capped at one attribute per athlete',bands:{20:'Exceptional','18-19':'Elite International','15-17':'International','12-14':'National','9-11':'Domestic','6-8':'Developing','1-5':'Raw'}}}
+function diagnostics(){return{version:VERSION,scale:SCALE,families:Object.keys(SETS),playerFacingOverall:false,persistent:true,calibration:'persistent attributes seeded from PB + event standards',developmentAuthority:'Training System 2.0',eliteRule:'20 is exceptional; Training System 2.0 uses hidden attribute-specific development ceilings',bands:{20:'Exceptional','18-19':'Elite International','15-17':'International','12-14':'National','9-11':'Domestic','6-8':'Developing','1-5':'Raw'}}}
 
-window.AMAthleteAttributes=Object.freeze({version:VERSION,scale:SCALE,get,assess,top,weakest,topAssessed,weakestAssessed,audit,performanceRating,attributeKnowledge,familyFor,familyLabel,band,bandLabel,diagnostics});
+window.AMAthleteAttributes=Object.freeze({version:VERSION,scale:SCALE,get,assess,top,weakest,topAssessed,weakestAssessed,audit,performanceRating,attributeKnowledge,familyFor,familyLabel,band,bandLabel,ensurePersistent,setAttribute,diagnostics});
 })();
