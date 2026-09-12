@@ -102,7 +102,7 @@ try{
  const w=dom.window;
  const requiredGlobals=[
   'AthleticsUI','__athleticsInboxDecisionCore','__athleticsHomeV2','__athleticsInboxV3','__athleticsSquadAthleteV2',
-  '__athleticsCalendarV2','__athleticsCompetitionJourneyV2','__athleticsScoutingV3','__athleticsStaffFinanceV2','__athleticsWorldSeasonV2','__athleticsManagerCareerV1','AMFirstTimeExperienceV2','AMRelease','__athleticsRegression','AMLiveBroadcastV4','AMPeopleBiography','AMAthleteAttributes','AMClubWorld'
+  '__athleticsCalendarV2','__athleticsCompetitionJourneyV2','__athleticsScoutingV3','__athleticsStaffFinanceV2','__athleticsWorldSeasonV2','__athleticsManagerCareerV1','AMFirstTimeExperienceV2','AMRelease','__athleticsRegression','AMLiveBroadcastV4','AMPeopleBiography','AMAthleteAttributes','AMAttributeScouting','AMClubWorld'
  ];
  for(const key of requiredGlobals)if(!w[key])fail(`Required runtime global missing after page load: ${key}`);
 
@@ -169,6 +169,10 @@ try{
    if(twentyShare>.01)fail(`Athlete Attributes calibration is too generous: ${(twentyShare*100).toFixed(1)}% of all ratings are 20.`);
    if(audit.average>14.5)fail(`Athlete Attributes database average is too high at ${audit.average}/20.`);
    console.log(`[smoke] attribute audit: ${audit.athletes} athletes · avg ${audit.average}/20 · ${audit.twenties} twenties · ${audit.multipleTwenties} athletes with multiple 20s`);
+   const managed=auditState?.managedNation||'GREAT BRITAIN',squadSample=(auditState?.athletes||[]).find(a=>a.nation===managed&&a.inSquad!==false&&!a.retired),poolSample=(auditState?.athletes||[]).find(a=>a.nation===managed&&a.inSquad===false&&!a.retired),foreignSample=(auditState?.athletes||[]).find(a=>a.nation!==managed&&!a.retired);
+   if(squadSample){const view=w.AMAthleteAttributes.assess(squadSample);if(!view?.exact||view.attributes.some(x=>x.low!==x.high))fail('Managed squad athlete attributes must be exact.');}
+   if(poolSample){const view=w.AMAthleteAttributes.assess(poolSample);if(view?.exact||view.attributes.every(x=>x.low===x.high))fail('National Pool athlete attributes must remain ranges before sufficient scouting.');}
+   if(foreignSample){const view=w.AMAthleteAttributes.assess(foreignSample);if(view?.exact||view.attributes.every(x=>x.low===x.high))fail('Foreign athlete attributes must not leak exact ratings without scouting.');}
   }catch(err){fail(`Athlete Attributes diagnostics threw: ${err?.stack||err}`)}
  }
  if(w.AMNationWorld){

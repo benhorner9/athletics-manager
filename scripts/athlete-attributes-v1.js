@@ -7,7 +7,7 @@
 'use strict';
 if(window.AMAthleteAttributes)return;
 
-const VERSION='0.2.1-preview';
+const VERSION='0.3-preview';
 const SCALE=20;
 const SETS={
  sprint:[
@@ -170,6 +170,33 @@ function get(a){
  rows.forEach(row=>{row.band=band(row.score)});
  return{version:VERSION,scale:SCALE,family,familyLabel:familyLabel(family),performanceLevel,base,attributes:rows};
 }
+function managedNationSafe(){try{return typeof managedNation==='function'?managedNation():s?.managedNation}catch(_){return null}}
+function isManagedSquad(a){return !!a&&a.nation===managedNationSafe()&&a.inSquad!==false&&!a.retired}
+function directIntel(a){try{return window.AMAttributeScouting?.knowledge?.(a)||{reports:0,bestScoutLevel:0,confidenceBonus:0,exact:false}}catch(_){return{reports:0,bestScoutLevel:0,confidenceBonus:0,exact:false}}}
+function attributeKnowledge(a){
+ if(isManagedSquad(a))return 100;
+ const own=a?.nation===managedNationSafe();let base;
+ try{base=typeof assessmentConfidence==='function'?Number(assessmentConfidence(a,'overall')):NaN}catch(_){base=NaN}
+ if(!Number.isFinite(base))base=own?58:42;
+ /* Programme access gives a better starting picture than public opposition analysis, but neither
+    may silently become exact without the athlete joining the squad or direct scouting resolving it. */
+ base=own?Math.min(base,84):Math.min(base,64);
+ const intel=directIntel(a);return clamp(Math.round(base+Number(intel.confidenceBonus||0)),25,96);
+}
+function assessmentSpread(confidence){const c=Number(confidence)||0;if(c>=92)return 1;if(c>=82)return 2;if(c>=70)return 3;if(c>=55)return 4;if(c>=40)return 5;return 6}
+function rangeWindow(truth,spread,seed){
+ const value=clamp(Math.round(truth),1,SCALE),width=Math.max(1,Math.round(spread));let low=value-(seed%(width+1)),high=low+width;
+ if(low<1){high+=1-low;low=1}if(high>SCALE){low-=high-SCALE;high=SCALE}low=clamp(low,1,SCALE);high=clamp(high,1,SCALE);
+ if(low===high){if(high<SCALE)high++;else if(low>1)low--}return{low,high,mid:(low+high)/2};
+}
+function knowledgeLabel(exact,squad,confidence){if(exact)return squad?'Exact · squad knowledge':'Exact · fully scouted';if(confidence>=90)return'Very strong evidence';if(confidence>=75)return'Strong evidence';if(confidence>=55)return'Developing picture';return'Limited evidence'}
+function assess(a){
+ const truth=get(a),intel=directIntel(a),squad=isManagedSquad(a),exact=squad||intel.exact===true,confidence=exact?100:attributeKnowledge(a),spread=exact?0:assessmentSpread(confidence);
+ const rows=truth.attributes.map(row=>{if(exact)return{key:row.key,label:row.label,abbr:row.abbr,low:row.score,high:row.score,mid:row.score,display:String(row.score),exact:true,band:band(row.score)};const win=rangeWindow(row.score,spread,hash(`${a?.id||a?.name}|${row.key}|attribute-uncertainty-v1`));return{key:row.key,label:row.label,abbr:row.abbr,low:win.low,high:win.high,mid:win.mid,display:`${win.low}–${win.high}`,exact:false,band:band(win.mid)}});
+ return{version:VERSION,scale:SCALE,family:truth.family,familyLabel:truth.familyLabel,exact,confidence,knowledgeLabel:knowledgeLabel(exact,squad,confidence),reports:Number(intel.reports)||0,attributes:rows};
+}
+function topAssessed(a,count=3){return assess(a).attributes.slice().sort((x,y)=>y.mid-x.mid||x.label.localeCompare(y.label)).slice(0,Math.max(1,Number(count)||3))}
+function weakestAssessed(a,count=2){return assess(a).attributes.slice().sort((x,y)=>x.mid-y.mid||x.label.localeCompare(y.label)).slice(0,Math.max(1,Number(count)||2))}
 function band(score){const n=Number(score)||0;if(n>=20)return'elite';if(n>=18)return'excellent';if(n>=15)return'strong';if(n>=12)return'solid';if(n>=9)return'developing';return'limited'}
 function bandLabel(score){const n=Number(score)||0;if(n>=20)return'Exceptional';if(n>=18)return'Elite International';if(n>=15)return'International';if(n>=12)return'National';if(n>=9)return'Domestic';if(n>=6)return'Developing';return'Raw'}
 function top(a,count=3){return get(a).attributes.slice().sort((x,y)=>y.score-x.score||x.label.localeCompare(y.label)).slice(0,Math.max(1,Number(count)||3))}
@@ -184,5 +211,5 @@ function audit(athletes){
 }
 function diagnostics(){return{version:VERSION,scale:SCALE,families:Object.keys(SETS),playerFacingOverall:false,calibration:'PB + event standards',eliteRule:'20 requires exceptional event performance and is capped at one attribute per athlete',bands:{20:'Exceptional','18-19':'Elite International','15-17':'International','12-14':'National','9-11':'Domestic','6-8':'Developing','1-5':'Raw'}}}
 
-window.AMAthleteAttributes=Object.freeze({version:VERSION,scale:SCALE,get,top,weakest,audit,performanceRating,familyFor,familyLabel,band,bandLabel,diagnostics});
+window.AMAthleteAttributes=Object.freeze({version:VERSION,scale:SCALE,get,assess,top,weakest,topAssessed,weakestAssessed,audit,performanceRating,attributeKnowledge,familyFor,familyLabel,band,bandLabel,diagnostics});
 })();
