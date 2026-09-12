@@ -102,7 +102,7 @@ try{
  const w=dom.window;
  const requiredGlobals=[
   'AthleticsUI','__athleticsInboxDecisionCore','__athleticsHomeV2','__athleticsInboxV3','__athleticsSquadAthleteV2',
-  '__athleticsCalendarV2','__athleticsCompetitionJourneyV2','__athleticsScoutingV3','__athleticsStaffFinanceV2','__athleticsWorldSeasonV2','__athleticsManagerCareerV1','AMFirstTimeExperienceV2','AMRelease','__athleticsRegression','AMLiveBroadcastV4','AMPeopleBiography'
+  '__athleticsCalendarV2','__athleticsCompetitionJourneyV2','__athleticsScoutingV3','__athleticsStaffFinanceV2','__athleticsWorldSeasonV2','__athleticsManagerCareerV1','AMFirstTimeExperienceV2','AMRelease','__athleticsRegression','AMLiveBroadcastV4','AMPeopleBiography','AMClubWorld'
  ];
  for(const key of requiredGlobals)if(!w[key])fail(`Required runtime global missing after page load: ${key}`);
 
@@ -182,9 +182,18 @@ try{
    if(bio.sampleAthlete&&w.AMPeopleBiography.formatDate(bio.sampleAthlete.dateOfBirth)==='—')fail('People Biography date formatter failed.');
   }catch(err){fail(`People Biography diagnostics threw: ${err?.stack||err}`)}
  }
+ if(w.AMClubWorld){
+  try{
+   const club=w.AMClubWorld.diagnostics();
+   if(!club||club.version!=='1.0')fail('Club Athletics diagnostics are invalid.');
+   if(club.clubs<10)fail(`Club Athletics expected at least 10 domestic clubs, found ${club.clubs}.`);
+   if(club.meetings!==6)fail(`Club Athletics expected six seasonal meetings, found ${club.meetings}.`);
+   if(club.missingAthleteClubs!==0)fail(`Club Athletics found ${club.missingAthleteClubs} athletes without club identities.`);
+  }catch(err){fail(`Club Athletics diagnostics threw: ${err?.stack||err}`)}
+ }
  console.log('[smoke] runtime globals and snapshot checked');
 
- const smokeRoutes=['home','inbox','squad','pool','calendar','training','scouting','league','rankings','olympics','staff','finance','news'];
+ const smokeRoutes=['home','inbox','squad','pool','clubs','calendar','training','scouting','league','rankings','olympics','staff','finance','news'];
  if(typeof w.view==='function'){
   w.document.getElementById('startup')?.classList.add('hidden');
   for(const target of smokeRoutes){

@@ -13,6 +13,7 @@ const ROUTES={
  inbox:{selector:'.am-inbox-v3,[data-am-ui-screen="inbox-v3"]',delay:650},
  squad:{selector:'.sav2,[data-am-ui-screen="squad-v2"]',delay:650},
  pool:{selector:'.sav2,[data-am-ui-screen="pool-v2"]',delay:650},
+ clubs:{selector:'.clv1,[data-am-ui-screen="club-world-v1"]',delay:650},
  calendar:{selector:'.calv2,[data-am-ui-screen="calendar-v2"]',delay:650},
  training:{selector:'.tr2-shell,[data-am-ui-screen="training-v3"]',delay:1800},
  scouting:{selector:'.scouting-v2-active,[data-am-ui-screen="scouting-v2"]',delay:6500},

@@ -7,12 +7,13 @@
 if(window.__amIntegrationRegressionV1)return;window.__amIntegrationRegressionV1=1;
 
 const $=id=>document.getElementById(id);
-const ROUTES=['home','inbox','squad','pool','calendar','training','scouting','league','rankings','olympics','staff','finance','news','competition'];
+const ROUTES=['home','inbox','squad','pool','clubs','calendar','training','scouting','league','rankings','olympics','staff','finance','news','competition'];
 const CANDIDATES={
  home:['.home-v2'],
  inbox:['.am-inbox-v3'],
  squad:['[data-am-ui-screen="squad-v2"],.sav2,.squad-v2'],
  pool:['[data-am-ui-screen="pool-v2"],.sav2,.squad-v2'],
+ clubs:['.clv1,[data-am-ui-screen="club-world-v1"]'],
  calendar:['.calv2,[data-am-ui-screen="calendar-v2"]'],
  training:['.tr3-frame,.tr2-shell,[data-am-ui-screen="training-v3"]'],
  scouting:['.scv3,[data-am-ui-screen="scouting-v3"]'],
