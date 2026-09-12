@@ -1,6 +1,6 @@
 # Athletics Manager
 
-Athletics Manager is a browser-based national athletics management game. The repository uses separate development and production branches, automated regression checks, and independent FTPS deployment paths for the dev and live sites.
+Athletics Manager is a browser-based national athletics management game. The repository uses separate development and production branches, automated regression checks, and separate deployment destinations for the dev and live sites on the same FTPS hosting account.
 
 ## Production entry points
 
@@ -64,9 +64,9 @@ The UI regression workflow validates:
 
 ## Deployment
 
-A successful push to `dev` triggers `.github/workflows/deploy-dev.yml` and deploys to the development site using dedicated `DEV_FTP_*` GitHub Actions secrets.
+A successful push to `dev` triggers `.github/workflows/deploy-dev.yml` and deploys to `dev.athleticsmanagergame.com`. It reuses the existing FTPS server/login secrets and requires a separate `DEV_FTP_REMOTE_DIR` pointing at the dev subdomain document root.
 
-A successful push to `main` triggers `.github/workflows/deploy-live.yml` and deploys to production using the existing production FTPS secrets.
+A successful push to `main` triggers `.github/workflows/deploy-live.yml` and deploys to production using the same hosting connection and the live remote directory.
 
 Normal development must not be merged directly into `main`; promote the tested `dev` build instead. Do not commit FTP credentials, passwords, API keys or local `.env` files to the repository.
 
