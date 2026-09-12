@@ -157,8 +157,18 @@ try{
   try{
    const attrs=w.AMAthleteAttributes.diagnostics();
    if(!attrs||attrs.scale!==20||attrs.playerFacingOverall!==false)fail('Athlete Attributes preview must expose a 1–20 scale with no player-facing Overall.');
+   if(attrs.calibration!=='PB + event standards')fail('Athlete Attributes must be calibrated from objective performance standards.');
    const sample=(w.s?.athletes||[])[0];
    if(sample){const model=w.AMAthleteAttributes.get(sample);if(!model||model.attributes?.length!==8)fail('Athlete Attributes preview must produce exactly eight event-specific attributes.');if(model.attributes?.some(x=>x.score<1||x.score>20))fail('Athlete Attributes produced a rating outside the 1–20 scale.');}
+   const auditState=typeof w.fresh==='function'?w.fresh('GREAT BRITAIN'):null;
+   const audit=w.AMAthleteAttributes.audit(auditState?.athletes||w.s?.athletes||[]);
+   if(!audit||audit.athletes<1)fail('Athlete Attributes calibration audit did not inspect the athlete database.');
+   if(audit.maxTwenties>1)fail(`Athlete Attributes elite-rarity rule failed: one athlete has ${audit.maxTwenties} ratings of 20.`);
+   if(audit.multipleTwenties>0)fail(`Athlete Attributes elite-rarity rule failed: ${audit.multipleTwenties} athletes have multiple 20 ratings.`);
+   const twentyShare=audit.totalScores?audit.twenties/audit.totalScores:0;
+   if(twentyShare>.01)fail(`Athlete Attributes calibration is too generous: ${(twentyShare*100).toFixed(1)}% of all ratings are 20.`);
+   if(audit.average>14.5)fail(`Athlete Attributes database average is too high at ${audit.average}/20.`);
+   console.log(`[smoke] attribute audit: ${audit.athletes} athletes · avg ${audit.average}/20 · ${audit.twenties} twenties · ${audit.multipleTwenties} athletes with multiple 20s`);
   }catch(err){fail(`Athlete Attributes diagnostics threw: ${err?.stack||err}`)}
  }
  if(w.AMNationWorld){
