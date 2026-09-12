@@ -65,13 +65,16 @@ text=text.replace('scripts/people-biography-v1.js?v=20260912-biography1','script
 text=text.replace('scripts/squad-athlete-v2.js?v=20260911-squadcallup1','scripts/squad-athlete-v2.js?v=20260912-club1',1)
 p.write_text(text,encoding='utf-8')
 
-# Extend static contracts.
+# Extend static source contracts using the current contract table.
 p=root/'tools/static-regression.mjs'
 text=p.read_text(encoding='utf-8')
-anchor="if(!peopleBiographySource.includes('dateOfBirth')||!peopleBiographySource.includes('birthPlace'))fail('People Biography V1 must persist dateOfBirth and birthPlace fields');"
-if anchor not in text: raise SystemExit('static biography contract anchor missing')
-insert=anchor+"\nif(!peopleBiographySource.includes('athleticsClubId')||!peopleBiographySource.includes('athleticsClubHome')||!peopleBiographySource.includes('clubFor'))fail('People Biography V1 must persist stable local athletics club identity');\nif(!read('scripts/squad-athlete-v2.js').includes('Athletics Club ${esc(a.athleticsClub'))fail('Canonical athlete profile must display Athletics Club');"
+anchor="  ['birthPlace','Place-of-birth persistence is missing'],"
+if anchor not in text: raise SystemExit('static biography birthPlace contract anchor missing')
+insert=anchor+"\n  ['athleticsClubId','Athletics Club stable ID persistence is missing'],\n  ['athleticsClubHome','Athletics Club home-location persistence is missing'],\n  ['function clubFor','Athletics Club deterministic assignment is missing'],"
 text=text.replace(anchor,insert,1)
+anchor="  ['Place of birth','Athlete profile must display place of birth'],"
+if anchor not in text: raise SystemExit('static athlete profile birthplace contract anchor missing')
+text=text.replace(anchor,anchor+"\n  ['Athletics Club','Athlete profile must display Athletics Club'],",1)
 p.write_text(text,encoding='utf-8')
 
 # Extend browserless runtime migration checks.
