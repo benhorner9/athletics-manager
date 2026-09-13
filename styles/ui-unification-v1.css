@@ -23,7 +23,9 @@
 
 /* Shell */
 html,body{background:radial-gradient(circle at 14% -8%,color-mix(in srgb,var(--am-ui-accent) 14%,transparent),transparent 34%),linear-gradient(180deg,#071522 0,#06101b 100%);color:var(--am-ui-text)}
-.main{background:radial-gradient(circle at 88% -12%,color-mix(in srgb,var(--am-ui-accent) 7%,transparent),transparent 30%)}
+html{background-color:#06101b!important;overscroll-behavior-y:none}
+body{background-color:#06101b;overscroll-behavior-y:none;min-height:100dvh}
+.main{min-height:100dvh;background:radial-gradient(circle at 88% -12%,color-mix(in srgb,var(--am-ui-accent) 7%,transparent),transparent 30%)}
 .content{width:min(1440px,calc(100% - 32px));padding:18px 0 42px}
 .topbar{height:64px;background:rgba(5,13,23,.94);border-bottom:1px solid var(--am-ui-line);backdrop-filter:blur(16px)}
 .page-kicker{font-size:9px;letter-spacing:.16em;color:color-mix(in srgb,var(--am-ui-accent) 48%,#a9bdd0);font-weight:900}
