@@ -21,30 +21,19 @@ export async function run(w){
   assert.equal(read(`s.athletes.find(a=>a.id===${JSON.stringify(poolId)}).inSquad`),false,'expired squad agreement did not return athlete to National Pool');
   assert.ok(read(`!!s.athletes.find(a=>a.id===${JSON.stringify(poolId)})`),'released athlete disappeared from database');
 
-  console.log('[release] Scouting discovery lifecycle');
+  console.log('[release] Scouting V2 assignment lifecycle');
   reset();
-  const apiSource={
-   renderer:String(read(`drawScouting`)).slice(0,900),
-   first:String(w.AMScoutingV2?.seedFirstAssignment||'').slice(0,1200),
-   first2:String(w.AMScoutingV2?.seedFirstScoutingAssignment||'').slice(0,1200),
-   refresh:String(w.AMScoutingV2?.refreshScoutingIntegration||'').slice(0,1600),
-   search:String(w.AMScoutingV2?.createSearchAssignment||'').slice(0,1600),
-   assignment:String(w.AMScoutingV2?.processAssignmentWeek||'').slice(0,1600),
-   longTerm:String(w.AMScoutingV2?.processLongTermWeek||'').slice(0,1200)
-  };
-  console.log('[release] scouting integration sources',JSON.stringify(apiSource));
-  const scoutBefore=read(`({athletes:s.athletes.length,reports:scoutingState().reports.length,pool:nationalPool().length,emails:s.emails.filter(m=>m.type==='scouting').length,v2Reports:(s.scoutingV2?.nations?.[managedNation()]?.reports||[]).length})`);
-  read(`s.game.week=9;s.game.careerWeek=9;scoutingState().lastCareerWeek=1;delete scoutingState().processedWeek;onWeekStart()`);
-  const scoutAfter=read(`({athletes:s.athletes.length,reports:scoutingState().reports.length,pool:nationalPool().length,emails:s.emails.filter(m=>m.type==='scouting').length,v2Reports:(s.scoutingV2?.nations?.[managedNation()]?.reports||[]).length,assignments:(s.scoutingV2?.nations?.[managedNation()]?.assignments||[]).length,hidden:(s.scoutingV2?.nations?.[managedNation()]?.hiddenTalent||[]).length})`);
-  console.log('[release] scouting week-start',JSON.stringify({before:scoutBefore,after:scoutAfter,onWeekStartSource:String(read(`onWeekStart`)).slice(0,700)}));
-  assert.ok(scoutAfter.athletes>scoutBefore.athletes,'scouting week-start did not advance the talent pool');
-  let scoutPost=scoutAfter;
-  if(!((scoutAfter.reports>scoutBefore.reports)||(scoutAfter.v2Reports>scoutBefore.v2Reports)||scoutAfter.emails>scoutBefore.emails)){
-   const processorResult=read(`window.AMScoutingV2?.processScoutingWeek?.()`);
-   scoutPost=read(`({athletes:s.athletes.length,reports:scoutingState().reports.length,pool:nationalPool().length,emails:s.emails.filter(m=>m.type==='scouting').length,v2Reports:(s.scoutingV2?.nations?.[managedNation()]?.reports||[]).length,assignments:(s.scoutingV2?.nations?.[managedNation()]?.assignments||[]).length,hidden:(s.scoutingV2?.nations?.[managedNation()]?.hiddenTalent||[]).length})`);
-   console.log('[release] scouting V2 processor probe',JSON.stringify({result:processorResult,after:scoutPost,source:String(w.AMScoutingV2?.processScoutingWeek||'').slice(0,1000)}));
-  }
-  assert.ok((scoutPost.reports>scoutBefore.reports)||(scoutPost.v2Reports>scoutBefore.v2Reports)||scoutPost.emails>scoutBefore.emails,'scouting system produced no player-facing report or communication');
+  const scoutingBefore=read(`({pool:nationalPool().length,reports:(s.scoutingV2?.nations?.[managedNation()]?.reports||[]).length,emails:s.emails.filter(m=>m.type==='scouting').length})`);
+  read(`s.game.week=2;s.game.careerWeek=2;onWeekStart()`);
+  const assignment=read(`(s.scoutingV2?.nations?.[managedNation()]?.assignments||[]).find(x=>x.status==='active'&&x.type==='search')||null`);
+  assert.ok(assignment,'Scouting V2 did not seed the first search assignment');
+  assert.ok(Number(assignment.dueCW)>2,'first scouting assignment has an invalid due week');
+  const assignmentId=assignment.id,due=Number(assignment.dueCW),dueWeek=(due-1)%52+1;
+  read(`s.game.careerWeek=${due};s.game.week=${dueWeek};onWeekStart()`);
+  const scoutingAfter=read(`({pool:nationalPool().length,reports:(s.scoutingV2?.nations?.[managedNation()]?.reports||[]).length,emails:s.emails.filter(m=>m.type==='scouting').length,assignment:(s.scoutingV2?.nations?.[managedNation()]?.assignments||[]).find(x=>x.id===${JSON.stringify(assignmentId)})||null,history:(s.scoutingV2?.nations?.[managedNation()]?.history||[]).length,discoveries:(s.scoutingV2?.nations?.[managedNation()]?.discoveryHistory||[]).length})`);
+  console.log('[release] scouting assignment result',JSON.stringify(scoutingAfter));
+  assert.ok(scoutingAfter.assignment&&scoutingAfter.assignment.status!=='active','first scouting assignment did not complete at its due week');
+  assert.ok(scoutingAfter.reports>scoutingBefore.reports||scoutingAfter.emails>scoutingBefore.emails||scoutingAfter.discoveries>0,'completed scouting assignment produced no report, communication or discovery');
 
   console.log('[release] Staff and finance authority');
   reset();
