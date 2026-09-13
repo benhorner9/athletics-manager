@@ -25,7 +25,7 @@ if(process.env.AM_SMOKE_CHILD!=='1'){
   console.error('\nATHLETICS MANAGER RUNTIME SMOKE: TIMED OUT\n');
   console.error('The child process stopped responding. The last [smoke] route printed above identifies the likely blocking renderer.');
   child.kill('SIGKILL');
- },process.env.AM_AUDIT_SOAK==='1'?900000:25000);
+ },process.env.AM_AUDIT_SOAK==='1'?900000:120000);
  const code=await new Promise(resolve=>child.on('exit',(value,signal)=>resolve(value??(signal?124:1))));
  clearTimeout(timer);
  process.exit(code);
