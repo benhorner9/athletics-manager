@@ -43,7 +43,7 @@ export async function run(w){
   assert.ok(Number.isFinite(Number(debug.cash)),'finance cash is non-finite');
   assert.ok(Number.isFinite(Number(snapshot.weekly?.total))&&snapshot.weekly.total>=0,'weekly programme cost is invalid');
   assert.ok(Number.isFinite(Number(w.AMProgrammeEconomy.safeToCommit())),'safe-to-commit value is invalid');
-  assert.ok(Object.keys(debug.staffContracts||{}).length>=1,'no active staff contracts were migrated');
+  assert.ok(Number(debug.staffContracts)>=1,'no active staff contracts were migrated');
   w.view('staff');w.AMProgrammeEconomy.renderStaff();await sleep(10);
   assert.ok(w.document.querySelector('#staff [data-stab="market"]'),'Staff Market tab is missing');
   w.AMProgrammeEconomy.openStaffMarket();await sleep(10);
