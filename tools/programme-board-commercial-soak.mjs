@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 
 const src=fs.readFileSync('scripts/programme-economy-v2.js','utf8');
+assert(src.includes("const V=3,UI="),'Programme Economy state version must migrate existing V2 saves');
 for(const token of [
  'function commercialProgress(deal)',
  "id:'community'",
