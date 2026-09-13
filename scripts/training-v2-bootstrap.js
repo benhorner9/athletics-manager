@@ -63,6 +63,9 @@ async function boot(){
   const notificationResponse=await fetch('scripts/training-notification-authority-v1.js?v=20260913-notify1',{cache:'no-store'});
   if(!notificationResponse.ok)throw new Error('training-notification-authority-v1.js '+notificationResponse.status);
   await run(await notificationResponse.text(),'notification-authority');
+  const finalPolishResponse=await fetch('scripts/release-final-polish-v1.js?v=20260913-final1',{cache:'no-store'});
+  if(!finalPolishResponse.ok)throw new Error('release-final-polish-v1.js '+finalPolishResponse.status);
+  await run(await finalPolishResponse.text(),'release-final-polish');
   if(typeof currentView!=='undefined'&&currentView==='training'&&typeof drawTraining==='function')drawTraining();
   if(typeof currentView!=='undefined'&&currentView==='calendar'&&window.__athleticsSquadTestingTraining?.calendar)window.__athleticsSquadTestingTraining.calendar();
   await loadScoutingV2();
