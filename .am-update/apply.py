@@ -1,19 +1,17 @@
 from pathlib import Path
+import re
 
-# Athletics Manager — Relay V1 Broadcast V4 unification
 relay_path=Path('scripts/relay-v1.js')
 broadcast_path=Path('scripts/live-event-broadcast-v4.js')
 reg_path=Path('tools/static-regression.mjs')
 html_path=Path('game.html')
-
 relay=relay_path.read_text(encoding='utf-8')
 broadcast=broadcast_path.read_text(encoding='utf-8')
 reg=reg_path.read_text(encoding='utf-8')
 html=html_path.read_text(encoding='utf-8')
 
-# 1) Keep relay gameplay/selection, remove the bespoke relay Event Day route.
+# Relay gameplay stays authoritative; only the bespoke live-event presentation is retired.
 relay=relay.replace('   - Nation/team records and a dedicated live relay presentation.','   - Nation/team records with native Broadcast V4 sprint presentation and exchange handovers.')
-
 old_team="""function teamObject(nation,d,lineup=null){
  const ids=(lineup||[]).map(a=>a.id);return {id:`relay:${s.game.season}:${d}:${nation}`,name:`${safe(()=>nationName(nation),nation)} 4×100m`,nation,relay:true,relayDisc:d,relayRoster:ids,relayLineup:lineup||[],overall:lineup?.length?avg(lineup.map(a=>num(a.overall,75))):80,fitness:lineup?.length?avg(lineup.map(a=>num(a.fitness,90))):92,form:lineup?.length?avg(lineup.map(a=>num(a.form,85))):86,fatigue:lineup?.length?avg(lineup.map(a=>num(a.fatigue,20))):18};
 }
@@ -26,29 +24,18 @@ new_team="""function teamObject(nation,d,lineup=null,visualLineup=null){
 if old_team not in relay: raise SystemExit('relay teamObject contract missing')
 relay=relay.replace(old_team,new_team,1)
 old_rivals="rivals.forEach(x=>teams.push(teamObject(x.n,d,null)));return teams.slice(0,8);"
-new_rivals="rivals.forEach(x=>teams.push(teamObject(x.n,d,null,nationCandidates(x.n,d).slice(0,4))));return teams.slice(0,8);"
 if old_rivals not in relay: raise SystemExit('relay rival field contract missing')
-relay=relay.replace(old_rivals,new_rivals,1)
-
-start=relay.find('let relayRun=null;')
-end=relay.find('function patchSelection(){',start)
+relay=relay.replace(old_rivals,"rivals.forEach(x=>teams.push(teamObject(x.n,d,null,nationCandidates(x.n,d).slice(0,4))));return teams.slice(0,8);",1)
+start=relay.find('let relayRun=null;');end=relay.find('function patchSelection(){',start)
 if start<0 or end<0: raise SystemExit('bespoke relay Event Day block not found')
 relay=relay[:start]+relay[end:]
-old_draw="const baseDrawCompetition=typeof drawCompetition==='function'?drawCompetition:null;if(baseDrawCompetition)drawCompetition=function(){const d=typeof activeEventDisc!=='undefined'?activeEventDisc:null,e=relayEventForRoute();if(competitionMode==='discipline'&&isRelay(d)&&e)return renderRelayDiscipline(e,d);const out=baseDrawCompetition.apply(this,arguments);requestAnimationFrame(patchCompetitionRelay);return out};"
-if old_draw in relay:
-    relay=relay.replace(old_draw,"const baseDrawCompetition=typeof drawCompetition==='function'?drawCompetition:null;if(baseDrawCompetition)drawCompetition=function(){const out=baseDrawCompetition.apply(this,arguments);requestAnimationFrame(patchCompetitionRelay);return out};",1)
-else:
-    # after removing the bespoke block relayEventForRoute no longer exists; replace the surviving wrapper by shape.
-    import re
-    relay,n=re.subn(r"const baseDrawCompetition=typeof drawCompetition==='function'\?drawCompetition:null;if\(baseDrawCompetition\)drawCompetition=function\(\)\{const d=.*?requestAnimationFrame\(patchCompetitionRelay\);return out\};", "const baseDrawCompetition=typeof drawCompetition==='function'?drawCompetition:null;if(baseDrawCompetition)drawCompetition=function(){const out=baseDrawCompetition.apply(this,arguments);requestAnimationFrame(patchCompetitionRelay);return out};", relay, count=1)
-    if n!=1: raise SystemExit('relay drawCompetition wrapper contract missing')
+relay,n=re.subn(r"const baseDrawCompetition=typeof drawCompetition==='function'\?drawCompetition:null;if\(baseDrawCompetition\)drawCompetition=function\(\)\{const d=.*?requestAnimationFrame\(patchCompetitionRelay\);return out\};", "const baseDrawCompetition=typeof drawCompetition==='function'?drawCompetition:null;if(baseDrawCompetition)drawCompetition=function(){const out=baseDrawCompetition.apply(this,arguments);requestAnimationFrame(patchCompetitionRelay);return out};", relay, count=1)
+if n!=1: raise SystemExit('relay drawCompetition wrapper contract missing')
 
-# 2) Teach Broadcast V4 that a relay is a sprint team with a baton holder that changes every 100m.
+# Broadcast V4 treats the relay as its normal 400m sprint geometry, with runner identity changing every 100m.
 old="const isTrack=d=>type(d)==='time'&&dist(d)>0;\nconst isHeight=d=>type(d)==='height';"
-new="const isTrack=d=>type(d)==='time'&&dist(d)>0;\nconst isRelay=d=>!!DISCIPLINES?.[d]?.relay;\nconst isHeight=d=>type(d)==='height';"
 if old not in broadcast: raise SystemExit('broadcast isTrack insertion point missing')
-broadcast=broadcast.replace(old,new,1)
-
+broadcast=broadcast.replace(old,"const isTrack=d=>type(d)==='time'&&dist(d)>0;\nconst isRelay=d=>!!DISCIPLINES?.[d]?.relay;\nconst isHeight=d=>type(d)==='height';",1)
 old="/* ---------- Track model ---------- */\nfunction checkpoints(n)"
 helpers="""/* ---------- Track model ---------- */
 function relayLineupFor(r){
@@ -63,12 +50,9 @@ function relayLegLabel(m){const i=relayLegIndex(m);return i===3?'ANCHOR':`LEG ${
 function checkpoints(n)"""
 if old not in broadcast: raise SystemExit('broadcast track helper insertion point missing')
 broadcast=broadcast.replace(old,helpers,1)
-
 old="if(c.runout!=null||c.settle!=null)return'PROVISIONAL';if(n===100)"
-new="if(c.runout!=null||c.settle!=null)return'PROVISIONAL';if(isRelay(c.d)){const m=state?.lead?.m||0,z=relayExchangeAt(m);if(z)return`EXCHANGE ${z/100}`;const leg=relayLegIndex(m)+1;return leg===4?'ANCHOR LEG':`LEG ${leg}`}if(n===100)"
 if old not in broadcast: raise SystemExit('broadcast sprintPhase contract missing')
-broadcast=broadcast.replace(old,new,1)
-
+broadcast=broadcast.replace(old,"if(c.runout!=null||c.settle!=null)return'PROVISIONAL';if(isRelay(c.d)){const m=state?.lead?.m||0,z=relayExchangeAt(m);if(z)return`EXCHANGE ${z/100}`;const leg=relayLegIndex(m)+1;return leg===4?'ANCHOR LEG':`LEG ${leg}`}if(n===100)",1)
 old_finish=""" out+=`<line x1="${TRACK.R}" y1="${TRACK.Y+TRACK.I}" x2="${TRACK.R}" y2="${TRACK.Y+outer}" stroke="#fff" stroke-width="4"/><line x1="${TRACK.L}" y1="${TRACK.Y+TRACK.I}" x2="${TRACK.L}" y2="${TRACK.Y+outer}" stroke="#fff" stroke-opacity="${n===100?1:.24}" stroke-width="${n===100?4:2}"/>`;
  for(let l=1;l<=8;l++){const y=TRACK.Y+rad(l);out+=`<text x="${TRACK.L-12}" y="${y+3}" text-anchor="end" class="lv4-lane-number">${l}</text>`}
 """
@@ -78,8 +62,6 @@ new_finish=""" out+=`<line x1="${TRACK.R}" y1="${TRACK.Y+TRACK.I}" x2="${TRACK.R
 """
 if old_finish not in broadcast: raise SystemExit('broadcast exchange-zone insertion point missing')
 broadcast=broadcast.replace(old_finish,new_finish,1)
-
-import re
 marker_pattern=r"function marker\(c,x,i,state\)\{.*?\}\nfunction distanceOverlay"
 marker_new="""function marker(c,x,i,state){
  let p=trackPos(c.d,x,i);if(c.runout!=null&&x.finish&&!x.status)p=postFinishPos(c.d,x,i,8+Math.min(1,c.runout/.8)*30);
@@ -92,36 +74,30 @@ marker_new="""function marker(c,x,i,state){
 function distanceOverlay"""
 broadcast,n=re.subn(marker_pattern,marker_new,broadcast,count=1,flags=re.S)
 if n!=1: raise SystemExit('broadcast marker function contract missing')
-
 board_pattern=r"function trackBoardRows\(c,state\)\{.*?\}\nfunction photoFinish"
 board_new="""function trackBoardRows(c,state){const leader=state.a.find(x=>!x.status),n=dist(c.d),leadSpeed=leader?.r?.perf?n/leader.r.perf:0,relay=isRelay(c.d);return state.a.map(x=>{let value;if(x.status)value=x.status;else if(x.finish)value=fmt(c.d,x.r.perf);else if(leader&&x!==leader){const gap=Math.max(0,leader.m-x.m),gapS=leadSpeed?gap/leadSpeed:0;value=gapS<.005?'+0.00':`+${gapS.toFixed(2)}`}else value='LEAD';const active=relay?relayRunnerAt(x.r,x.m):null,boardR=active?{...x.r,name:active.name}:x.r,sub=relay?`${nation(x.r.nation)} · ${relayLegLabel(x.m)}${x.r.lane?` · Lane ${x.r.lane}`:''}`:`${nation(x.r.nation)}${x.r.lane?` · Lane ${x.r.lane}`:''}`;return{id:x.r.id,pos:x.status?'—':x.pos,r:boardR,value,sub,leader:x.pos===1&&!x.status,ours:x.r.nation===myNation()}})}
 function photoFinish"""
 broadcast,n=re.subn(board_pattern,board_new,broadcast,count=1,flags=re.S)
 if n!=1: raise SystemExit('broadcast trackBoardRows contract missing')
-
 old_moment="function trackMomentText(c,m,top){const n=dist(c.d),a=top[0]?.r.name||'The leader',b=top[1]?.r.name||'the chasing pack',pick=(key,lines)=>speechVariant(c,`${n}-${key}`,lines);if(n===100)"
 new_moment="function trackMomentText(c,m,top){const n=dist(c.d),a=top[0]?.r.name||'The leader',b=top[1]?.r.name||'the chasing pack',pick=(key,lines)=>speechVariant(c,`${n}-${key}`,lines);if(isRelay(c.d)){const lead=top[0]?.r,team=lead?nation(lead.nation):a,next=lead?relayRunnerAt(lead,Math.min(399.9,m+.1)):null;if(m<=100)return`${team} reach the first exchange in front${next?' — '+next.name+' takes the baton.':'.'}`;if(m<=200)return`${team} lead into exchange two${next?' — '+next.name+' is away with the baton.':'.'}`;if(m<=300)return`${team} have the advantage at the final changeover${next?' — '+next.name+' takes the anchor leg.':'.'}`;return`${team} reach the line first.`}if(n===100)"
 if old_moment not in broadcast: raise SystemExit('broadcast trackMomentText contract missing')
 broadcast=broadcast.replace(old_moment,new_moment,1)
-
 old_lead="function leadChangeReady(c){const n=dist(c.d),m=c.state?.lead?.m||0;return n===100?m>15:n===200?m>95:n===400?m>235:m>n*.12}"
-new_lead="function leadChangeReady(c){const n=dist(c.d),m=c.state?.lead?.m||0;if(isRelay(c.d))return m>15;return n===100?m>15:n===200?m>95:n===400?m>235:m>n*.12}"
 if old_lead not in broadcast: raise SystemExit('broadcast leadChangeReady contract missing')
-broadcast=broadcast.replace(old_lead,new_lead,1)
+broadcast=broadcast.replace(old_lead,"function leadChangeReady(c){const n=dist(c.d),m=c.state?.lead?.m||0;if(isRelay(c.d))return m>15;return n===100?m>15:n===200?m>95:n===400?m>235:m>n*.12}",1)
 
-# 3) Regression contract: relays must remain on canonical Broadcast V4, not a bespoke screen.
+# Lock the presentation architecture in regression checks.
 needle="if(!html.includes('styles/relay-v1.css'))fail('Relay V1 stylesheet is not loaded.');\n"
-insert="if(!html.includes('styles/relay-v1.css'))fail('Relay V1 stylesheet is not loaded.');\nconst relayPresentation=read('scripts/relay-v1.js');\nif(relayPresentation.includes('function renderRelayDiscipline'))fail('Relay V1 must use the canonical Broadcast V4 sprint presentation, not a bespoke Event Day renderer.');\n"
 if needle not in reg: raise SystemExit('static regression relay insertion point missing')
-reg=reg.replace(needle,insert,1)
+reg=reg.replace(needle,needle+"const relayPresentation=read('scripts/relay-v1.js');\nif(relayPresentation.includes('function renderRelayDiscipline'))fail('Relay V1 must use the canonical Broadcast V4 sprint presentation, not a bespoke Event Day renderer.');\n",1)
 old_contract="['function trackMomentText(c,m,top)','Sprint-specific commentary is missing'],"
-new_contract="['function trackMomentText(c,m,top)','Sprint-specific commentary is missing'],\n  ['function relayRunnerAt(r,m)','Relay baton-holder transition model is missing'],\n  ['function relayExchangeAt(m)','Relay exchange-zone choreography is missing'],"
 if old_contract not in reg: raise SystemExit('static regression broadcast contract missing')
-reg=reg.replace(old_contract,new_contract,1)
+reg=reg.replace(old_contract,old_contract+"\n  ['function relayRunnerAt(r,m)','Relay baton-holder transition model is missing'],\n  ['function relayExchangeAt(m)','Relay exchange-zone choreography is missing'],",1)
 
-# 4) Force iPad/Safari to fetch the unified renderer immediately.
+# Cache-bust the exact current dev assets.
 for old,new in [
- ('scripts/live-event-broadcast-v4.js?v=20260911-broadcast4654','scripts/live-event-broadcast-v4.js?v=20260913-broadcast-relay1'),
+ ('scripts/live-event-broadcast-v4.js?v=20260913-audit4','scripts/live-event-broadcast-v4.js?v=20260913-broadcast-relay1'),
  ('scripts/relay-v1.js?v=20260913-relay3','scripts/relay-v1.js?v=20260913-relay4')
 ]:
  if old not in html: raise SystemExit(f'asset cache contract missing: {old}')
@@ -131,4 +107,4 @@ relay_path.write_text(relay,encoding='utf-8')
 broadcast_path.write_text(broadcast,encoding='utf-8')
 reg_path.write_text(reg,encoding='utf-8')
 html_path.write_text(html,encoding='utf-8')
-print('Relay V1 now uses the canonical Broadcast V4 sprint renderer with native exchange-zone handovers.')
+print('Relay V1 now uses Broadcast V4 sprint visuals with runner handovers at 100m, 200m and 300m.')
