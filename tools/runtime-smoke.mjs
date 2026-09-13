@@ -275,6 +275,13 @@ try{
    catch(err){fail(`Route ${target} threw during smoke render: ${err?.stack||err}`)}
    const on=[...w.document.querySelectorAll('.view.on')];
    if(on.length!==1)fail(`Route ${target} left ${on.length} active views.`);
+   if(target==='staff'){
+    const profile=w.document.querySelector('#staff [data-cp],#staff [data-sfv2-coach]'),dialog=w.document.getElementById('managementProfile');
+    if(!profile)fail('Staff route did not expose a coach profile action.');
+    else{
+     try{if(dialog?.open)dialog.close();profile.click();await new Promise(resolve=>setTimeout(resolve,15));if(!dialog?.open)fail('Coach profile action did not open the staff dossier dialog.');dialog?.close()}catch(err){fail(`Coach profile click threw during Staff smoke: ${err?.stack||err}`)}
+    }
+   }
   }
  }else fail('Global view() router is unavailable.');
  console.log('[smoke] route render sweep finished');
