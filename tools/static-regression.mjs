@@ -134,6 +134,8 @@ if(fs.existsSync(integration)){
 const relayCore=read('scripts/game.js');
 if(!relayCore.includes('const SQUAD_LIMIT=14;'))fail('Relay V1 requires the senior squad limit to remain 14.');
 if(!html.includes('styles/relay-v1.css'))fail('Relay V1 stylesheet is not loaded.');
+const relayPresentation=read('scripts/relay-v1.js');
+if(relayPresentation.includes('function renderRelayDiscipline'))fail('Relay V1 must use the canonical Broadcast V4 sprint presentation, not a bespoke Event Day renderer.');
 
 const sourceContracts={
  'scripts/people-biography-v1.js':[
@@ -225,6 +227,8 @@ const sourceContracts={
   ['function cameraTarget(c,state)','Sprint camera director is missing'],
   ['function postFinishPos(d,x,i,extra)','Post-finish runout is missing'],
   ['function trackMomentText(c,m,top)','Sprint-specific commentary is missing'],
+  ['function relayRunnerAt(r,m)','Relay baton-holder transition model is missing'],
+  ['function relayExchangeAt(m)','Relay exchange-zone choreography is missing'],
   ['function fieldRoundInfo(c,q=c.seq[c.i]||c.seq.at(-1))','Field-event round tracking is missing'],
   ['function fieldPreAttemptSpeech(c,q)','Field-event pre-attempt context is missing'],
   ['function fieldBestMarkers(c,family)','Field-event best-mark references are missing'],
