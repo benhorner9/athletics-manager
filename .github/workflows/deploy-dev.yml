@@ -44,6 +44,25 @@ jobs:
             node --check "$file"
           done < <(find scripts -type f -name '*.js' -print0)
 
+      - name: Inject dev build status runtime
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import os
+          path = Path('game.html')
+          html = path.read_text(encoding='utf-8')
+          marker = '<!-- AM_DEV_BUILD_STATUS -->'
+          tag = f'{marker}\n<script src="scripts/dev/dev-build-status-v1.js?v={os.environ["GITHUB_SHA"][:8]}"></script>'
+          if marker in html:
+              before, _, tail = html.partition(marker)
+              tail = tail.split('\n', 2)
+              html = before + tag + ('\n' + tail[2] if len(tail) > 2 else '')
+          else:
+              html = html.replace('</body>', tag + '\n</body>')
+          path.write_text(html, encoding='utf-8')
+          PY
+
       - name: Deploy dev build to hosting
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
@@ -61,3 +80,78 @@ jobs:
             **/.github/**
             **/README.md
             **/docs/**
+
+      - name: Publish live dev build marker
+        shell: bash
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PORT: ${{ secrets.FTP_PORT }}
+        run: |
+          set -euo pipefail
+          PORT="${FTP_PORT:-21}"
+          BASE="ftp://${FTP_SERVER}:${PORT}/dev"
+          mkdir -p .deploy-status
+
+          curl --silent --show-error --ssl-reqd \
+            --user "$FTP_USERNAME:$FTP_PASSWORD" \
+            "$BASE/dev-build-history.json" \
+            -o .deploy-status/previous-history.json || true
+
+          python3 - <<'PY'
+          from pathlib import Path
+          from datetime import datetime, timezone
+          import json, os, subprocess
+
+          sha = os.environ['GITHUB_SHA']
+          title = subprocess.check_output(['git','log','-1','--pretty=%s'], text=True).strip()
+          now = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace('+00:00','Z')
+          entry = {
+              'channel': 'dev',
+              'sha': sha,
+              'shortSha': sha[:8],
+              'title': title,
+              'deployedAt': now,
+              'runId': os.environ.get('GITHUB_RUN_ID',''),
+              'runNumber': os.environ.get('GITHUB_RUN_NUMBER','')
+          }
+
+          previous = []
+          p = Path('.deploy-status/previous-history.json')
+          if p.exists():
+              try:
+                  raw = json.loads(p.read_text(encoding='utf-8'))
+                  previous = raw if isinstance(raw, list) else raw.get('history', [])
+              except Exception:
+                  previous = []
+
+          history = [entry]
+          for item in previous:
+              if not isinstance(item, dict) or item.get('sha') == sha:
+                  continue
+              history.append(item)
+              if len(history) >= 10:
+                  break
+
+          Path('.deploy-status/dev-build.json').write_text(json.dumps(entry, indent=2) + '\n', encoding='utf-8')
+          Path('.deploy-status/dev-build-history.json').write_text(json.dumps(history, indent=2) + '\n', encoding='utf-8')
+          runtime = 'window.__ATHLETICS_DEV_RUNTIME_BUILD=' + json.dumps(entry, separators=(',',':')) + ';\n'
+          Path('.deploy-status/dev-runtime-build.js').write_text(runtime, encoding='utf-8')
+          PY
+
+          curl --fail --silent --show-error --ssl-reqd --ftp-create-dirs \
+            --user "$FTP_USERNAME:$FTP_PASSWORD" \
+            -T .deploy-status/dev-build-history.json \
+            "$BASE/dev-build-history.json"
+
+          curl --fail --silent --show-error --ssl-reqd --ftp-create-dirs \
+            --user "$FTP_USERNAME:$FTP_PASSWORD" \
+            -T .deploy-status/dev-runtime-build.js \
+            "$BASE/scripts/dev/dev-runtime-build.js"
+
+          # Publish the manifest last. Its presence means the complete dev build is live.
+          curl --fail --silent --show-error --ssl-reqd --ftp-create-dirs \
+            --user "$FTP_USERNAME:$FTP_PASSWORD" \
+            -T .deploy-status/dev-build.json \
+            "$BASE/dev-build.json"
