@@ -102,6 +102,6 @@ function drawCandidate(){
  catch(err){console.error('[Athletics Manager] Inbox V3 recovered to previous Inbox',err);legacyDrawInbox();window.AthleticsUI?.registerScreen?.('inbox',{status:'fallback',replacement:'inbox-v3'})}
 }
 drawInbox=drawCandidate;
-window.__athleticsInboxV3={version:3,render:renderInbox,legacy:legacyDrawInbox,debug:()=>({filter:sys().ui.filter,actions:actions(),blockers:blockers(),rows:filtered().length,archive:allArchive().length})};
+window.__athleticsInboxV3={version:3,render:renderInbox,openMessage,legacy:legacyDrawInbox,debug:()=>({filter:sys().ui.filter,actions:actions(),blockers:blockers(),rows:filtered().length,archive:allArchive().length})};
 if(typeof currentView!=='undefined'&&currentView==='inbox')requestAnimationFrame(drawCandidate);
 })();
