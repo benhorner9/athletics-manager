@@ -1,53 +1,4 @@
-from pathlib import Path
-import re
-
-root = Path('.')
-js = root / 'scripts/programme-economy-v2.js'
-text = js.read_text(encoding='utf-8')
-replacements = {
-    "r==='scout'?.9:1": "r==='scout' ? .9 : 1",
-    "bf=f.construction?.weeksRemaining>0?.9:1": "bf=f.construction?.weeksRemaining>0 ? .9 : 1",
-    "const f=p===1?1:p===2?.65:.4": "const f=p===1 ? 1 : p===2 ? .65 : .4",
-    "o.term>=Number(c.preferredTerm||104)?.025:0": "o.term>=Number(c.preferredTerm||104) ? .025 : 0",
-}
-for old, new in replacements.items():
-    if old not in text:
-        raise SystemExit(f'Expected programme-economy token missing: {old}')
-    text = text.replace(old, new)
-if re.search(r'\?\.\d', text):
-    raise SystemExit('Suspicious numeric optional-chain token remains in programme-economy-v2.js')
-js.write_text(text, encoding='utf-8')
-
-cut = root / 'scripts/ui-cutover-v1.js'
-ui = cut.read_text(encoding='utf-8')
-ui = ui.replace("const BUILD='2026.09.13-programme-economy1';", "const BUILD='2026.09.13-programme-economy2';")
-ui = ui.replace('programme-staff-v1', 'programme-staff-v2')
-ui = ui.replace('[data-am-ui-screen=\"programme-economy-v1\"]', '[data-am-ui-screen=\"programme-economy-v2\"]')
-ui = ui.replace("programmeEconomy:'programme-economy-v1'", "programmeEconomy:'programme-economy-v2'")
-ui = ui.replace("styles/programme-economy-v1.css?v=20260913-pe1", "styles/programme-economy-v1.css?v=20260913-pe2")
-ui = ui.replace("scripts/programme-economy-v1.js?v=20260913-pe1", "scripts/programme-economy-v2.js?v=20260913-pe2")
-if 'scripts/programme-economy-v1.js' in ui:
-    raise SystemExit('Retired programme-economy-v1.js is still active in UI cutover')
-if 'scripts/programme-economy-v2.js' not in ui:
-    raise SystemExit('Programme Economy V2 was not wired into UI cutover')
-cut.write_text(ui, encoding='utf-8')
-
-broken = root / 'scripts/programme-economy-v1.js'
-if broken.exists():
-    broken.unlink()
-
-css = root / 'styles/programme-economy-v1.css'
-style = css.read_text(encoding='utf-8')
-extra = """
-/* Programme Economy V2 facility benefit list */
-.pe-benefits{margin:0;padding:0 26px 2px;color:#859dab;font-size:8px;line-height:1.55}.pe-benefits li+li{margin-top:2px}
-@media(max-width:700px){.pe-benefits{padding-left:24px;padding-right:18px}}
-"""
-if '.pe-benefits{' not in style:
-    css.write_text(style.rstrip() + '\n' + extra, encoding='utf-8')
-
-arch = root / 'docs/PROGRAMME-ECONOMY-ARCHITECTURE.md'
-arch.write_text("""# Programme Economy & Management Systems V2
+# Programme Economy & Management Systems V2
 
 ## Authority
 
@@ -97,4 +48,3 @@ Funding, salaries and upkeep use controlled 2% annual inflation capped at 2.2x t
 ## Migration
 
 Existing facilities, named staff, squad members, funding and legacy finance history are retained. Migration is versioned through `s.programmeEconomies[nation].migration`; no existing career is required to restart.
-""", encoding='utf-8')

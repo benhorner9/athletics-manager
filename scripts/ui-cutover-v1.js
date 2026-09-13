@@ -7,7 +7,7 @@ if(window.__amUICutoverV1)return;window.__amUICutoverV1=1;
 
 const $=id=>document.getElementById(id);
 const GENERATION='production';
-const BUILD='2026.09.13-programme-economy1';
+const BUILD='2026.09.13-programme-economy2';
 const ROUTES={
  home:{selector:'.home-v2,[data-am-ui-screen="home-v2"]',delay:650},
  inbox:{selector:'.am-inbox-v3,[data-am-ui-screen="inbox-v3"]',delay:650},
@@ -17,8 +17,8 @@ const ROUTES={
  calendar:{selector:'.calv2,[data-am-ui-screen="calendar-v2"]',delay:650},
  training:{selector:'.tr2-shell,[data-am-ui-screen="training-v3"]',delay:1800},
  scouting:{selector:'.scouting-v2-active,[data-am-ui-screen="scouting-v2"]',delay:6500},
- staff:{selector:'.pe-shell,[data-am-ui-screen="programme-staff-v1"],.sfv2,[data-am-ui-screen="staff-v2"]',delay:1800},
- finance:{selector:'.pe-shell,[data-am-ui-screen="programme-economy-v1"],.sfv2,[data-am-ui-screen="finance-v2"]',delay:1800},
+ staff:{selector:'.pe-shell,[data-am-ui-screen="programme-staff-v2"],.sfv2,[data-am-ui-screen="staff-v2"]',delay:1800},
+ finance:{selector:'.pe-shell,[data-am-ui-screen="programme-economy-v2"],.sfv2,[data-am-ui-screen="finance-v2"]',delay:1800},
  league:{selector:'.wsv2,[data-am-ui-screen="summit-v2"]',delay:650},
  rankings:{selector:'.wsv2,[data-am-ui-screen="rankings-v2"]',delay:650},
  olympics:{selector:'.wsv2,[data-am-ui-screen="qualification-v3"]',delay:650},
@@ -32,13 +32,13 @@ const COMPONENTS={
  inboxReader:'inbox-v3 + inbox-single-render-v1',
  progressionGate:'inbox-decision-core-v1',
  selection:'selection-decision-v3 + competition-journey-v2',
- programmeEconomy:'programme-economy-v1'
+ programmeEconomy:'programme-economy-v2'
 };
 let ticket=0;
 
 function loadProgrammeEconomy(){
- if(!$('amProgrammeEconomyStyle')){const link=document.createElement('link');link.id='amProgrammeEconomyStyle';link.rel='stylesheet';link.href='styles/programme-economy-v1.css?v=20260913-pe1';document.head.appendChild(link)}
- if(!$('amProgrammeEconomyScript')){const script=document.createElement('script');script.id='amProgrammeEconomyScript';script.src='scripts/programme-economy-v1.js?v=20260913-pe1';script.async=false;document.body.appendChild(script)}
+ if(!$('amProgrammeEconomyStyle')){const link=document.createElement('link');link.id='amProgrammeEconomyStyle';link.rel='stylesheet';link.href='styles/programme-economy-v1.css?v=20260913-pe2';document.head.appendChild(link)}
+ if(!$('amProgrammeEconomyScript')){const script=document.createElement('script');script.id='amProgrammeEconomyScript';script.src='scripts/programme-economy-v2.js?v=20260913-pe2';script.async=false;document.body.appendChild(script)}
 }
 function ensureStyles(){
  if($('amUICutoverStyles'))return;const style=document.createElement('style');style.id='amUICutoverStyles';style.textContent=`
