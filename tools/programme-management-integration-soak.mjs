@@ -11,6 +11,7 @@ need(economy.includes('function liabilities(')&&economy.includes('function safeT
 need(economy.includes('exitFee=!renew&&old&&cur'),'staff early-exit settlement missing');
 need(economy.includes('staffContractHistory'),'staff contract history missing');
 need(economy.includes("if(UI.staff==='market'){safe(()=>refreshMarket(p),null)")&&economy.includes('marketRows.map(marketCard)'),'Staff team render must not depend on market generation');
+need(economy.includes('function roleName(r)')&&economy.includes("sprint:'Sprint Coach'")&&economy.includes("science:'Sports Scientist'"),'Programme Economy must own Staff role labels');
 need(economy.includes('function decisionActions(')&&economy.includes('programmeAction'),'programme decisions are not exposed to Inbox');
 need(core.includes('AMProgrammeEconomy?.decisionActions')&&core.includes("a.destination==='finance'"),'Inbox core does not own programme action routing');
 need(reader.includes('data-open-programme')&&reader.includes('openFinanceView'),'canonical reader lacks programme action');
