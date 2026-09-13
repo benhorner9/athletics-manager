@@ -21,7 +21,7 @@ The new gate exposed an agreement-expiry defect: the migration helper recreated 
 
 ## Gate infrastructure
 
-The standard runtime-smoke watchdog is now 240 seconds so the final release-readiness lifecycle checks can run after the existing full-route smoke sweep. Audit-mode soak testing retains its longer 900-second allowance.
+The standard runtime-smoke watchdog is now 240 seconds so the final release-readiness lifecycle checks can run after the existing full-route smoke sweep. Audit-mode soak testing retains its longer 900-second allowance. Release approval requires a successful gate on the exact PR head; bot-generated cleanup commits are not treated as equivalent evidence when GitHub does not execute the jobs.
 
 ## Scouting V2 weekly integration finding
 
