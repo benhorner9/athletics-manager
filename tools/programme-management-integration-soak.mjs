@@ -9,6 +9,8 @@ need(economy.includes('ledgerByNation')&&economy.includes('ledgerOwner'),'financ
 need(economy.includes('function liabilities(')&&economy.includes('function safeToCommit(')&&economy.includes('function offerImpact('),'planning authority missing');
 need(economy.includes('exitFee=!renew&&old&&cur'),'staff early-exit settlement missing');
 need(economy.includes('staffContractHistory'),'staff contract history missing');
+need(economy.includes("if(UI.staff==='market'){safe(()=>refreshMarket(p),null)")&&economy.includes('marketRows.map(marketCard)'),'Staff team render must not depend on market generation');
+need(economy.includes("return OLD.drawStaff.apply(this,arguments)"),'Staff screen must recover through the existing Staff V2 renderer');
 need(economy.includes('function decisionActions(')&&economy.includes('programmeAction'),'programme decisions are not exposed to Inbox');
 need(core.includes('AMProgrammeEconomy?.decisionActions')&&core.includes("a.destination==='finance'"),'Inbox core does not own programme action routing');
 need(reader.includes('data-open-programme')&&reader.includes('openFinanceView'),'canonical reader lacks programme action');
