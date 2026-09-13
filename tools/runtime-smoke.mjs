@@ -293,6 +293,7 @@ try{
   }
  }else fail('Global view() router is unavailable.');
  console.log('[smoke] route render sweep finished');
+ await (await import('./release-readiness-soak.mjs')).run(w);
  if(process.env.AM_AUDIT_SOAK==='1')await (await import('./dev-career-soak.mjs')).run(w);
 
 } catch(err){
