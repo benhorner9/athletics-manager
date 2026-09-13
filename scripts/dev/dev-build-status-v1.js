@@ -6,6 +6,14 @@ if(window.__athleticsDevBuildStatus)return;
 const isDev=/^dev\./i.test(location.hostname)||/(^|\/)dev(\/|$)/i.test(location.pathname);
 if(!isDev)return;
 
+function forceDevAlphaAccess(){
+ try{localStorage.setItem('athletics_manager_alpha_menu_access_v2','16')}catch(_){}
+ const menu=document.querySelector('.menu-side'),form=document.getElementById('alphaAccessForm');
+ if(menu){menu.classList.remove('alpha-locked');menu.classList.add('alpha-unlocked');menu.dataset.devAutoAccess='true'}
+ if(form){form.hidden=true;form.setAttribute('aria-hidden','true')}
+}
+forceDevAlphaAccess();
+
 const state={boot:null,server:null,history:[],status:'loading'};
 let menuWrapped=false;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
