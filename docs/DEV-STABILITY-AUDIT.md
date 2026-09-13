@@ -1,9 +1,9 @@
 # Development stability audit — 13 September 2026
 
 Dev base: `d709ec98` (includes the owner's removal of the dev alpha gate).
-Work branch: `audit/dev-stability-20260913`. No production deployment or promotion is authorized.
+Repair branches: `audit/dev-*` through dev PR #63. No production deployment or promotion was performed.
 
-This is a live audit log, not a release certificate. Status: **Improved but requires more work**. Dev repair PRs #58–#61 passed CI and were deployed only to dev. Calendar follow-up verification is tracked below; its first browser retest exposed the historical route guard and led to an additional targeted repair. Production was not modified, deployed, or merged.
+This is a live audit log, not a release certificate. Status: **Improved but requires more work**. Dev repair PRs #58–#63 passed CI and were deployed only to dev. Final code build: `88a3b59b`. Hosted browser verification includes the final historical route repair. Production was not modified, deployed, or merged.
 
 | ID | Priority | System | Issue | Root cause | Fix | Verification |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -19,14 +19,14 @@ This is a live audit log, not a release certificate. Status: **Improved but requ
 | AUD-11 | P1 | Live events | Recovery saves official result while broadcast is still running | Legacy watchdog ignores V4 timeline and bypasses V4 completion | Watch current engine frames; respect pause/background; recover through canonical Instant Result | Verified: regression and live 100m pause beyond old timeout, resume and official finish |
 | AUD-12 | P1 | Training UI | Current training is incorrectly reported missing | Cutover and diagnostic selectors recognize only older training DOM | Recognize training-v4 authority | Verified: fresh-career browser onboarding and current training change |
 | AUD-13 | P1 | Live controls | Pause/speed buttons disappear during interaction | Broadcast redraw replaces controls every painted frame | Preserve controls while updating canvas; bind each handler once | Verified: regression and browser Pause / 4x / Resume |
-| AUD-14 | P3 | Competition navigation | Footer overview click hits the dev badge | Fixed dev badge overlaps footer button; DOM rectangles confirmed | Move dev badge above event controls; retain canonical programme/results route | Fixed: browser overlap retest pending |
-| AUD-15 | P3 | Live header | Programme text overflows narrow back button | Journey changes icon to long label despite V4 fixed icon dimensions | Keep V4 icon and descriptive accessible label | Fixed: screenshot retest pending |
-| AUD-16 | P3 | Selection | Locked slots still say Tap to clear and look editable | Handler rejects changes but controls retain draft affordance | Disable locked athlete/slot controls and label Selection locked | Verified: regression; browser retest pending |
+| AUD-14 | P3 | Competition navigation | Footer overview click hits the dev badge | Fixed dev badge overlaps footer button; DOM rectangles confirmed | Move dev badge above event controls; retain canonical programme/results route | Verified: footer centre hit-test targets the control; Results Overview click returns to summary |
+| AUD-15 | P3 | Live header | Programme text overflows narrow back button | Journey changes icon to long label despite V4 fixed icon dimensions | Keep V4 icon and descriptive accessible label | Verified: final browser DOM shows compact icon with descriptive accessible name |
+| AUD-16 | P3 | Selection | Locked slots still say Tap to clear and look editable | Handler rejects changes but controls retain draft affordance | Disable locked athlete/slot controls and label Selection locked | Verified: regression and reloaded Summit selection displays disabled controls and Selection locked |
 | AUD-17 | P0 | Existing-save startup | Reload can abort core script and leave expansion constants undefined | Initial UI and qualification read expanded saved disciplines before their definitions load | Defer initial presentation and qualification reconciliation until DOMContentLoaded | Verified: seeded startup smoke and latest dev browser reload; no new game console errors |
-| AUD-18 | P2 | Commentary | Instant/recovered official result still says waiting or provisional | Instant completion omits official speech; legacy saved logs lack final commentary | Reuse current finish path and derive final commentary from official rows | Verified: official-commentary regression; browser retest pending |
-| AUD-19 | P2 | Programme results | Unselected domestic rivals appear as Your Programme and inflate medals | Player result filtering uses nation alone | Filter by recorded event entries in result, Calendar and onboarding summaries | Verified: same-nation rival and No Entry regression; browser retest pending |
-| AUD-20 | P3 | Calendar | Completed meeting has no results navigation | Calendar only renders a status label; legacy guard redirects historical requests to current Event Day | Open existing results route; preserve explicit historical request until leaving competition | Fixed: targeted regression; hosted browser retest pending |
-| AUD-21 | P2 | Calendar / Summit | Calendar advertises obsolete weeks 17/19/21 | Hardcoded legacy league schedule | Read current Summit meeting schedule | Verified: current weeks 14/20/26/32/38/44 and absence of old weeks in regression |
+| AUD-18 | P2 | Commentary | Instant/recovered official result still says waiting or provisional | Instant completion omits official speech; legacy saved logs lack final commentary | Reuse current finish path and derive final commentary from official rows | Verified: regression and saved 100m browser result confirms Maya Thompson, matching official standings |
+| AUD-19 | P2 | Programme results | Unselected domestic rivals appear as Your Programme and inflate medals | Player result filtering uses nation alone | Filter by recorded event entries in result, Calendar and onboarding summaries | Verified: regression; browser Calendar and meeting summary show 1 podium and W200 No entry |
+| AUD-20 | P3 | Calendar | Completed meeting has no results navigation | Calendar only renders a status label; legacy guard redirects historical requests to current Event Day | Open existing results route; preserve explicit historical request until leaving competition | Verified: browser opens W5 results during W8, opens official 100m, returns through footer and Home |
+| AUD-21 | P2 | Calendar / Summit | Calendar advertises obsolete weeks 17/19/21 | Hardcoded legacy league schedule | Read current Summit meeting schedule | Verified: regression and browser Calendar renders six rounds at weeks 14/20/26/32/38/44 |
 | AUD-09 | P3 | Large selection confirmation | Long final review can hide submission controls | Fixed dialog clips unbounded confirmation summary | Scrollable summary within bounded flex confirmation; actions remain available | Verified at desktop: all 36 Summit slots reviewed/submitted; submit button inside viewport; tablet/mobile pending |
 
 ## Evidence and scope
@@ -90,3 +90,15 @@ Release considerations (maximum five):
 3. Older builds cannot read compressed saves; rollback needs conversion or raw recovery saves.
 4. Corrupt-save and blocked-storage startup recovery need additional fault testing.
 5. Remaining legacy wrappers and encoded engines still create load-order and duplicate-authority maintenance risk.
+
+## Final hosted dev evidence — 88a3b59b
+
+- Existing week-8 career reload and Continue Career succeeded; no new game warnings/errors in the final console window.
+- Calendar historical week 5 shows two completed disciplines and one programme podium. View Results opens the correct National Season Opener despite current week-8 activity.
+- Meeting summary shows one win/one podium; Maya Thompson is the programme entrant in W100 at 11.27s; W200 correctly says No entry while preserving Molly Shaw's official win.
+- Saved 100m official scoreboard and current commentary agree on Maya Thompson; Results Overview footer is unobstructed and returns to the summary, then Return Home succeeds.
+- Summit completed selection survived reload, opened for review, and showed disabled coach/No Entry/slot controls with Selection locked. Calendar displays all six current Summit rounds.
+- National Pool and an external athlete profile opened successfully; contract offer/call-up/demotion lifecycle remains unverified.
+- Final test suite: 15 targeted scenarios, static regression, repository hygiene and runtime route smoke passed. The earlier 45-week integration is retained as progression evidence; final Calendar/route changes received targeted and browser retests rather than repeating the entire soak.
+
+**Recommendation: Improved but requires more work.** The repaired dev build is available for owner review; this audit does not certify complete device, event-family or long-career coverage. No production action was taken.
