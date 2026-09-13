@@ -181,4 +181,16 @@ await test('Domestic rivals are not counted as programme entrants or medals',()=
   assert.equal(f.w.resultMedals(e).wins,0);assert.equal(f.w.resultMedals(e).podiums,1);
  }finally{f.dom.window.close()}
 });
+await test('Calendar uses recorded entrants, current Summit weeks and historical result routes',()=>{
+ const f=fixture();try{
+  f.w.eval(`var safe=fn=>fn(),managedNation=()=> 'GB',summitMeetings=()=>[14,20,26,32,38,44].map(week=>({week}));`);
+  const source=fs.readFileSync('scripts/calendar-v2.js','utf8');
+  for(const name of ['leagueRound','resultSummary'])f.w.eval(source.split('\n').find(line=>line.startsWith('function '+name+'(')));
+  assert.equal(f.w.leagueRound(17),false);assert.equal(f.w.leagueRound(14),true);assert.equal(f.w.leagueRound(44),true);
+  assert.equal(f.w.resultSummary({disc:['W100'],entries:{W100:['own']},results:{W100:[{id:'rival',nation:'GB',place:1},{id:'own',nation:'GB',place:2}]}}).podiums,1);
+  f.w.document.body.innerHTML='<div id="calendar"><button data-calv2-results="past">VIEW RESULTS</button></div>';
+  f.w.eval(`var opened=[],__athleticsCompetitionJourneyV2={openEvent:(...args)=>opened.push(args)},$=()=>null,plannerPreview=()=>{};`);
+  f.w.eval(source.split('\n').find(line=>line.startsWith('function bind(')));f.w.bind(f.w.document.getElementById('calendar'),[]);f.w.document.querySelector('button').click();assert.equal(JSON.stringify(f.w.opened),'[["past","results"]]');
+ }finally{f.dom.window.close()}
+});
 process.exitCode=failures?1:0;
