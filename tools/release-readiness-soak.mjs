@@ -32,7 +32,8 @@ export async function run(w){
    const probeBefore=read(`({reports:scoutingState().reports.length,emails:s.emails.filter(m=>m.type==='scouting').length,athletes:s.athletes.length})`);
    const probeIds=read(`generateProspects(1,'Release QA direct probe').map(a=>a.id)`);
    const probeAfter=read(`({reports:scoutingState().reports.length,emails:s.emails.filter(m=>m.type==='scouting').length,athletes:s.athletes.length})`);
-   console.log('[release] scouting direct probe',JSON.stringify({probeIds,before:probeBefore,after:probeAfter,weeklySource:String(read(`weeklyLifecycle`)).slice(0,180),generatorSource:String(read(`generateProspects`)).slice(0,180)}));
+   const v2=read(`({api:Object.keys(window.AMScoutingV2||{}),stateKeys:Object.keys(s).filter(k=>/scout/i.test(k)),scoutingKeys:Object.keys(s.scouting||{}),v2:s.scoutingV2||null,legacy:s.scouting||null})`);
+   console.log('[release] scouting direct probe',JSON.stringify({probeIds,before:probeBefore,after:probeAfter,weeklySource:String(read(`weeklyLifecycle`)).slice(0,220),generatorSource:String(read(`generateProspects`)).slice(0,360),v2}));
   }
   assert.ok(scoutAfter.reports>scoutBefore.reports,'scouting cycle did not create a report');
   assert.ok(scoutAfter.pool>scoutBefore.pool,'scouted prospect did not enter National Pool');
