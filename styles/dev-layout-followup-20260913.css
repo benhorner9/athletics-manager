@@ -1,0 +1,147 @@
+/* Athletics Manager — Dev layout follow-up · 2026-09-13
+   Narrow visual repair for Finance/Staff tab rails and Inbox controls.
+   Dev branch only; loaded after the shared UI unification layer. */
+
+/* Finance + Staff navigation rails
+   Keep the rail anchored under the global topbar while the page content scrolls.
+   The two screens deliberately use different column counts so Staff never inherits
+   the eight-slot Finance geometry. */
+.pe-shell[data-am-ui-screen="programme-economy-v2"],
+.pe-shell[data-am-ui-screen="programme-staff-v2"]{
+  align-content:start;
+}
+
+.pe-shell[data-am-ui-screen="programme-economy-v2"] > .pe-tabs,
+.pe-shell[data-am-ui-screen="programme-staff-v2"] > .pe-tabs{
+  box-sizing:border-box!important;
+  min-height:38px!important;
+  margin:0!important;
+  padding:3px!important;
+  gap:3px!important;
+  border-radius:10px!important;
+  background:rgba(5,13,23,.96)!important;
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  scrollbar-width:none;
+  isolation:isolate;
+  align-self:start!important;
+}
+.pe-shell[data-am-ui-screen="programme-economy-v2"] > .pe-tabs::-webkit-scrollbar,
+.pe-shell[data-am-ui-screen="programme-staff-v2"] > .pe-tabs::-webkit-scrollbar{display:none}
+
+.pe-shell[data-am-ui-screen="programme-economy-v2"] > .pe-tabs{
+  display:grid!important;
+  grid-template-columns:repeat(8,minmax(68px,1fr))!important;
+  width:min(100%,580px)!important;
+}
+
+.pe-shell[data-am-ui-screen="programme-staff-v2"] > .pe-tabs{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(118px,1fr))!important;
+  width:min(100%,270px)!important;
+}
+
+.pe-shell[data-am-ui-screen="programme-economy-v2"] > .pe-tabs > button,
+.pe-shell[data-am-ui-screen="programme-staff-v2"] > .pe-tabs > button{
+  box-sizing:border-box!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:100%!important;
+  min-width:0!important;
+  height:32px!important;
+  min-height:32px!important;
+  margin:0!important;
+  padding:0 8px!important;
+  border-radius:7px!important;
+  line-height:1!important;
+  text-align:center!important;
+  transform:none!important;
+  white-space:nowrap!important;
+}
+
+/* The topbar is 64px in the unified UI. On tablet/desktop, pin the rail directly
+   below it so switching sections changes the page underneath, not the rail position. */
+@media(min-width:701px){
+  .pe-shell[data-am-ui-screen="programme-economy-v2"] > .pe-tabs,
+  .pe-shell[data-am-ui-screen="programme-staff-v2"] > .pe-tabs{
+    position:sticky!important;
+    top:72px!important;
+    z-index:24!important;
+    box-shadow:0 8px 20px rgba(0,0,0,.18)!important;
+  }
+}
+
+@media(max-width:760px){
+  .pe-shell[data-am-ui-screen="programme-economy-v2"] > .pe-tabs > button,
+  .pe-shell[data-am-ui-screen="programme-staff-v2"] > .pe-tabs > button{
+    height:36px!important;
+    min-height:36px!important;
+  }
+}
+
+/* Inbox containment
+   The shared tab treatment made the filter rail wider than the message-list column.
+   Use two contained rows of three filters and explicitly constrain the tools so neither
+   Archive nor the category selector can render underneath the reader pane. */
+@media(min-width:701px){
+  .am-inbox-v3-sidebar{
+    min-width:0!important;
+    overflow:hidden!important;
+  }
+
+  .am-inbox-v3-tabs{
+    box-sizing:border-box!important;
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    width:100%!important;
+    max-width:none!important;
+    gap:3px!important;
+    padding:7px!important;
+    overflow:visible!important;
+  }
+
+  .am-inbox-v3-tabs > button{
+    box-sizing:border-box!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    min-height:32px!important;
+    padding:0 5px!important;
+    line-height:1!important;
+    text-align:center!important;
+    overflow:hidden!important;
+  }
+
+  .am-inbox-v3-tabs > button b{
+    flex:0 0 auto;
+  }
+
+  .am-inbox-v3-tools{
+    box-sizing:border-box!important;
+    grid-template-columns:minmax(0,1fr) minmax(108px,128px)!important;
+    width:100%!important;
+    min-width:0!important;
+  }
+
+  .am-inbox-v3-tools > *{
+    box-sizing:border-box!important;
+    min-width:0!important;
+    max-width:100%!important;
+  }
+
+  .am-inbox-v3-tools [data-v3-readall]{
+    grid-column:1 / -1!important;
+    width:100%!important;
+  }
+
+  .am-inbox-v3-reader{
+    min-width:0!important;
+    overflow:hidden!important;
+  }
+}
