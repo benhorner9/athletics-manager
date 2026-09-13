@@ -81,7 +81,7 @@ function submit(){
  const submitButton=ensureDialog().querySelector('[data-submit]');if(submitButton){submitButton.disabled=true;submitButton.textContent='SUBMITTING…'}
  try{
   if(ctx.type==='normal'){
-   const e=ctx.event;e.entries??={};for(const d of discs(ctx))e.entries[d]=chosenIds(ctx,d);e.selectionReasons??={};for(const d of discs(ctx))e.selectionReasons[d]??='performance';
+   const e=ctx.event;e.entries??={};for(const d of discs(ctx))e.entries[d]=chosenIds(ctx,d);e.relaySelectionSnapshot??={};for(const d of discs(ctx))if(DISCIPLINES?.[d]?.relay&&e.entries[d]?.length===4)e.relaySelectionSnapshot[d]=[...e.entries[d]];e.selectionReasons??={};for(const d of discs(ctx))e.selectionReasons[d]??='performance';
    const ok=typeof confirmEventSelection==='function'?confirmEventSelection(e)!==false:true;if(!ok)throw new Error('Competition system rejected selection');e.decision=true;st.locked=true;st.status='submitted';st.submittedAt=Date.now();st.declined=discs(ctx).every(d=>!chosenIds(ctx,d).length);syncLegacy(ctx);markMail(ctx,st.declined?'Competition entry declined':'Team submitted');
   }else{
    const q=summitState();if(!q)throw new Error('Summit state unavailable');q.seriesEntries=[...new Set(discs(ctx).flatMap(d=>chosenIds(ctx,d)))];try{for(const m of summitMeetings())m.entries=[...q.seriesEntries]}catch(_){}

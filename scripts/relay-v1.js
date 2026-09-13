@@ -125,7 +125,13 @@ if(baseRecommendation)selectionRecommendationPlan=function(e,d,candidates){
  return {athletes:line,reason:'performance',note:line.length===4?`Recommended order: ${line.map((a,i)=>`L${i+1} ${a.name}`).join(' · ')}. Order balances speed, bend suitability, baton skill and current readiness.`:'Four eligible 100m/200m squad athletes are required for a relay team.'};
 };
 
-function selectedLineup(e,d){return (e?.entries?.[d]||[]).map(id=>s.athletes.find(a=>String(a.id)===String(id))).filter(Boolean).slice(0,4)}
+function relaySelectedIds(e,d){
+ const current=[...(e?.entries?.[d]||[])],locked=(e?.selectionDecisionV3?.slots?.[d]||[]).filter(x=>x?.mode==='athlete'&&x.id).map(x=>x.id),saved=[...(e?.relaySelectionSnapshot?.[d]||[])];
+ const ids=(saved.length===4?saved:locked.length===4?locked:current).slice(0,4);if(ids.length===4){e.relaySelectionSnapshot??={};e.relaySelectionSnapshot[d]=[...ids]}return ids
+}
+function relayUnavailableReason(a,leg=0){if(!a)return`Leg ${leg+1} runner is no longer available`;if(a.retired)return`${a.name} retired after selection`;if(num(a.injury)>0)return`${a.name} is injured and cannot start (${Math.max(1,Math.round(num(a.injury)))} week${Math.round(num(a.injury))===1?'':'s'} remaining)`;if(a.inSquad===false)return`${a.name} is no longer in the national squad`;if(a.camp)return`${a.name} is away at a training camp`;return''}
+function relayAvailability(e,d){const ids=relaySelectedIds(e,d),current=new Set((e?.entries?.[d]||[]).map(String)),line=ids.map(id=>s.athletes.find(a=>String(a.id)===String(id))),unavailable=[];ids.forEach((id,i)=>{const a=line[i];let reason=relayUnavailableReason(a,i);if(!reason&&!current.has(String(id)))reason=`${a?.name||`Leg ${i+1} runner`} became unavailable after selection`;if(reason)unavailable.push({id,a,leg:i+1,reason})});return{ids,line,unavailable}}
+function selectedLineup(e,d){return relaySelectedIds(e,d).map(id=>s.athletes.find(a=>String(a.id)===String(id))).filter(Boolean).slice(0,4)}
 function nationCandidates(nation,d){return (s.athletes||[]).filter(a=>!a.retired&&a.nation===nation&&relaySprintDisc(a,d)&&num(a.injury)<=0).sort((a,b)=>equivalent100(a)-equivalent100(b))}
 function virtualRelayTime(nation,d){
  const xs=nationCandidates(nation,d).slice(0,4),female=RELAYS[d].gender==='W';let eq=xs.map(equivalent100);
@@ -139,8 +145,8 @@ function teamObject(nation,d,lineup=null,visualLineup=null){
  return {id:`relay:${s.game.season}:${d}:${nation}`,name:`${safe(()=>nationName(nation),nation)} 4×100m`,nation,relay:true,relayDisc:d,relayRoster:ids,relayLineup:lineup||[],relayVisualLineup:visual,overall:lineup?.length?avg(lineup.map(a=>num(a.overall,75))):80,fitness:lineup?.length?avg(lineup.map(a=>num(a.fitness,90))):92,form:lineup?.length?avg(lineup.map(a=>num(a.form,85))):86,fatigue:lineup?.length?avg(lineup.map(a=>num(a.fatigue,20))):18};
 }
 function relayField(e,d){
- const mn=safe(()=>managedNation(),'GREAT BRITAIN'),teams=[];
- const line=selectedLineup(e,d);if(line.length===4)teams.push(teamObject(mn,d,line));
+ const mn=safe(()=>managedNation(),'GREAT BRITAIN'),teams=[],availability=relayAvailability(e,d);
+ if(availability.ids.length===4){const existing=availability.line.filter(Boolean),team=teamObject(mn,d,existing,existing);team.relayRoster=[...availability.ids];if(availability.unavailable.length){const miss=availability.unavailable[0];team.relayDNS=true;team.relayWithdrawnRunner=miss.a?.name||`Leg ${miss.leg} runner`;team.relayWithdrawalReason=miss.reason;teams.push(team)}else if(existing.length===4)teams.push(team)}
  const rivals=Object.keys(typeof COUNTRIES!=='undefined'?COUNTRIES:{}).filter(n=>n!==mn).map(n=>({n,t:virtualRelayTime(n,d)})).sort((a,b)=>a.t-b.t).slice(0,7);
  rivals.forEach(x=>teams.push(teamObject(x.n,d,null,nationCandidates(x.n,d).slice(0,4))));return teams.slice(0,8);
 }
@@ -153,6 +159,7 @@ function exchangeProfile(team,d){
  const seed=hash(`${team.nation}:${d}:exchange`);return {baton:72+(seed%21),chem:66+((seed>>>4)%24)};
 }
 function runRelay(team,d,e){
+ if(team.relayDNS)return {...team,perf:99.99,dns:true,dq:false,disqualified:false,withdrawalReason:team.relayWithdrawalReason||'Relay team withdrawn before the start',points:0,achievements:[]};
  const actual=team.relayLineup?.length===4,base=actual?estimateLineup(team.relayLineup):virtualRelayTime(team.nation,d),x=exchangeProfile(team,d);
  const form=actual?avg(team.relayLineup.map(a=>num(a.form,85))):86,fat=actual?avg(team.relayLineup.map(a=>num(a.fatigue,20))):18;
  let perf=base+(84-form)*.004+Math.max(0,fat-35)*.004+noise(`${team.id}:${e.id}`,0.16),issue=null,dq=false;
@@ -161,10 +168,10 @@ function runRelay(team,d,e){
  return {...team,perf:+perf.toFixed(2),dq,disqualified:dq,exchangeIssue:issue,points:0,achievements:[]};
 }
 const baseSim=typeof simulateDiscipline==='function'?simulateDiscipline:null;
-if(baseSim)simulateDiscipline=function(e,d){if(!isRelay(d))return baseSim.apply(this,arguments);const rows=relayField(e,d).map(t=>runRelay(t,d,e));rows.sort((a,b)=>a.dq!==b.dq?(a.dq?1:-1):a.perf-b.perf);rows.forEach((r,i)=>r.rank=i+1);return rows};
+if(baseSim)simulateDiscipline=function(e,d){if(!isRelay(d))return baseSim.apply(this,arguments);const rows=relayField(e,d).map(t=>runRelay(t,d,e));rows.sort((a,b)=>!!a.dns!==!!b.dns?(a.dns?1:-1):a.dq!==b.dq?(a.dq?1:-1):a.perf-b.perf);rows.forEach((r,i)=>r.rank=i+1);return rows};
 
 function recordRelayMark(e,d,row){
- if(row.dq||!Number.isFinite(row.perf))return [];
+ if(row.dq||row.dns||!Number.isFinite(row.perf))return [];
  const st=relayState(),ach=[];let wr=st.records.world[d];if(!wr||row.perf<wr.value-.0001){st.records.world[d]={value:row.perf,holder:row.name,nation:row.nation,season:s.game.season,week:s.game.week,event:e.name};ach.push('WR')}
  st.records.national[row.nation]??={};const nr=st.records.national[row.nation][d];if(!nr){st.records.national[row.nation][d]={value:row.perf,holder:row.name,nation:row.nation,season:s.game.season,week:s.game.week,event:e.name}}else if(row.perf<nr.value-.0001){st.records.national[row.nation][d]={value:row.perf,holder:row.name,nation:row.nation,season:s.game.season,week:s.game.week,event:e.name};if(!ach.includes('WR'))ach.push('NR')}
  return ach;
@@ -172,9 +179,9 @@ function recordRelayMark(e,d,row){
 const baseCommit=typeof commitDisciplineResults==='function'?commitDisciplineResults:null;
 if(baseCommit)commitDisciplineResults=function(e,d,rows){
  if(!isRelay(d))return baseCommit.apply(this,arguments);if(Array.isArray(e.results?.[d]))return;e.results??={};const mn=safe(()=>managedNation(),'GREAT BRITAIN');
- rows.forEach((r,i)=>{r.points=e.ranked&&!r.dq?Math.round((typeof PTS!=='undefined'?(PTS[i]||0):0)*safe(()=>rankingPointMultiplier(e),1)):0;s.nationPoints[r.nation]=(s.nationPoints[r.nation]||0)+r.points;r.achievements=recordRelayMark(e,d,r)});
- const mine=rows.find(r=>r.nation===mn),line=selectedLineup(e,d);if(mine&&line.length===4){line.forEach((a,i)=>{const st=athleteRelay(a);st.starts++;st.experience+=1;st.lastRelayWeek=s.game.careerWeek||s.game.week;a.fatigue=clampLocal(num(a.fatigue)+3+Math.floor(Math.random()*4),0,100);a.form=clampLocal(num(a.form,80)+(mine.rank<=3?1:0),55,99);safe(()=>rememberAthlete(a,'Relay appearance',`${LEG_NAMES[i].replace(' · ',' — ')} for ${safe(()=>nationName(mn),mn)} at ${e.name}. Team result: ${mine.dq?'DQ':mine.perf.toFixed(2)+'s'}.`),null)})}
- e.results[d]=rows;relayState().history.push({season:s.game.season,week:s.game.week,event:e.name,eventId:e.id,disc:d,results:rows.map(r=>({nation:r.nation,perf:r.perf,dq:r.dq,rank:r.rank,roster:r.relayRoster||[]}))});relayState().history=relayState().history.slice(-80);saveSafe();
+ rows.forEach((r,i)=>{r.points=e.ranked&&!r.dq&&!r.dns?Math.round((typeof PTS!=='undefined'?(PTS[i]||0):0)*safe(()=>rankingPointMultiplier(e),1)):0;s.nationPoints[r.nation]=(s.nationPoints[r.nation]||0)+r.points;r.achievements=recordRelayMark(e,d,r)});
+ const mine=rows.find(r=>r.nation===mn),line=selectedLineup(e,d);if(mine&&!mine.dns&&line.length===4){line.forEach((a,i)=>{const st=athleteRelay(a);st.starts++;st.experience+=1;st.lastRelayWeek=s.game.careerWeek||s.game.week;a.fatigue=clampLocal(num(a.fatigue)+3+Math.floor(Math.random()*4),0,100);a.form=clampLocal(num(a.form,80)+(mine.rank<=3?1:0),55,99);safe(()=>rememberAthlete(a,'Relay appearance',`${LEG_NAMES[i].replace(' · ',' — ')} for ${safe(()=>nationName(mn),mn)} at ${e.name}. Team result: ${mine.dq?'DQ':mine.perf.toFixed(2)+'s'}.`),null)})}
+ e.results[d]=rows;relayState().history.push({season:s.game.season,week:s.game.week,event:e.name,eventId:e.id,disc:d,results:rows.map(r=>({nation:r.nation,perf:r.perf,dq:r.dq,dns:!!r.dns,withdrawalReason:r.withdrawalReason||'',rank:r.rank,roster:r.relayRoster||[]}))});relayState().history=relayState().history.slice(-80);saveSafe();
 };
 
 const baseCommentary=typeof commentaryLines==='function'?commentaryLines:null;

@@ -136,6 +136,13 @@ if(!relayCore.includes('const SQUAD_LIMIT=14;'))fail('Relay V1 requires the seni
 if(!html.includes('styles/relay-v1.css'))fail('Relay V1 stylesheet is not loaded.');
 const relayPresentation=read('scripts/relay-v1.js');
 if(relayPresentation.includes('function renderRelayDiscipline'))fail('Relay V1 must use the canonical Broadcast V4 sprint presentation, not a bespoke Event Day renderer.');
+if(!relayPresentation.includes('function relayAvailability(e,d)'))fail('Relay V1 must explain a locked-team withdrawal instead of silently dropping the nation.');
+const selectionAuthority=read('scripts/selection-decision-v3.js');
+if(!selectionAuthority.includes('relaySelectionSnapshot'))fail('Selection V3 must preserve the submitted relay lineup for withdrawal recovery.');
+const economyAuthority=read('scripts/programme-economy-v2.js');
+if(!economyAuthority.includes('Funds available today')||!economyAuthority.includes('currentProjected'))fail('Contract offers must show current-to-post-decision programme funding impact.');
+const economyCss=read('styles/programme-economy-v1.css');
+if(economyCss.includes('.pe-contract-summary>div{'))fail('Contract impact layout must not inherit the generic direct-child flex rule.');
 
 const sourceContracts={
  'scripts/people-biography-v1.js':[
@@ -225,6 +232,7 @@ const sourceContracts={
   ['commentQueue','Broadcast commentary priority queue is missing'],
   ['function sprintPhase(c,state)','Sprint phase choreography is missing'],
   ['function cameraTarget(c,state)','Sprint camera director is missing'],
+  ['if(isRelay(c.d))return[20,18,720,419]','Relay camera must stay on the full oval for the complete baton race'],
   ['function postFinishPos(d,x,i,extra)','Post-finish runout is missing'],
   ['function trackMomentText(c,m,top)','Sprint-specific commentary is missing'],
   ['function relayRunnerAt(r,m)','Relay baton-holder transition model is missing'],
