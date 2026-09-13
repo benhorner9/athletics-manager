@@ -74,6 +74,7 @@ try{
   pretendToBeVisual:true,
   virtualConsole,
   beforeParse(window){
+   if(process.env.AM_SMOKE_SAVE_FIXTURE)window.localStorage.setItem("rto_full_game_v1",fs.readFileSync(process.env.AM_SMOKE_SAVE_FIXTURE,"utf8"));
    window.TextEncoder=TextEncoder;window.TextDecoder=TextDecoder;
    window.fetch=(input,init)=>globalThis.fetch(new URL(String(input),window.location.href),init);
    if(globalThis.Response)window.Response=globalThis.Response;
@@ -100,7 +101,7 @@ try{
  await new Promise((resolve,reject)=>{
   const timer=setTimeout(()=>reject(new Error("Page load did not complete within 15 seconds")),15000);
   dom.window.addEventListener('load',()=>{clearTimeout(timer);setTimeout(resolve,900)},{once:true});
-  dom.window.addEventListener('error',event=>fail(`window error: ${event.message||event.error||'unknown error'}`));
+  dom.window.addEventListener('error',event=>fail(`window error: ${event.error?.stack||event.message||'unknown error'}`));
   dom.window.addEventListener('unhandledrejection',event=>fail(`unhandled rejection: ${event.reason||'unknown rejection'}`));
  });
  console.log('[smoke] page load settled');

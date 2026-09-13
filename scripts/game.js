@@ -1762,7 +1762,9 @@ const _summitRender=render;
 render=function(){_summitRender();const block=currentBlocking(),career=careerState();if(block&&!appointmentPending()&&!career.finished&&!career.pendingReview){$('advanceTop').disabled=false;$('advanceTop').textContent=block.kind==='summit'?'ENTER SUMMIT EVENT':'ENTER EVENT'}};
 /* ===== End Summit Series live event flow ===== */
 
-load();renderMenu();renderView(currentView);
+load();renderMenu();
+// Render only after the full dev asset graph has registered saved disciplines and UI owners.
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>renderView(currentView),{once:true});else renderView(currentView);
 
 
 
@@ -1962,7 +1964,9 @@ const _roadDrawCalendar=drawCalendar;drawCalendar=function(){_roadDrawCalendar()
 
 UPDATES.unshift({date:'8 September 2026',title:'Road to Qualification',items:['World Athletics Cup and Olympic qualification are now live season races rather than simple end-of-season point checks. Each discipline has a direct performance standard, a ranking-points route, a qualification deadline and a maximum of two athletes per nation.','The Road to Qualification screen now tracks every discipline with statuses including Standard Met, In Ranking Places, On the Bubble, Nation Limit, Outside Places and No Eligible Mark, plus specific performance-team advice on what each athlete should do next.','Qualification positions can move as rival athletes score around the world. Managed athletes trigger qualification movement emails when they secure a standard, enter the ranking quota, fall onto the bubble or drop outside the field.','The World Cup window closes in Week 32 each season; Olympic qualification opens in Year 4 and closes in Week 34. Deadline warnings appear in the calendar and inbox, while athlete profiles carry their current championship qualification position.','Ranking rewards now scale with meeting importance, making major internationals and championships more valuable than lower-level national events. Summit Series remains separate from world ranking points, so a full-Series commitment can materially limit qualification opportunities elsewhere.']});
 {const latestIndex=UPDATES.findIndex(u=>u.title==='Road to Qualification');if(latestIndex>0)UPDATES.unshift(UPDATES.splice(latestIndex,1)[0]);}
-qualificationRoadState();ensureQualificationLocks();updateQualificationTracking(true);document.querySelectorAll('[data-view="olympics"],[data-mobile-view="olympics"]').forEach(b=>b.textContent='Qualification');if(currentView==='olympics')drawQualificationRoad();if(typeof renderMenu==='function')renderMenu();
+function initialiseQualificationRoad(){qualificationRoadState();ensureQualificationLocks();updateQualificationTracking(true);document.querySelectorAll('[data-view="olympics"],[data-mobile-view="olympics"]').forEach(b=>b.textContent='Qualification');if(currentView==='olympics')drawQualificationRoad();if(typeof renderMenu==='function')renderMenu()}
+// Saved careers may contain disciplines registered by later expansion scripts.
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initialiseQualificationRoad,{once:true});else initialiseQualificationRoad();
 /* ===== End Road to Qualification Update ===== */
 
 
