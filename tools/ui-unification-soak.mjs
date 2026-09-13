@@ -2,7 +2,7 @@ import fs from 'node:fs';
 const html=fs.readFileSync('game.html','utf8');
 const css=fs.readFileSync('styles/ui-unification-v1.css','utf8');
 const need=(ok,msg)=>{if(!ok)throw new Error('UI unification regression: '+msg)};
-need(html.includes('styles/ui-unification-v1.css?v=20260913-profilebaseline2'),'unified UI stylesheet is not loaded');
+need(html.includes('styles/ui-unification-v1.css?v=20260913-profilebaseline3'),'unified UI stylesheet is not loaded');
 need(html.indexOf('manager-profile-v1.css')<html.indexOf('ui-unification-v1.css'),'unified UI layer must load after My Profile baseline');
 for(const selector of ['.home-v2-card','.am-inbox-v3','.sav2-workspace','.apv2-shell','.calv2-card','.tr3-command','.scv3-card','.pe-shell','.cj-hero','.panel'])need(css.includes(selector),`missing shared styling for ${selector}`);
 need(css.includes('--am-ui-card-radius:16px'),'card-radius baseline drifted from My Profile');
@@ -14,4 +14,7 @@ need(css.includes('.sav2-table{min-width:1160px;table-layout:fixed}'),'Squad/Poo
 need(css.includes('--am-ui-font:Inter'),'shared tab font authority missing');
 need(css.includes('.summit-shell button,.summit-shell select,.summit-shell input'),'Summit typography correction missing');
 need(css.includes('.pe-tabs button{min-height:32px!important'),'Finance compact tab correction missing');
+need(css.includes('grid-template-columns:minmax(360px,420px) minmax(0,1fr)'), 'Inbox desktop list/reader column boundary missing');
+need(css.includes('font-size:10px!important;line-height:1.25'), 'Inbox compact subject treatment missing');
+need(css.includes('.am-inbox-v3-reader{position:relative;z-index:2'), 'Inbox reader stacking boundary missing');
 console.log('[ui-unification] My Profile visual baseline contract passed.');

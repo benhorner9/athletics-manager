@@ -187,3 +187,21 @@ input,select,textarea{border-radius:var(--am-ui-control-radius)!important}
  .sav2-tabs button,.pe-tabs button,.home-v2-world-tabs button,.am-inbox-v3-tabs button,#training.training-v3 .tr2-tabs button,.scv3-tabs button,.summit-shell nav button,.summit-shell .tabs button,.summit-shell [role="tab"]{min-height:38px!important}
  .pe-tabs button{min-height:36px!important}
 }
+
+/* Inbox column composition follow-up — keep message list visually separate from reader. */
+@media(min-width:701px){
+ .am-inbox-v3-workspace{grid-template-columns:minmax(360px,420px) minmax(0,1fr)}
+ .am-inbox-v3-sidebar{position:relative;z-index:1;overflow:hidden}
+ .am-inbox-v3-reader{position:relative;z-index:2;min-width:0;box-shadow:-1px 0 0 var(--am-ui-line)}
+ .am-inbox-v3-row{width:100%;max-width:100%;grid-template-columns:40px minmax(0,1fr) 28px;overflow:hidden}
+ .am-inbox-v3-row>*{min-width:0}
+ .am-inbox-v3-copy,.am-inbox-v3-sender{min-width:0;max-width:100%;overflow:hidden}
+ .am-inbox-v3-copy>strong{display:block;max-width:100%;font-size:10px!important;line-height:1.25;letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .am-inbox-v3-preview{display:block;max-width:100%;font-size:8px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .am-inbox-v3-week{width:28px;max-width:28px;text-align:right;overflow:hidden}
+}
+@media(min-width:701px) and (max-width:1100px){
+ .am-inbox-v3-workspace{grid-template-columns:minmax(330px,38%) minmax(0,1fr)}
+ .am-inbox-v3-copy>strong{font-size:9.5px!important}
+}
+
