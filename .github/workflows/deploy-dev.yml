@@ -94,7 +94,9 @@ jobs:
           BASE="ftp://${FTP_SERVER}:${PORT}/dev"
           mkdir -p .deploy-status
 
-          curl --silent --show-error --ssl-reqd \
+          # The shared host presents a certificate for the hosting domain rather than
+          # the FTP hostname. Keep FTPS encryption, but allow that known name mismatch.
+          curl --insecure --silent --show-error --ssl-reqd \
             --user "$FTP_USERNAME:$FTP_PASSWORD" \
             "$BASE/dev-build-history.json" \
             -o .deploy-status/previous-history.json || true
@@ -140,18 +142,18 @@ jobs:
           Path('.deploy-status/dev-runtime-build.js').write_text(runtime, encoding='utf-8')
           PY
 
-          curl --fail --silent --show-error --ssl-reqd --ftp-create-dirs \
+          curl --insecure --fail --silent --show-error --ssl-reqd --ftp-create-dirs \
             --user "$FTP_USERNAME:$FTP_PASSWORD" \
             -T .deploy-status/dev-build-history.json \
             "$BASE/dev-build-history.json"
 
-          curl --fail --silent --show-error --ssl-reqd --ftp-create-dirs \
+          curl --insecure --fail --silent --show-error --ssl-reqd --ftp-create-dirs \
             --user "$FTP_USERNAME:$FTP_PASSWORD" \
             -T .deploy-status/dev-runtime-build.js \
             "$BASE/scripts/dev/dev-runtime-build.js"
 
           # Publish the manifest last. Its presence means the complete dev build is live.
-          curl --fail --silent --show-error --ssl-reqd --ftp-create-dirs \
+          curl --insecure --fail --silent --show-error --ssl-reqd --ftp-create-dirs \
             --user "$FTP_USERNAME:$FTP_PASSWORD" \
             -T .deploy-status/dev-build.json \
             "$BASE/dev-build.json"
