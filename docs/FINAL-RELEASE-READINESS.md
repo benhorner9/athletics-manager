@@ -19,6 +19,10 @@ The normal browserless runtime regression now exercises:
 
 The new gate exposed an agreement-expiry defect: the migration helper recreated an agreement whose end week had been reached before the expiry processor could return the athlete to the National Pool. The release branch changes migration so only missing or invalid agreements are created; genuine expired agreements remain available to the expiry authority.
 
+## Gate infrastructure
+
+The standard runtime-smoke watchdog is now 120 seconds so the final release-readiness lifecycle checks can run after the existing full-route smoke sweep. Audit-mode soak testing retains its longer 900-second allowance.
+
 ## Manual device sign-off still required
 
 Browserless responsive checks protect route/runtime structure but do not replace real Safari/iPad visual and touch verification. The final dev build must still receive a short manual iPad pass before any production promotion.
