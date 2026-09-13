@@ -23,16 +23,26 @@ export async function run(w){
 
   console.log('[release] Scouting discovery lifecycle');
   reset();
+  const apiSource={
+   renderer:String(read(`drawScouting`)).slice(0,900),
+   first:String(w.AMScoutingV2?.seedFirstAssignment||'').slice(0,1200),
+   first2:String(w.AMScoutingV2?.seedFirstScoutingAssignment||'').slice(0,1200),
+   refresh:String(w.AMScoutingV2?.refreshScoutingIntegration||'').slice(0,1600),
+   search:String(w.AMScoutingV2?.createSearchAssignment||'').slice(0,1600),
+   assignment:String(w.AMScoutingV2?.processAssignmentWeek||'').slice(0,1600),
+   longTerm:String(w.AMScoutingV2?.processLongTermWeek||'').slice(0,1200)
+  };
+  console.log('[release] scouting integration sources',JSON.stringify(apiSource));
   const scoutBefore=read(`({athletes:s.athletes.length,reports:scoutingState().reports.length,pool:nationalPool().length,emails:s.emails.filter(m=>m.type==='scouting').length,v2Reports:(s.scoutingV2?.nations?.[managedNation()]?.reports||[]).length})`);
   read(`s.game.week=9;s.game.careerWeek=9;scoutingState().lastCareerWeek=1;delete scoutingState().processedWeek;onWeekStart()`);
   const scoutAfter=read(`({athletes:s.athletes.length,reports:scoutingState().reports.length,pool:nationalPool().length,emails:s.emails.filter(m=>m.type==='scouting').length,v2Reports:(s.scoutingV2?.nations?.[managedNation()]?.reports||[]).length,assignments:(s.scoutingV2?.nations?.[managedNation()]?.assignments||[]).length,hidden:(s.scoutingV2?.nations?.[managedNation()]?.hiddenTalent||[]).length})`);
-  console.log('[release] scouting week-start',JSON.stringify({before:scoutBefore,after:scoutAfter,onWeekStartSource:String(read(`onWeekStart`)).slice(0,500)}));
+  console.log('[release] scouting week-start',JSON.stringify({before:scoutBefore,after:scoutAfter,onWeekStartSource:String(read(`onWeekStart`)).slice(0,700)}));
   assert.ok(scoutAfter.athletes>scoutBefore.athletes,'scouting week-start did not advance the talent pool');
   let scoutPost=scoutAfter;
   if(!((scoutAfter.reports>scoutBefore.reports)||(scoutAfter.v2Reports>scoutBefore.v2Reports)||scoutAfter.emails>scoutBefore.emails)){
    const processorResult=read(`window.AMScoutingV2?.processScoutingWeek?.()`);
    scoutPost=read(`({athletes:s.athletes.length,reports:scoutingState().reports.length,pool:nationalPool().length,emails:s.emails.filter(m=>m.type==='scouting').length,v2Reports:(s.scoutingV2?.nations?.[managedNation()]?.reports||[]).length,assignments:(s.scoutingV2?.nations?.[managedNation()]?.assignments||[]).length,hidden:(s.scoutingV2?.nations?.[managedNation()]?.hiddenTalent||[]).length})`);
-   console.log('[release] scouting V2 processor probe',JSON.stringify({result:processorResult,after:scoutPost,source:String(w.AMScoutingV2?.processScoutingWeek||'').slice(0,700)}));
+   console.log('[release] scouting V2 processor probe',JSON.stringify({result:processorResult,after:scoutPost,source:String(w.AMScoutingV2?.processScoutingWeek||'').slice(0,1000)}));
   }
   assert.ok((scoutPost.reports>scoutBefore.reports)||(scoutPost.v2Reports>scoutBefore.v2Reports)||scoutPost.emails>scoutBefore.emails,'scouting system produced no player-facing report or communication');
 
