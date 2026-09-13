@@ -15,7 +15,7 @@ const CANDIDATES={
  pool:['[data-am-ui-screen="pool-v2"],.sav2,.squad-v2'],
  clubs:['.clv1,[data-am-ui-screen="club-world-v1"]'],
  calendar:['.calv2,[data-am-ui-screen="calendar-v2"]'],
- training:['.tr3-frame,.tr2-shell,[data-am-ui-screen="training-v3"]'],
+ training:['.tr3-frame,.tr2-shell,.tr4-shell,[data-am-ui-screen="training-v4"],[data-am-ui-screen="training-v3"]'],
  scouting:['.scv3,[data-am-ui-screen="scouting-v3"]'],
  staff:['.sfv2,[data-am-ui-screen="staff-v2"]'],
  finance:['.sfv2,[data-am-ui-screen="finance-v2"]'],

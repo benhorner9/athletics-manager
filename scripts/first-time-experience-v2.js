@@ -239,7 +239,7 @@ function decorateHome(){
  if(st?.completionShown&&st.completed)return;
  let card=root.querySelector('.ftx-agenda');
  if(active()||(!st.completed&&st.guidance!=='off')){
-  if(!card)root.insertAdjacentHTML('afterbegin',agendaHTML());else card.outerHTML=agendaHTML();
+  const html=agendaHTML();if(card?.__ftxMarkup!==html){if(!card)root.insertAdjacentHTML('afterbegin',html);else card.outerHTML=html;card=root.querySelector('.ftx-agenda');if(card)card.__ftxMarkup=html}
   markSeen('home');
  }else card?.remove();
 }
@@ -253,13 +253,13 @@ function decorateSquad(){
  const root=athleteManagementRoot();if(!root)return;const phase=currentPhase(),cv=typeof currentView!=='undefined'?currentView:'squad';
  if(!active()||!['squad','athlete'].includes(phase)){clearSquadGuidance();return}
  if(cv==='squad'){markSeen('squad');if(!ensureState().steps.squadReviewed)markStep('squadReviewed')}
- const star=starAthlete();if(!star){clearSquadGuidance();return}clearSquadGuidance();
+ const star=starAthlete();if(!star){clearSquadGuidance();return}const mentorKey=`${currentPhase()}|${star.id}`;if(root.querySelector('.ftx-athlete-management-mentor')?.dataset.ftxMentorKey===mentorKey)return;clearSquadGuidance();
  if(currentPhase()==='squad'){
   root.insertAdjacentHTML('afterbegin',`<section class="ftx-mentor ftx-athlete-management-mentor"><div><small>${esc(headCoach().name.toUpperCase())} • HEAD COACH</small><strong>Meet your national squad</strong><p>Your first task is in National Squad. Open the squad and take a closer look at one of the athletes you have inherited.</p></div><button class="am-button primary" data-ftx-route="squad">MEET THE SQUAD</button></section>`);
-  return;
+  root.querySelector('.ftx-athlete-management-mentor').dataset.ftxMentorKey=mentorKey;return;
  }
  if(currentPhase()!=='athlete')return;
- root.insertAdjacentHTML('afterbegin',athleteManagementMentorHTML(star));
+ root.insertAdjacentHTML('afterbegin',athleteManagementMentorHTML(star));root.querySelector('.ftx-athlete-management-mentor').dataset.ftxMentorKey=mentorKey;
  const row=root.querySelector(`[data-ath="${CSS.escape(String(star.id))}"]`)||root.querySelector(`[data-profile="${CSS.escape(String(star.id))}"]`)?.closest('tr,article,button');row?.classList.add('ftx-spotlight');
 }
 function decorateTraining(){
@@ -359,6 +359,7 @@ function decorateCompetition(){
 
 function decisionState(e,d){
  if(!e)return'undecided';
+ const slots=e.selectionDecisionV3?.slots?.[d];if(Array.isArray(slots)&&slots.length){if(slots.some(x=>!x.mode))return'undecided';return slots.some(x=>x.mode==='athlete')?'athlete':'no-entry'}
  if((e.entries?.[d]||[]).length)return'athlete';
  if(e.firstTimeNoEntry?.[d])return'no-entry';
  return'undecided';
@@ -386,6 +387,7 @@ function noEntryCompetition(e){
 }
 function noEntryDiscipline(e,d){e.entries??={};e.firstTimeNoEntry??={};e.entries[d]=[];e.firstTimeNoEntry[d]=true;ensureState().entrySource[d]='No Entry — chosen by you';saveSafe();refreshInbox()}
 function firstSelectionPanel(e){
+ if(window.__athleticsExplicitSelectionV3)return `<section class="ftx-selection-guide"><small>YOUR FIRST TEAM SELECTION</small><p>Use Open Selection below to choose athletes or explicitly mark each slot No Entry. Review and submit the team in the Selection Centre.</p></section>`;
  const rows=e.disc.filter(d=>d!=='ALL').map(d=>{const state=decisionState(e,d),ids=e.entries?.[d]||[],names=ids.map(id=>(s.athletes||[]).find(a=>a.id===id)?.name).filter(Boolean);return `<div class="ftx-selection-row ${state}"><div><strong>${esc(eventText(d))}</strong><span>${state==='athlete'?esc(names.join(', ')):state==='no-entry'?'No Entry':'Needs decision'}</span></div><button class="am-button compact ghost" data-ftx-no-entry="${esc(d)}">NO ENTRY</button></div>`}).join('');
  return `<section class="ftx-selection-guide"><div class="ftx-selection-head"><div><small>YOUR FIRST TEAM SELECTION</small><h3>${esc(e.name)}</h3><p>Every event needs a deliberate decision. Empty means undecided. No Entry means you have chosen not to compete.</p></div><span class="am-status ${firstSelectionComplete(e)?'success':'important'}">${e.disc.filter(d=>d!=='ALL').filter(d=>decisionState(e,d)!=='undecided').length}/${e.disc.filter(d=>d!=='ALL').length} decided</span></div><div class="ftx-selection-actions"><button class="am-button primary" data-ftx-coach-team>USE COACH TEAM</button><button class="am-button secondary" data-ftx-choose-team>CHOOSE TEAM</button><button class="am-button ghost" data-ftx-no-entry-all>DO NOT ENTER COMPETITION</button></div><div class="ftx-selection-decisions">${rows}</div></section>`;
 }
@@ -537,7 +539,7 @@ function initialise(){
   if(st&&!st.legacy&&s?.appointment?.contractSigned){st.active=!st.completed;ensureOpeningSchedule();retireLegacyOpeningTasks();weekMessages()}
   document.addEventListener('click',handleClick);
   document.addEventListener('click',event=>{if(!active()||currentPhase()!=='scouting')return;const target=event.target.closest?.('#scouting button,#scouting [role="button"],#scouting label');if(target)maybeCompleteScoutingV2Assignment(target,'scouting-v2-click')});
-  document.addEventListener('change',event=>{if(!active())return;const el=event.target;if(currentPhase()==='scouting'&&$('scouting')?.contains(el))maybeCompleteScoutingV2Assignment(el,'scouting-v2-change');if(currentPhase()==='training'&&$('training')?.contains(el)&&!ensureState().steps.trainingDecision)queueTrainingDecisionDetection('training-change')});
+  document.addEventListener('change',event=>{if(!active())return;const el=event.target;if(currentPhase()==='scouting'&&$('scouting')?.contains(el))maybeCompleteScoutingV2Assignment(el,'scouting-v2-change');if(currentPhase()==='training'&&$('training')?.contains(el)&&!ensureState().steps.trainingDecision)queueTrainingDecisionDetection('training-change')},true);
   document.addEventListener('click',captureAdvance,true);
   const observer=new MutationObserver(()=>scheduleDecorate());observer.observe(document.body,{subtree:true,childList:true});
   const athleteDialog=$('athleteProfile');if(athleteDialog&&!athleteDialog.dataset.ftxCloseBound){athleteDialog.dataset.ftxCloseBound='1';athleteDialog.addEventListener('close',()=>{clearSquadGuidance();scheduleDecorate()})}

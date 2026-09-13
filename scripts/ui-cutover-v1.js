@@ -15,7 +15,7 @@ const ROUTES={
  pool:{selector:'.sav2,[data-am-ui-screen="pool-v2"]',delay:650},
  clubs:{selector:'.clv1,[data-am-ui-screen="club-world-v1"]',delay:650},
  calendar:{selector:'.calv2,[data-am-ui-screen="calendar-v2"]',delay:650},
- training:{selector:'.tr2-shell,[data-am-ui-screen="training-v3"]',delay:1800},
+ training:{selector:'.tr2-shell,.tr4-shell,[data-am-ui-screen="training-v4"],[data-am-ui-screen="training-v3"]',delay:1800},
  scouting:{selector:'.scouting-v2-active,[data-am-ui-screen="scouting-v2"]',delay:6500},
  staff:{selector:'.pe-shell,[data-am-ui-screen="programme-staff-v2"],.sfv2,[data-am-ui-screen="staff-v2"]',delay:1800},
  finance:{selector:'.pe-shell,[data-am-ui-screen="programme-economy-v2"],.sfv2,[data-am-ui-screen="finance-v2"]',delay:1800},

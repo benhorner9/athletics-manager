@@ -309,14 +309,25 @@ function readyBoard(e,d,r){const rr=rowsFor(r).slice(0,16);return`<div class="v3
 function finalBoard(d,r){return`<div class="v3board lv4-board"><header><div><small>FINAL STANDINGS</small><strong>${E(label(d))}</strong></div><span>OFFICIAL</span></header><div class="lv4-board-head"><b>POS</b><span>ATHLETE</span><em>RESULT</em></div><div class="v3board-list">${rowsFor(r).map((x,i)=>`<div class="v3board-row lv4-board-row ${x.nation===myNation()?'ours':''} ${i===0?'leader':''}"><b>${x.status?'—':i+1}</b><i style="background:${colour(x.nation)}"></i><div><strong>${E(x.name)}</strong><small>${E(nation(x.nation))}${records(x.raw).length?` · ${records(x.raw).join(' ')}`:''}</small></div><span>${E(x.status||fmt(d,x.perf))}</span></div>`).join('')}</div></div>`}
 
 /* ---------- Main screen ---------- */
-function wire(c){if(!c)return;const root=$('liveEventVisual');root?.querySelector('[data-pause]')?.addEventListener('click',()=>{c.paused=!c.paused;c.visibilityPaused=false;c.last=null;render(c,true)});root?.querySelectorAll('[data-speed]').forEach(b=>b.addEventListener('click',()=>{c.speed=b.dataset.speed==='broadcast'?'broadcast':Number(b.dataset.speed);c.last=null;render(c,true)}))}
+function wire(c){if(!c)return;const root=$('liveEventVisual');const pause=root?.querySelector('[data-pause]');if(pause)pause.onclick=()=>{c.paused=!c.paused;c.visibilityPaused=false;c.last=null;render(c,true)};root?.querySelectorAll('[data-speed]').forEach(b=>b.onclick=()=>{c.speed=b.dataset.speed==='broadcast'?'broadcast':Number(b.dataset.speed);c.last=null;render(c,true)})}
 function render(c,force=false){
  if(!c||live!==c)return;
  updateBoard(c,force);
  refreshQa(c,force);
  if(!paintDue(c,force))return;
  const began=clockNow(),v=$('liveEventVisual');
- if(v){v.innerHTML=liveVisual(c);v.dataset.lv4Hz=String(c.targetFps||presentationHz())}
+ if(v){
+  const controlsNode=v.querySelector('.v3controls'),canvas=v.querySelector('.v3canvas');
+  if(controlsNode&&canvas){
+   const template=document.createElement('template');template.innerHTML=liveVisual(c);
+   canvas.replaceWith(template.content.querySelector('.v3canvas'));
+   const top=v.querySelector('.v3top'),nextTop=template.content.querySelector('.v3top');if(top&&nextTop)top.replaceWith(nextTop);
+   const pause=controlsNode.querySelector('[data-pause]');if(pause&&pause.textContent!==(c.paused?'RESUME':'PAUSE'))pause.textContent=c.paused?'RESUME':'PAUSE';
+   controlsNode.querySelectorAll('[data-speed]').forEach(b=>b.classList.toggle('on',String(b.dataset.speed)===String(c.speed)));
+   const clock=controlsNode.querySelector('span'),nextClock=template.content.querySelector('.v3controls span');if(clock&&nextClock&&clock.textContent!==nextClock.textContent)clock.textContent=nextClock.textContent;
+  }else v.innerHTML=liveVisual(c);
+  v.dataset.lv4Hz=String(c.targetFps||presentationHz())
+ }
  wire(c);
  c.lastPaintMs=Math.max(0,clockNow()-began);
  requestAnimationFrame(()=>{try{window.__athleticsShotPutAthlete?.sync?.()}catch(_){}})
