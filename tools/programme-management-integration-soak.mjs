@@ -3,6 +3,7 @@ const economy=fs.readFileSync('scripts/programme-economy-v2.js','utf8');
 const core=fs.readFileSync('scripts/inbox-decision-core-v1.js','utf8');
 const reader=fs.readFileSync('scripts/inbox-single-render-v1.js','utf8');
 const career=fs.readFileSync('scripts/manager-career-v1.js','utf8');
+const staffUi=fs.readFileSync('scripts/staff-finance-v2.js','utf8');
 const need=(ok,msg)=>{if(!ok)throw new Error('Programme Economy V4 regression: '+msg)};
 need(/const V=4,UI=/.test(economy),'economy schema must be V4');
 need(economy.includes('ledgerByNation')&&economy.includes('ledgerOwner'),'finance ledger must be nation-owned');
@@ -15,7 +16,9 @@ need(economy.includes('function decisionActions(')&&economy.includes('programmeA
 need(core.includes('AMProgrammeEconomy?.decisionActions')&&core.includes("a.destination==='finance'"),'Inbox core does not own programme action routing');
 need(reader.includes('data-open-programme')&&reader.includes('openFinanceView'),'canonical reader lacks programme action');
 need(economy.includes('function handleNationChange(')&&career.includes('handleNationChange?.(ctx.before.nation)'),'national-job economy handover missing');
-need(economy.includes('function openCoachDossier(')&&economy.includes('__athleticsStaffFinanceV2')&&economy.includes("if(!openCoachDossier(b.dataset.cp))"),'Staff profile actions must use the explicit Staff V2 profile authority');
+need(economy.includes('function coachSource(')&&economy.includes('function openCoachDossier(')&&economy.includes('function openStaffMarket(')&&economy.includes('programmeEconomyDialog'),'Programme Economy must own Staff profiles and market navigation');
+need(!economy.includes("return OLD.drawStaff.apply(this,arguments)"),'Staff route must not fall back to the retired shortlist renderer');
+need(!staffUi.includes('Recruitment shortlist'),'Retired three-coach recruitment shortlist is still present in Staff V2');
 need(economy.includes('class="athlete-link" data-cp=')&&economy.includes('type="button" class="btn ghost" data-cp='),'Staff coach names and profile buttons must both expose dossier actions');
 const impact=(cash,weekly,left,newAnnual,currentAnnual=0,upfront=0)=>{const delta=(newAnnual-currentAnnual)/52,projected=cash-weekly*left-upfront-delta*left,nextWeekly=Math.max(0,weekly+delta),reserve=nextWeekly*13,headroom=Math.max(0,Math.min(cash-upfront-reserve,projected));return{projected,headroom}};
 const a=impact(3_000_000,60_000,30,120_000);need(a.headroom>=0&&a.headroom<=a.projected,'safe headroom exceeds forecast');

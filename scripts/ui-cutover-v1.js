@@ -27,7 +27,7 @@ const ROUTES={
 };
 const COMPONENTS={
  athleteProfile:'squad-athlete-v2',
- staffProfile:'staff-finance-v2 + programme-economy-v1',
+ staffProfile:'programme-economy-v2',
  competitionOverview:'competition-journey-v2',
  inboxReader:'inbox-v3 + inbox-single-render-v1',
  progressionGate:'inbox-decision-core-v1',
