@@ -37,7 +37,7 @@ function resultRows(e,d){return Array.isArray(e?.results?.[d])?(e.results[d]||[]
 function resultStatus(r){if(r?.dns)return'DNS';if(r?.dnf)return'DNF';if(r?.dq||r?.disqualified)return'DQ';if(r?.noHeight)return'NH';if(r?.noMark)return'NM';return''}
 function markText(d,r){const st=resultStatus(r);return st||safe(()=>fmtPerf(d,r?.perf),'—')}
 function recordCodes(r){return (r?.achievements||[]).filter(x=>['PB','SB','NR','CR','WR'].includes(String(x).toUpperCase())).map(x=>String(x).toUpperCase())}
-function playerRows(e,d){return resultRows(e,d).map((r,i)=>({...r,place:i+1})).filter(r=>r.nation===safe(()=>managedNation(),''))}
+function playerRows(e,d){return resultRows(e,d).map((r,i)=>({...r,place:i+1})).filter(r=>r.nation===safe(()=>managedNation(),'')&&(e.entries?.[d]||[]).some(id=>String(id)===String(r.id)))}
 function playerHighlight(e,d){const rows=playerRows(e,d);if(!rows.length)return null;return rows.sort((a,b)=>a.place-b.place)[0]}
 function resultMedals(e){let podiums=0,wins=0,pb=0,nr=0,wr=0;for(const d of eventDiscs(e))for(const r of playerRows(e,d)){if(r.place<=3)podiums++;if(r.place===1)wins++;const c=recordCodes(r);if(c.includes('PB'))pb++;if(c.includes('NR'))nr++;if(c.includes('WR'))wr++}return{podiums,wins,pb,nr,wr}}
 function athleteNames(e,d){return (e?.entries?.[d]||[]).map(id=>s.athletes?.find(a=>String(a.id)===String(id))).filter(Boolean)}

@@ -153,4 +153,32 @@ await test('Competition footer opens canonical programme and results routes',()=
   e.completed=true;f.w.decorateLive(e,'W100');f.w.document.getElementById('v3day').click();assert.equal(JSON.stringify(f.w.opened[1]),'["meet","results"]');
  }finally{f.dom.window.close()}
 });
+await test('Saved-career UI and qualification initialise after discipline registration',()=>{
+ const f=fixture();try{
+  const source=fs.readFileSync('scripts/game.js','utf8');
+  f.w.eval(`var expanded=false,calls=0,renderView=()=>{if(!expanded)throw Error('early UI');calls++},qualificationRoadState=()=>{},ensureQualificationLocks=()=>{if(!expanded)throw Error('early qualification')},updateQualificationTracking=()=>calls++,renderMenu=()=>{};`);
+  const render=source.split('\n').find(line=>line.includes("document.addEventListener('DOMContentLoaded',()=>renderView(currentView)"));assert.ok(render);f.w.eval(render);
+  const start=source.indexOf('function initialiseQualificationRoad(){');f.w.eval(source.slice(start,source.indexOf('/* ===== End Road to Qualification Update',start)));
+  assert.equal(f.w.calls,0);f.w.expanded=true;f.w.document.dispatchEvent(new f.w.Event('DOMContentLoaded'));assert.equal(f.w.calls,2);
+ }finally{f.dom.window.close()}
+});
+await test('Official results replace waiting or provisional commentary',()=>{
+ const f=fixture();try{
+  f.w.eval(`var performanceMoment=()=>null,championTitle=()=> 'Event winner',label=()=> '100m',normaliseSpeech=String,E=String,officialRows=(e,d,r)=>r;`);
+  const source=fs.readFileSync('scripts/live-event-broadcast-v4.js','utf8');
+  f.w.eval(source.split('\n').find(line=>line.startsWith('function officialMomentSpeech(')));f.w.eval(source.split('\n').find(line=>line.startsWith('function commentaryHTML(')));
+  const e={results:{W100:[{name:'Test Winner',perf:11.27}]},commentary:{W100:['Order provisional']}};
+  f.w.document.body.innerHTML=f.w.commentaryHTML(null,e,'W100');const text=f.w.document.querySelector('.lv4-current-comment').textContent;
+  assert.match(text,/Test Winner is confirmed/);assert.doesNotMatch(text,/Waiting|provisional/);
+ }finally{f.dom.window.close()}
+});
+await test('Domestic rivals are not counted as programme entrants or medals',()=>{
+ const f=fixture();try{
+  f.w.eval(`var safe=fn=>fn(),managedNation=()=> 'GREAT BRITAIN',eventDiscs=e=>e.disc;`);
+  const source=fs.readFileSync('scripts/competition-journey-v2.js','utf8');f.w.eval(source.slice(source.indexOf('function resultRows(e,d){'),source.indexOf('function athleteNames(e,d){')));
+  const e={disc:['W100','W200'],entries:{W100:['own'],W200:[]},results:{W100:[{id:'rival',nation:'GREAT BRITAIN'},{id:'own',nation:'GREAT BRITAIN'}],W200:[{id:'rival2',nation:'GREAT BRITAIN'}]}};
+  assert.equal(f.w.playerHighlight(e,'W100').id,'own');assert.equal(f.w.playerHighlight(e,'W100').place,2);assert.equal(f.w.playerHighlight(e,'W200'),null);
+  assert.equal(f.w.resultMedals(e).wins,0);assert.equal(f.w.resultMedals(e).podiums,1);
+ }finally{f.dom.window.close()}
+});
 process.exitCode=failures?1:0;
