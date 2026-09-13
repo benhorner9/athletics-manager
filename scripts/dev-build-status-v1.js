@@ -7,6 +7,7 @@ const isDev=/^dev\./i.test(location.hostname)||/(^|\/)dev(\/|$)/i.test(location.
 if(!isDev)return;
 
 const state={boot:null,server:null,history:[],status:'loading'};
+const fed=new Set();
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const short=v=>String(v||'').slice(0,8).toUpperCase();
 const fmt=iso=>{try{return new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'Europe/London'}).format(new Date(iso)).replace(',',' ·')}catch(_){return iso||''}};
@@ -22,7 +23,6 @@ function ensureStyle(){
  @media(max-width:700px){#amDevBuildChip{right:8px;bottom:72px}.am-dev-build-panel-head{display:grid}.am-dev-build-row{grid-template-columns:auto minmax(0,1fr)}.am-dev-build-row time{grid-column:2}}
  `;document.head.appendChild(s)
 }
-
 function compute(){
  if(!state.server)return state.status==='error'?'error':'loading';
  if(!state.boot?.sha)return 'error';
@@ -53,7 +53,8 @@ function renderPanel(){
 function feedUpdatePanel(){
  if(typeof window.addDevelopmentUpdate!=='function'||!Array.isArray(state.history))return;
  for(const item of state.history.slice(0,5)){
-  if(!item?.deployedAt)continue;
+  if(!item?.deployedAt||fed.has(item.deployedAt))continue;
+  fed.add(item.deployedAt);
   try{window.addDevelopmentUpdate({timestamp:item.deployedAt,date:'',title:item.title||`Dev Build ${short(item.sha)}`,items:[`Dev client build ${short(item.sha)} deployed successfully.`]})}catch(_){ }
  }
 }
@@ -80,7 +81,10 @@ async function start(){
  setInterval(refresh,60000);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});
  window.addEventListener('pageshow',()=>refresh());
- const observer=new MutationObserver(()=>renderPanel());observer.observe(document.body,{childList:true,subtree:true});
+ if(typeof renderMenu==='function'){
+  const baseRenderMenu=renderMenu;
+  renderMenu=function(...args){const out=baseRenderMenu.apply(this,args);setTimeout(renderPanel,0);return out};
+ }
  window.__athleticsDevBuildStatus={version:1,state,refresh,render:()=>{renderChip();renderPanel()}}
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
