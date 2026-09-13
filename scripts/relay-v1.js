@@ -1,25 +1,4 @@
-from pathlib import Path
-
-root=Path('.')
-
-def replace_once(path, old, new):
-    p=root/path
-    text=p.read_text(encoding='utf-8')
-    if old not in text:
-        raise SystemExit(f'Missing expected source contract in {path}: {old[:80]!r}')
-    p.write_text(text.replace(old,new,1),encoding='utf-8')
-
-# Expand the senior squad for relay depth. Keep this in the core constant so every
-# existing squad-cap consumer (contracts, call-ups, onboarding, profiles) agrees.
-replace_once('scripts/game.js','const SQUAD_LIMIT=9;','const SQUAD_LIMIT=14;')
-replace_once('scripts/game.js','leaving five places for you to shape.','leaving ten places for you to shape.')
-# Remove two stale hard-coded squad-size references while this system is being touched.
-p=root/'scripts/game.js'
-text=p.read_text(encoding='utf-8')
-text=text.replace('the 12-athlete national squad','the ${SQUAD_LIMIT}-athlete national squad')
-p.write_text(text,encoding='utf-8')
-
-relay_js=r'''/* Athletics Manager — 4x100m Relay V1
+/* Athletics Manager — 4x100m Relay V1
    Dev-only first relay implementation.
    - Men's and Women's 4x100m at selected international meetings.
    - 100m/200m senior-squad athletes remain eligible for individual events at the same meeting.
@@ -241,35 +220,3 @@ const baseDrawCompetition=typeof drawCompetition==='function'?drawCompetition:nu
 migrate();queuePatch();
 window.AMRelayV1={version:1,isRelay,eligible:relayEligible,bestLineup,estimateLineup,relaySkill,state:relayState,events:[...RELAY_EVENT_IDS],disciplines:Object.keys(RELAYS),migrate};
 })();
-'''
-
-relay_css=r'''/* Athletics Manager — 4x100m Relay V1 */
-.relay-selection .relay-selection-note{margin:10px 0 4px;padding:10px 12px;border:1px solid rgba(244,201,93,.28);border-radius:9px;background:rgba(244,201,93,.06);display:grid;gap:3px}.relay-selection-note strong{font-size:9px;letter-spacing:.11em;color:#f0cf77}.relay-selection-note span{font-size:9px;line-height:1.45;color:#91adbc}.relay-selection .sdv3-slot small{color:#e1c46f}.relay-selection .relay-skill{margin-top:3px!important;color:#81bfdc!important}.relay-profile-tag{border-color:rgba(244,201,93,.28)!important;color:#e7ca78!important;background:rgba(244,201,93,.06)!important}.relay-live{width:100%;min-height:100%;background:#061421}.relay-live-head{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#081b29;border-bottom:1px solid rgba(121,174,203,.16);font-size:9px;font-weight:900;letter-spacing:.09em;color:#dcebf2}.relay-live-head b{color:#f0cf77}.relay-live svg{display:block;width:100%;height:auto;max-height:520px}.relay-live-legend{display:flex;gap:7px;flex-wrap:wrap;padding:7px 10px;background:#071824;border-top:1px solid rgba(121,174,203,.12)}.relay-live-legend span{font-size:8px;color:#91adbc}@media(max-width:700px){.relay-live-legend{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.relay-selection-note span{font-size:8px}}
-'''
-
-(root/'scripts/relay-v1.js').write_text(relay_js,encoding='utf-8')
-(root/'styles/relay-v1.css').write_text(relay_css,encoding='utf-8')
-
-# Load the relay presentation with competition assets, and load its runtime after the
-# canonical Competition Journey has registered but before the route guard captures it.
-replace_once('game.html',
- '<link rel="stylesheet" href="styles/competition-journey-v2.css?v=20260910-competition2">',
- '<link rel="stylesheet" href="styles/competition-journey-v2.css?v=20260910-competition2">\n<link rel="stylesheet" href="styles/relay-v1.css?v=20260913-relay1">')
-replace_once('game.html',
- '<script src="scripts/competition-journey-v2.js?v=20260913-audit6"></script>\n<script src="scripts/competition-journey-route-guard-v1.js?v=20260913-audit6"></script>',
- '<script src="scripts/competition-journey-v2.js?v=20260913-audit6"></script>\n<script src="scripts/relay-v1.js?v=20260913-relay1"></script>\n<script src="scripts/competition-journey-route-guard-v1.js?v=20260913-audit6"></script>')
-
-# Add static source contracts so every ordinary dev deployment checks that Relay V1
-# remains loaded in the intended order and the squad expansion is not accidentally lost.
-p=root/'tools/static-regression.mjs'
-text=p.read_text(encoding='utf-8')
-text=text.replace(" 'scripts/competition-journey-v2.js',\n 'scripts/training-v3.js',"," 'scripts/competition-journey-v2.js',\n 'scripts/relay-v1.js',\n 'scripts/training-v3.js',",1)
-text=text.replace("before('scripts/competition-journey-v2.js','scripts/competition-journey-route-guard-v1.js');","before('scripts/competition-journey-v2.js','scripts/relay-v1.js');\nbefore('scripts/relay-v1.js','scripts/competition-journey-route-guard-v1.js');",1)
-needle="const sourceContracts={\n"
-relay_contract="const relayCore=read('scripts/game.js');\nif(!relayCore.includes('const SQUAD_LIMIT=14;'))fail('Relay V1 requires the senior squad limit to remain 14.');\nif(!html.includes('styles/relay-v1.css'))fail('Relay V1 stylesheet is not loaded.');\n\n"
-if needle not in text: raise SystemExit('Static regression source-contract insertion point missing')
-text=text.replace(needle,relay_contract+needle,1)
-text=text.replace(" 'scripts/competition-journey-v2.js':["," 'scripts/relay-v1.js':[[\"M4X100\",'Men’s 4x100m relay discipline is missing'],[\"W4X100\",'Women’s 4x100m relay discipline is missing'],['selectionEntryLimit','Relay selection slot override is missing'],['simulateDiscipline','Relay simulation override is missing'],['eventVisualHTML','Relay live presentation override is missing'],['window.AMRelayV1','Relay V1 public authority is missing']],\n 'scripts/competition-journey-v2.js':[",1)
-p.write_text(text,encoding='utf-8')
-
-print('Relay V1 staged: squad cap 14, 4x100 relay runtime/presentation, selection and regression contracts.')

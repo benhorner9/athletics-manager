@@ -56,6 +56,7 @@ const requiredScripts=[
  'scripts/shotput-athlete-v1.js',
  'scripts/live-event-broadcast-v4.js',
  'scripts/competition-journey-v2.js',
+ 'scripts/relay-v1.js',
  'scripts/training-v3.js',
  'scripts/scouting-v3.js',
  'scripts/staff-finance-v2.js',
@@ -88,7 +89,8 @@ before('scripts/ui-platform-v1.js','scripts/home-v2.js');
 before('scripts/live-event-engine-v3.js','scripts/live-event-broadcast-v4.js');
 before('scripts/shotput-athlete-v1.js','scripts/live-event-broadcast-v4.js');
 before('scripts/live-event-broadcast-v4.js','scripts/competition-journey-v2.js');
-before('scripts/competition-journey-v2.js','scripts/competition-journey-route-guard-v1.js');
+before('scripts/competition-journey-v2.js','scripts/relay-v1.js');
+before('scripts/relay-v1.js','scripts/competition-journey-route-guard-v1.js');
 before('scripts/scouting-v3.js','scripts/world-season-v2.js');
 before('scripts/staff-finance-v2.js','scripts/world-season-v2.js');
 before('scripts/world-season-v2.js','scripts/club-world-v1.js');
@@ -129,6 +131,10 @@ if(fs.existsSync(integration)){
 }
 
 /* Source contracts for bugs already discovered during the rebuild. */
+const relayCore=read('scripts/game.js');
+if(!relayCore.includes('const SQUAD_LIMIT=14;'))fail('Relay V1 requires the senior squad limit to remain 14.');
+if(!html.includes('styles/relay-v1.css'))fail('Relay V1 stylesheet is not loaded.');
+
 const sourceContracts={
  'scripts/people-biography-v1.js':[
   ['window.AMPeopleBiography','People Biography public authority is missing'],
@@ -198,6 +204,7 @@ const sourceContracts={
   ['function decorateAthletes(ctx,d,dlg)','Selection athlete-story decorator is missing'],
   ['__selectionImmersion','Selection immersion wrapper ownership marker is missing']
  ],
+ 'scripts/relay-v1.js':[["M4X100",'Men’s 4x100m relay discipline is missing'],["W4X100",'Women’s 4x100m relay discipline is missing'],['selectionEntryLimit','Relay selection slot override is missing'],['simulateDiscipline','Relay simulation override is missing'],['eventVisualHTML','Relay live presentation override is missing'],['window.AMRelayV1','Relay V1 public authority is missing']],
  'scripts/competition-journey-v2.js':[
   ['window.__athleticsCompetitionJourneyV2','Competition Journey public handle is missing'],
   ['function summitRouteActive()','Competition Journey must delegate active Summit routes to the Summit authority'],
