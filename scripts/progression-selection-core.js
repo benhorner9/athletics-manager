@@ -16,11 +16,13 @@ window.__athleticsLiveScoreboardSync=function(){try{return baseScoreSync?.()}cat
 let lastSig='',lastMove=performance.now();
 function playbackSig(){
  if(!disciplineRunning||!liveEventView)return '';
+ const current=window.AMLiveBroadcastV4?.active;if(current){if(current.paused||document.hidden)return '';return `v4:${current.e?.id}:${current.d}:${current.last}:${current.elapsed||0}:${current.i||0}:${current.phase||''}`} 
  if(liveEventView.trackCoreV5){const t=liveEventView.trackCoreV5;return `t5:${t.stageIndex||0}:${Math.round((Number(t.local)||0)*1000)}:${liveEventView.lines?.length||0}`}
  if(liveEventView.fd){const f=liveEventView.fd,c=f.c||f.last;return `f:${c?.athleteId||''}:${c?.attempt||0}:${c?.height||0}:${c?.outcome||''}:${liveEventView.lines?.length||0}:${f.done?1:0}`}
  return `x:${liveEventView.lines?.length||0}`
 }
 function emergencyFinish(){
+ const current=window.AMLiveBroadcastV4?.active;if(current){if(current.paused||document.hidden)return;const skip=$('v4skip');if(skip&&!skip.disabled)skip.click();return}
  const v=liveEventView,e=v?.event,d=v?.disc,rows=v?.results;if(!disciplineRunning||!e||!d||!Array.isArray(rows))return;
  try{commitDisciplineResults(e,d,rows);save()}catch(err){console.warn('Playback recovery commit failed',err);return}
  try{v.trackCoreV5?.raf&&cancelAnimationFrame(v.trackCoreV5.raf);v.trackCoreV5?.timer&&clearTimeout(v.trackCoreV5.timer)}catch(_){}

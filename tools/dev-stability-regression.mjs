@@ -99,4 +99,47 @@ await test('Withdrawals reopen selection and single No Entry resolves a slot',()
   assert.equal(f.w.__athleticsInboxDecisionCore.getUnresolvedActions().length,0);
  }finally{f.dom.window.close()}
 });
+await test('Onboarding keeps stable buttons and observes training before redraw',()=>{
+ const f=fixture();try{
+  f.w.document.body.insertAdjacentHTML('beforeend','<div id="home"></div>');
+  const source=fs.readFileSync('scripts/first-time-experience-v2.js','utf8');
+  f.w.eval(`var $=id=>document.getElementById(id),active=()=>true,markSeen=()=>{},ensureState=()=>({steps:{trainingDecision:false}}),agendaHTML=()=>'<section class="ftx-agenda"><button>Review</button></section>';s.appointment={contractSigned:true};`);
+  f.w.eval(source.slice(source.indexOf('function decisionState(e,d){'),source.indexOf('function coachPick(e,d){')));
+  assert.equal(f.w.firstSelectionComplete({disc:['M100'],entries:{M100:[]},selectionDecisionV3:{slots:{M100:[{mode:'no_entry',id:null}]}}}),true,'guidance rejects current No Entry decision');
+  f.w.eval(source.slice(source.indexOf('function decorateHome(){'),source.indexOf('function athleteManagementRoot()')));
+  f.w.decorateHome();const button=f.w.document.querySelector('#home button');f.w.decorateHome();
+  assert.equal(f.w.document.querySelector('#home button'),button,'observer decoration replaces focused/clickable button');
+  f.w.eval(`var detected=0,currentPhase=()=> 'training',queueTrainingDecisionDetection=()=>{detected++};`);
+  const listener=source.split('\n').find(line=>line.includes("document.addEventListener('change',event=>"));f.w.eval(listener);
+  const root=f.w.document.getElementById('training');root.innerHTML='<select><option>A</option><option>B</option></select>';
+  const select=root.firstChild;select.onchange=()=>{root.innerHTML='Redrawn'};
+  select.dispatchEvent(new f.w.Event('change',{bubbles:true}));assert.equal(f.w.detected,1,'redraw detaches target before guidance observes it');
+ }finally{f.dom.window.close()}
+});
+await test('Playback watchdog follows current frames, respects pause and uses canonical completion',()=>{
+ const f=fixture();try{
+  const source=fs.readFileSync('scripts/progression-selection-core.js','utf8');
+  f.w.eval(`var $=id=>document.getElementById(id),disciplineRunning=true,liveEventView={};`);
+  f.w.eval(source.slice(source.indexOf('function playbackSig(){'),source.indexOf('setInterval(()=>{const sig=playbackSig()')));
+  Object.defineProperty(f.w.document,'hidden',{value:false,configurable:true});
+  const c={e:{id:'meet'},d:'W100',last:100,elapsed:0};f.w.AMLiveBroadcastV4={active:c};
+  const before=f.w.playbackSig();c.last=116;assert.notEqual(f.w.playbackSig(),before);
+  c.paused=true;assert.equal(f.w.playbackSig(),'');c.paused=false;
+  Object.defineProperty(f.w.document,'hidden',{value:true,configurable:true});assert.equal(f.w.playbackSig(),'');
+  Object.defineProperty(f.w.document,'hidden',{value:false,configurable:true});
+  f.w.document.body.insertAdjacentHTML('beforeend','<button id="v4skip">Instant Result</button>');let completed=0;f.w.document.getElementById('v4skip').onclick=()=>completed++;
+  f.w.emergencyFinish();assert.equal(completed,1);
+  c.paused=true;f.w.emergencyFinish();assert.equal(completed,1);
+ }finally{f.dom.window.close()}
+});
+await test('Live playback preserves interactive controls across animation frames',()=>{
+ const f=fixture();try{
+  f.w.document.body.insertAdjacentHTML('beforeend','<div id="liveEventVisual"></div>');
+  f.w.eval(`var $=id=>document.getElementById(id),live={paused:false,speed:1},updateBoard=()=>{},refreshQa=()=>{},paintDue=()=>true,clockNow=()=>0,presentationHz=()=>30;var liveVisual=c=>'<div class="v3stage"><div class="v3top">LIVE</div><div class="v3canvas">frame</div><div class="v3controls"><button data-pause>'+ (c.paused?'RESUME':'PAUSE') +'</button><button data-speed="4">4x</button><span>0s</span></div></div>';`);
+  const source=fs.readFileSync('scripts/live-event-broadcast-v4.js','utf8');f.w.eval(source.slice(source.indexOf('function wire(c){'),source.indexOf('function draw(e,can,ds){')));
+  f.w.render(f.w.live);const pause=f.w.document.querySelector('[data-pause]');f.w.render(f.w.live);f.w.render(f.w.live);
+  assert.equal(f.w.document.querySelector('[data-pause]'),pause);pause.click();assert.equal(f.w.live.paused,true);assert.equal(pause.textContent,'RESUME');
+  f.w.document.querySelector('[data-speed]').click();assert.equal(f.w.live.speed,4);
+ }finally{f.dom.window.close()}
+});
 process.exitCode=failures?1:0;

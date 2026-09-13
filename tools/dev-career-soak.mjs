@@ -23,7 +23,7 @@ export async function run(w){
  }
  let completed=0;
  const weeks=[];
- for(let i=0;i<16;i++){
+ for(let i=0;i<Number(process.env.AM_AUDIT_WEEKS||16);i++){
   const before=read('s.game.week');
   const legacyHistory=read('s.athletes.reduce((n,a)=>n+(a.trainingV2?.history||[]).filter(h=>h.type==="training").length,0)');
   const decisions=w.__athleticsInboxDecisionCore.getUnresolvedActions();

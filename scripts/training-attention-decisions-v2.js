@@ -2,7 +2,7 @@
 (function(){
 'use strict';
 // The asynchronous legacy bundle must not replace the current Training Centre queue.
-if(window.AMTrainingSystem2){window.AMTrainingSystem2.syncAttention();return}
+if(window.AMTrainingSystem2){window.AMTrainingSystem2.syncAttention?.();return}
 if(window.__amTrainingAttentionDecisionsV2)return;
 window.__amTrainingAttentionDecisionsV2=1;
 
