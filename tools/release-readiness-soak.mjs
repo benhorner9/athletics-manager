@@ -23,10 +23,17 @@ export async function run(w){
 
   console.log('[release] Scouting discovery lifecycle');
   reset();
-  const scoutBefore=read(`({athletes:s.athletes.length,reports:scoutingState().reports.length,pool:nationalPool().length})`);
+  const scoutBefore=read(`({athletes:s.athletes.length,reports:scoutingState().reports.length,pool:nationalPool().length,emails:s.emails.filter(m=>m.type==='scouting').length,last:scoutingState().lastCareerWeek,now:careerNow()})`);
   read(`scoutingState().lastCareerWeek=careerNow()-8;delete scoutingState().processedWeek;weeklyLifecycle()`);
-  const scoutAfter=read(`({athletes:s.athletes.length,reports:scoutingState().reports.length,pool:nationalPool().length})`);
+  const scoutAfter=read(`({athletes:s.athletes.length,reports:scoutingState().reports.length,pool:nationalPool().length,emails:s.emails.filter(m=>m.type==='scouting').length,last:scoutingState().lastCareerWeek,now:careerNow()})`);
+  console.log('[release] scouting weekly',JSON.stringify({before:scoutBefore,after:scoutAfter}));
   assert.ok(scoutAfter.athletes>scoutBefore.athletes,'eight-week scouting cycle did not create a prospect');
+  if(!(scoutAfter.reports>scoutBefore.reports)){
+   const probeBefore=read(`({reports:scoutingState().reports.length,emails:s.emails.filter(m=>m.type==='scouting').length,athletes:s.athletes.length})`);
+   const probeIds=read(`generateProspects(1,'Release QA direct probe').map(a=>a.id)`);
+   const probeAfter=read(`({reports:scoutingState().reports.length,emails:s.emails.filter(m=>m.type==='scouting').length,athletes:s.athletes.length})`);
+   console.log('[release] scouting direct probe',JSON.stringify({probeIds,before:probeBefore,after:probeAfter,weeklySource:String(read(`weeklyLifecycle`)).slice(0,180),generatorSource:String(read(`generateProspects`)).slice(0,180)}));
+  }
   assert.ok(scoutAfter.reports>scoutBefore.reports,'scouting cycle did not create a report');
   assert.ok(scoutAfter.pool>scoutBefore.pool,'scouted prospect did not enter National Pool');
 
