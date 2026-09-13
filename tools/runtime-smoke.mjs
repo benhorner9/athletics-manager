@@ -10,6 +10,7 @@ const scriptPath=fileURLToPath(import.meta.url);
 
 if(process.env.AM_SMOKE_CHILD!=='1'){
  await import('./programme-economy-soak.mjs');
+ await import('./programme-board-commercial-soak.mjs');
  const child=spawn(process.execPath,[scriptPath],{
   cwd:process.cwd(),
   env:{...process.env,AM_SMOKE_CHILD:'1'},
