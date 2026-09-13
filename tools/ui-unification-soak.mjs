@@ -19,4 +19,5 @@ need(css.includes('font-size:10px!important;line-height:1.25'), 'Inbox compact s
 need(css.includes('.am-inbox-v3-reader{position:relative;z-index:2'), 'Inbox reader stacking boundary missing');
 need(css.includes('html{background-color:#06101b!important;overscroll-behavior-y:none}'),'iPad root overscroll containment missing');
 need(css.includes('body{background-color:#06101b;overscroll-behavior-y:none;min-height:100dvh}'),'iPad body overscroll containment missing');
+need(css.includes('.main{min-height:100dvh;'),'iPad app shell dynamic viewport floor missing');
 console.log('[ui-unification] My Profile visual baseline contract passed.');
