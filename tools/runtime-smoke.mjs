@@ -25,7 +25,7 @@ if(process.env.AM_SMOKE_CHILD!=='1'){
   console.error('\nATHLETICS MANAGER RUNTIME SMOKE: TIMED OUT\n');
   console.error('The child process stopped responding. The last [smoke] route printed above identifies the likely blocking renderer.');
   child.kill('SIGKILL');
- },25000);
+ },process.env.AM_AUDIT_SOAK==='1'?180000:25000);
  const code=await new Promise(resolve=>child.on('exit',(value,signal)=>resolve(value??(signal?124:1))));
  clearTimeout(timer);
  process.exit(code);
@@ -74,6 +74,7 @@ try{
   pretendToBeVisual:true,
   virtualConsole,
   beforeParse(window){
+   window.TextEncoder=TextEncoder;window.TextDecoder=TextDecoder;
    window.fetch=(input,init)=>globalThis.fetch(new URL(String(input),window.location.href),init);
    if(globalThis.Response)window.Response=globalThis.Response;
    if(globalThis.Request)window.Request=globalThis.Request;
@@ -96,8 +97,8 @@ try{
    }
   }
  });
- await new Promise(resolve=>{
-  const timer=setTimeout(resolve,3500);
+ await new Promise((resolve,reject)=>{
+  const timer=setTimeout(()=>reject(new Error("Page load did not complete within 15 seconds")),15000);
   dom.window.addEventListener('load',()=>{clearTimeout(timer);setTimeout(resolve,900)},{once:true});
   dom.window.addEventListener('error',event=>fail(`window error: ${event.message||event.error||'unknown error'}`));
   dom.window.addEventListener('unhandledrejection',event=>fail(`unhandled rejection: ${event.reason||'unknown rejection'}`));
@@ -290,8 +291,10 @@ try{
   }
  }else fail('Global view() router is unavailable.');
  console.log('[smoke] route render sweep finished');
+ if(process.env.AM_AUDIT_SOAK==='1')await (await import('./dev-career-soak.mjs')).run(w);
 
 } catch(err){
+ if(process.env.AM_AUDIT_SOAK==='1'&&dom)fs.writeFileSync('/tmp/am-audit-state.json',dom.window.eval('JSON.stringify(s)'));
  fail(`Runtime smoke harness failed: ${err?.stack||err}`);
 } finally {
  try{dom?.window?.close()}catch(_){}

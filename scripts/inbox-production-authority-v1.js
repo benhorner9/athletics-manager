@@ -86,10 +86,9 @@ function bottomBadge(){
 function setBadge(badge,snap){if(!badge)return;const text=snap.count?String(snap.count):'';if(badge.textContent!==text)badge.textContent=text;badge.classList.toggle('hidden',!snap.count);badge.hidden=!snap.count;badge.title=snap.count?`${snap.count} inbox item${snap.count===1?'':'s'} need attention · ${snap.unread} unread · ${snap.actions} action${snap.actions===1?'':'s'}`:'No inbox items need attention'}
 function syncVisibleCounters(snap=attentionSnapshot()){
  const root=$('inbox');if(!root)return;
- root.querySelector('[data-v3-count="actions"] b')?.replaceChildren(String(snap.actions));
- root.querySelector('[data-v3-count="unread"] b')?.replaceChildren(String(snap.unread));
- root.querySelector('[data-v3-count="important"] b')?.replaceChildren(String(snap.important));
- const actionTab=root.querySelector('[data-v3-filter="actions"] b');if(actionTab)actionTab.textContent=String(snap.actions)
+ // This subtree is observed: writing identical text would schedule another frame forever.
+ for(const key of ['actions','unread','important']){const node=root.querySelector(`[data-v3-count="${key}"] b`),value=String(snap[key]);if(node&&node.textContent!==value)node.textContent=value}
+ const actionTab=root.querySelector('[data-v3-filter="actions"] b');if(actionTab&&actionTab.textContent!==String(snap.actions))actionTab.textContent=String(snap.actions)
 }
 function syncAttentionBadge(){
  removeLegacyIndicators();const snap=attentionSnapshot();setBadge($('mailBadge'),snap);setBadge(bottomBadge(),snap);syncVisibleCounters(snap);return snap.count
