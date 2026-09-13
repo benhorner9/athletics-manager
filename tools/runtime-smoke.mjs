@@ -276,9 +276,13 @@ try{
    const on=[...w.document.querySelectorAll('.view.on')];
    if(on.length!==1)fail(`Route ${target} left ${on.length} active views.`);
    if(target==='staff'){
-    const profile=w.document.querySelector('#staff [data-cp],#staff [data-sfv2-coach]'),dialog=w.document.getElementById('managementProfile');
+    if(w.AMProgrammeEconomy?.renderStaff){try{w.AMProgrammeEconomy.renderStaff();await new Promise(resolve=>setTimeout(resolve,20))}catch(err){fail(`Canonical Staff Market render threw: ${err?.stack||err}`)}}
+    const profile=w.document.querySelector('#staff [data-cp]'),marketTab=w.document.querySelector('#staff [data-stab="market"]'),legacyShortlist=w.document.querySelector('#staff .sfv2-shortlist,#staff [data-sfv2-appoint]');
+    if(!w.AMProgrammeEconomy)fail('Programme Economy Staff authority was not loaded before Staff route validation.');
+    if(!marketTab)fail('Staff route did not expose the canonical Staff Market tab.');
+    if(legacyShortlist)fail('Staff route exposed the retired three-coach shortlist.');
     if(profile){
-     try{if(dialog?.open)dialog.close();profile.click();await new Promise(resolve=>setTimeout(resolve,15));if(!dialog?.open)fail('Coach profile action did not open the staff dossier dialog.');dialog?.close()}catch(err){fail(`Coach profile click threw during Staff smoke: ${err?.stack||err}`)}
+     try{const manager=w.document.getElementById('managementProfile');if(manager?.open)manager.close();profile.click();await new Promise(resolve=>setTimeout(resolve,15));const dialog=w.document.getElementById('programmeEconomyDialog');if(!dialog?.open)fail('Coach profile action did not open the Programme Economy staff dossier.');if(w.document.getElementById('myProfileShortcut')?.classList.contains('on'))fail('Coach profile incorrectly activated My Profile navigation.');dialog?.close()}catch(err){fail(`Coach profile click threw during Staff smoke: ${err?.stack||err}`)}
     }else console.log('[smoke] staff profile interaction skipped: startup smoke has no active career staff');
    }
   }

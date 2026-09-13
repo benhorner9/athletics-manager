@@ -7,7 +7,7 @@ if(window.__amUICutoverV1)return;window.__amUICutoverV1=1;
 
 const $=id=>document.getElementById(id);
 const GENERATION='production';
-const BUILD='2026.09.13-staffprofile1';
+const BUILD='2026.09.13-staffmarket2';
 const ROUTES={
  home:{selector:'.home-v2,[data-am-ui-screen="home-v2"]',delay:650},
  inbox:{selector:'.am-inbox-v3,[data-am-ui-screen="inbox-v3"]',delay:650},
@@ -27,7 +27,7 @@ const ROUTES={
 };
 const COMPONENTS={
  athleteProfile:'squad-athlete-v2',
- staffProfile:'staff-finance-v2 + programme-economy-v1',
+ staffProfile:'programme-economy-v2',
  competitionOverview:'competition-journey-v2',
  inboxReader:'inbox-v3 + inbox-single-render-v1',
  progressionGate:'inbox-decision-core-v1',
@@ -36,9 +36,10 @@ const COMPONENTS={
 };
 let ticket=0;
 
+// Programme Economy is loaded statically in game.html. This remains a recovery loader for partial restores.
 function loadProgrammeEconomy(){
- if(!$('amProgrammeEconomyStyle')){const link=document.createElement('link');link.id='amProgrammeEconomyStyle';link.rel='stylesheet';link.href='styles/programme-economy-v1.css?v=20260913-staffprofile1';document.head.appendChild(link)}
- if(!$('amProgrammeEconomyScript')){const script=document.createElement('script');script.id='amProgrammeEconomyScript';script.src='scripts/programme-economy-v2.js?v=20260913-staffprofile1';script.async=false;document.body.appendChild(script)}
+ if(!document.querySelector('link[href*="programme-economy-v1.css"]')&&!$('amProgrammeEconomyStyle')){const link=document.createElement('link');link.id='amProgrammeEconomyStyle';link.rel='stylesheet';link.href='styles/programme-economy-v1.css?v=20260913-staffmarket2';document.head.appendChild(link)}
+ if(!window.__amProgrammeEconomyV2&&!$('amProgrammeEconomyScript')){const script=document.createElement('script');script.id='amProgrammeEconomyScript';script.src='scripts/programme-economy-v2.js?v=20260913-staffmarket2';script.async=false;document.body.appendChild(script)}
 }
 function ensureStyles(){
  if($('amUICutoverStyles'))return;const style=document.createElement('style');style.id='amUICutoverStyles';style.textContent=`
