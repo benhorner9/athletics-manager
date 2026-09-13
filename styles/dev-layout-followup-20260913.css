@@ -145,3 +145,52 @@
     overflow:hidden!important;
   }
 }
+
+/* Squad + National Pool viewport fit
+   The unified polish increased the vertical rhythm while the athlete-management shell
+   retained its older viewport allowance. Keep the whole management screen inside the
+   available desktop/tablet viewport and let long athlete lists scroll inside the table,
+   not by moving the entire page. */
+@media(min-width:701px){
+  #squad > .sav2,
+  #pool > .sav2{
+    box-sizing:border-box!important;
+    height:calc(100dvh - 124px)!important;
+    min-height:0!important;
+    gap:12px!important;
+    overflow:hidden!important;
+  }
+
+  #squad .sav2-summary > div,
+  #pool .sav2-summary > div{
+    padding:10px 12px!important;
+  }
+
+  #squad .sav2-toolbar,
+  #pool .sav2-toolbar{
+    padding:9px!important;
+  }
+
+  #squad .sav2-table th,
+  #pool .sav2-table th{
+    height:36px!important;
+  }
+
+  #squad .sav2-table td,
+  #pool .sav2-table td{
+    height:58px!important;
+  }
+
+  #squad .sav2-workspace,
+  #pool .sav2-workspace,
+  #squad .sav2-table-wrap,
+  #pool .sav2-table-wrap{
+    min-height:0!important;
+  }
+
+  #squad .sav2-table-wrap,
+  #pool .sav2-table-wrap{
+    overflow:auto!important;
+    overscroll-behavior:contain;
+  }
+}
