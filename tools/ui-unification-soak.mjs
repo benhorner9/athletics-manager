@@ -15,6 +15,7 @@ need(css.includes('--am-ui-font:Inter'),'shared tab font authority missing');
 need(css.includes('.summit-shell button,.summit-shell select,.summit-shell input'),'Summit typography correction missing');
 need(css.includes('grid-template-columns:repeat(8,minmax(68px,1fr))!important;width:min(100%,580px)!important'),'Finance stable tab-rail sizing missing');
 need(css.includes('.pe-tabs button{width:100%!important;min-width:68px!important;min-height:32px!important'),'Finance fixed tab sizing missing');
+need(css.includes('overflow-x:auto!important;align-self:start!important'),'Finance tab rail alignment/overflow contract missing');
 need(css.includes('grid-template-columns:minmax(360px,420px) minmax(0,1fr)'), 'Inbox desktop list/reader column boundary missing');
 need(css.includes('font-size:10px!important;line-height:1.25'), 'Inbox compact subject treatment missing');
 need(css.includes('.am-inbox-v3-reader{position:relative;z-index:2'), 'Inbox reader stacking boundary missing');
