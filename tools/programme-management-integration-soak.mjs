@@ -15,6 +15,8 @@ need(economy.includes('function decisionActions(')&&economy.includes('programmeA
 need(core.includes('AMProgrammeEconomy?.decisionActions')&&core.includes("a.destination==='finance'"),'Inbox core does not own programme action routing');
 need(reader.includes('data-open-programme')&&reader.includes('openFinanceView'),'canonical reader lacks programme action');
 need(economy.includes('function handleNationChange(')&&career.includes('handleNationChange?.(ctx.before.nation)'),'national-job economy handover missing');
+need(economy.includes('function openCoachDossier(')&&economy.includes('__athleticsStaffFinanceV2')&&economy.includes("if(!openCoachDossier(b.dataset.cp))"),'Staff profile actions must use the explicit Staff V2 profile authority');
+need(economy.includes('class="athlete-link" data-cp=')&&economy.includes('type="button" class="btn ghost" data-cp='),'Staff coach names and profile buttons must both expose dossier actions');
 const impact=(cash,weekly,left,newAnnual,currentAnnual=0,upfront=0)=>{const delta=(newAnnual-currentAnnual)/52,projected=cash-weekly*left-upfront-delta*left,nextWeekly=Math.max(0,weekly+delta),reserve=nextWeekly*13,headroom=Math.max(0,Math.min(cash-upfront-reserve,projected));return{projected,headroom}};
 const a=impact(3_000_000,60_000,30,120_000);need(a.headroom>=0&&a.headroom<=a.projected,'safe headroom exceeds forecast');
 const b=impact(300_000,60_000,30,250_000);need(b.projected<0&&b.headroom===0,'dangerous contract must expose zero headroom');
