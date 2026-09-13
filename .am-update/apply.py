@@ -21,9 +21,15 @@ js.write_text(text, encoding='utf-8')
 cut = root / 'scripts/ui-cutover-v1.js'
 ui = cut.read_text(encoding='utf-8')
 ui = ui.replace("const BUILD='2026.09.13-programme-economy1';", "const BUILD='2026.09.13-programme-economy2';")
-ui = ui.replace('programme-staff-v1', 'programme-staff-v2').replace('programme-economy-v1', 'programme-economy-v2')
+ui = ui.replace('programme-staff-v1', 'programme-staff-v2')
+ui = ui.replace('[data-am-ui-screen=\"programme-economy-v1\"]', '[data-am-ui-screen=\"programme-economy-v2\"]')
+ui = ui.replace("programmeEconomy:'programme-economy-v1'", "programmeEconomy:'programme-economy-v2'")
 ui = ui.replace("styles/programme-economy-v1.css?v=20260913-pe1", "styles/programme-economy-v1.css?v=20260913-pe2")
 ui = ui.replace("scripts/programme-economy-v1.js?v=20260913-pe1", "scripts/programme-economy-v2.js?v=20260913-pe2")
+if 'scripts/programme-economy-v1.js' in ui:
+    raise SystemExit('Retired programme-economy-v1.js is still active in UI cutover')
+if 'scripts/programme-economy-v2.js' not in ui:
+    raise SystemExit('Programme Economy V2 was not wired into UI cutover')
 cut.write_text(ui, encoding='utf-8')
 
 broken = root / 'scripts/programme-economy-v1.js'
@@ -56,7 +62,7 @@ Existing gameplay systems remain authoritative for performance simulation. The e
 ## Weekly order
 
 1. Existing gameplay/training week is processed.
-2. Programme Economy processes facility construction/condition.
+2. Programme Economy processes facility construction and condition.
 3. Athlete payroll is charged.
 4. Staff payroll is charged.
 5. Facility upkeep is charged.
@@ -92,20 +98,3 @@ Funding, salaries and upkeep use controlled 2% annual inflation capped at 2.2x t
 
 Existing facilities, named staff, squad members, funding and legacy finance history are retained. Migration is versioned through `s.programmeEconomies[nation].migration`; no existing career is required to restart.
 """, encoding='utf-8')
-
-# Keep the UI cutover contract explicit for regression/debugging.
-static = root / 'tools/static-regression.mjs'
-if static.exists():
-    st = static.read_text(encoding='utf-8')
-    marker = "// Programme Economy V2 authority check\n"
-    check = """// Programme Economy V2 authority check
-{
-  const pe = read('scripts/programme-economy-v2.js');
-  const cutover = read('scripts/ui-cutover-v1.js');
-  assert(pe.includes('window.AMProgrammeEconomy'), 'Programme Economy V2 must expose one canonical authority');
-  assert(cutover.includes('scripts/programme-economy-v2.js'), 'Production cutover must load Programme Economy V2');
-  assert(!cutover.includes('scripts/programme-economy-v1.js'), 'Retired Programme Economy V1 must not remain active');
-}
-"""
-    if marker not in st:
-        static.write_text(st.rstrip() + '\n\n' + check, encoding='utf-8')
