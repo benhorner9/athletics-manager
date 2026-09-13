@@ -1,0 +1,12 @@
+import fs from 'node:fs';
+const html=fs.readFileSync('game.html','utf8');
+const css=fs.readFileSync('styles/ui-unification-v1.css','utf8');
+const need=(ok,msg)=>{if(!ok)throw new Error('UI unification regression: '+msg)};
+need(html.includes('styles/ui-unification-v1.css?v=20260913-profilebaseline1'),'unified UI stylesheet is not loaded');
+need(html.indexOf('manager-profile-v1.css')<html.indexOf('ui-unification-v1.css'),'unified UI layer must load after My Profile baseline');
+for(const selector of ['.home-v2-card','.am-inbox-v3','.sav2-workspace','.apv2-shell','.calv2-card','.tr3-command','.scv3-card','.pe-shell','.cj-hero','.panel'])need(css.includes(selector),`missing shared styling for ${selector}`);
+need(css.includes('--am-ui-card-radius:16px'),'card-radius baseline drifted from My Profile');
+need(css.includes('--am-ui-copy:#9fb0c4'),'body-copy palette drifted from My Profile');
+need(css.includes('color-mix(in srgb,var(--am-ui-accent)'),'nation theming is not carried through the shared UI layer');
+need(css.includes('@media(max-width:760px)'),'mobile unification pass missing');
+console.log('[ui-unification] My Profile visual baseline contract passed.');

@@ -12,6 +12,7 @@ if(process.env.AM_SMOKE_CHILD!=='1'){
  await import('./programme-economy-soak.mjs');
  await import('./programme-board-commercial-soak.mjs');
  await import('./programme-management-integration-soak.mjs');
+ await import('./ui-unification-soak.mjs');
  await import('./inbox-week-advance-soak.mjs');
  const child=spawn(process.execPath,[scriptPath],{
   cwd:process.cwd(),
