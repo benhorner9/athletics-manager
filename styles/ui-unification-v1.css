@@ -176,9 +176,9 @@ input,select,textarea{border-radius:var(--am-ui-control-radius)!important}
 .summit-shell button,.summit-shell select,.summit-shell input{font-family:var(--am-ui-font)!important}
 .summit-shell nav button,.summit-shell .tabs button,.summit-shell [role="tab"]{min-height:34px!important;padding:0 11px!important;border-radius:8px!important;font-family:var(--am-ui-font)!important;font-size:9px!important;font-weight:900!important;letter-spacing:.06em!important}
 
-/* Finance has the most sections, so keep its tab rail compact instead of oversized. */
-.pe-tabs{padding:3px!important;border-radius:10px!important;gap:3px!important}
-.pe-tabs button{min-height:32px!important;padding:0 9px!important;border-radius:7px!important;font-size:9px!important;letter-spacing:.045em!important}
+/* Finance uses one fixed navigation footprint across every section. Income is the sizing baseline. */
+.pe-tabs{display:grid!important;grid-template-columns:repeat(8,minmax(68px,1fr))!important;width:min(100%,580px)!important;min-height:38px!important;padding:3px!important;border-radius:10px!important;gap:3px!important;overflow-x:auto!important;align-self:start!important}
+.pe-tabs button{width:100%!important;min-width:68px!important;min-height:32px!important;padding:0 8px!important;border-radius:7px!important;font-size:9px!important;letter-spacing:.045em!important}
 
 @media(max-width:900px){
  .sav2-table{min-width:1080px}
