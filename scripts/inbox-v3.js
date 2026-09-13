@@ -40,7 +40,7 @@ function filtered(){
  else if(filter==='unread')rows=rows.filter(r=>r.mail.unread===true);
  if(filter==='actions'){
   const known=new Set(rows.map(r=>String(r.action?.actionId||'')));
-  for(const a of acts)if(!known.has(String(a.actionId||''))&&!a.emailId)rows.push({kind:'action',action:a,mail:null});
+  for(const a of acts)if(!known.has(String(a.actionId||'')))rows.push({kind:'action',action:a,mail:null});
  }
  const cat=String(x.ui.category||'all');if(cat!=='all')rows=rows.filter(r=>r.mail&&category(r.mail)===cat);
  const q=String(x.ui.search||'').trim().toLowerCase();if(q)rows=rows.filter(r=>r.mail?textHaystack(r.mail).includes(q):`${r.action?.title||''} ${r.action?.reason||''}`.toLowerCase().includes(q));
@@ -72,7 +72,7 @@ function openMessage(id){
  if(matchMedia('(max-width:700px)').matches)root?.classList.add('am-inbox-v3-reading');updateCounters(root);
 }
 function openArchived(id){const root=$('inbox'),m=allArchive().find(x=>String(x.id)===String(id));if(!m)return;openMail=m.id;const reader=$('reader');if(reader)reader.innerHTML=archivedReader(m);root?.querySelectorAll('[data-v3-mail]').forEach(b=>b.classList.toggle('on',String(b.dataset.v3Mail)===String(id)));if(matchMedia('(max-width:700px)').matches)root?.classList.add('am-inbox-v3-reading')}
-function setFilter(id){const x=sys();x.ui.filter=id;x.ui.inboxV3Limit=80;x.ui.scroll=0;saveSafe();renderInbox()}
+function setFilter(id){const x=sys();x.ui.filter=id;x.ui.inboxV3Limit=80;x.ui.scroll=0;if(id==='actions'){x.ui.search='';x.ui.category='all'}saveSafe();renderInbox()}
 function renderInbox(){
  const root=$('inbox');if(!root)return;
  const x=sys(),a=actions(),b=blockers(),unread=allActive().filter(m=>m.unread).length,important=allActive().filter(m=>isImportant(m,actionForMail(m,a))).length,filter=x.ui.filter||'inbox',rows=filtered(),limit=Math.max(40,Number(x.ui.inboxV3Limit)||80),shown=rows.slice(0,limit);

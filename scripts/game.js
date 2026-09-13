@@ -200,7 +200,7 @@ function load(){
   const raw=localStorage.getItem(SAVE_KEY);
   if(!raw){s=fresh();return}
   try{
-    const parsed=JSON.parse(raw);
+    const parsed=JSON.parse(window.AMCareerSaveCodec?window.AMCareerSaveCodec.decode(raw):raw);
     if(!parsed||typeof parsed!=='object'||Array.isArray(parsed))throw new Error('Invalid save root');
     s=parsed;
     ensureState();
@@ -212,7 +212,24 @@ function load(){
   }
 }
 function ensureState(){s.events=(s.events||[]).filter(e=>e.id!=='camp');s.emails=(s.emails||[]).filter(m=>m.subject!=='Pre-season camp complete');s.staff=s.staff||{sprint:1,jumps:1,throws:1,physio:1,science:1,scout:1};s.prospects=s.prospects||[];s.history=s.history||[];s.performances=s.performances||[];s.news=s.news||[];s.medals=s.medals||{g:0,s:0,b:0};s.managedNation=s.managedNation||'GREAT BRITAIN';if(!NATIONS[s.managedNation])s.managedNation='GREAT BRITAIN';s.nationPoints=s.nationPoints||{};if(s.nationPoints['TEAM GB']!==undefined){s.nationPoints['GREAT BRITAIN']=(s.nationPoints['GREAT BRITAIN']||0)+s.nationPoints['TEAM GB'];delete s.nationPoints['TEAM GB']}Object.keys(COUNTRIES).forEach(n=>{s.nationPoints[n]??=0});s.athletes=s.athletes||makeAthletes();let ids=new Set(s.athletes.map(a=>a.id));makeAthletes().filter(a=>a.source==='World'&&!ids.has(a.id)).forEach(a=>s.athletes.push(a));s.athletes.forEach(a=>{if(a.nation==='TEAM GB'||a.nation==='Great Britain')a.nation='GREAT BRITAIN';a.points??=0;a.injury??=0;a.medals??={g:0,s:0,b:0};a.training??='Balanced';a.inSquad??=true;a.source??='Established';a.injuryHistory??=[];if(a.injuryCase&&a.injury===0)a.injuryCase.active=false;if(a.seriousInjury){a.seriousInjury.initialExpectedWeeks??=a.seriousInjury.expectedWeeks||Math.max(1,a.injury||20);a.seriousInjury.expectedWeeks??=a.seriousInjury.initialExpectedWeeks;a.seriousInjury.earlyBy??=0;a.seriousInjury.cause??='suffered a serious injury during training'}});let own=s.athletes.filter(a=>!a.retired&&a.nation===s.managedNation);let active=own.filter(a=>a.inSquad!==false);if(active.length>SQUAD_LIMIT)active.slice(SQUAD_LIMIT).forEach(a=>a.inSquad=false);if(!own.some(a=>a.inSquad===false)){let existing=new Set(s.athletes.map(a=>a.id));s.athletes.push(...makeInitialPool(s.managedNation).filter(a=>!existing.has(a.id)))}s.emails=(s.emails||[]).map(m=>({...m,sender:(m.sender||'').replace(/Team GB/g,'Great Britain'),subject:(m.subject||'').replace(/Team GB/g,'Great Britain'),body:(m.body||'').replace(/Team GB/g,'Great Britain')}));careerState();s.events=s.events||makeEvents(s.game.cycleYear,s.managedNation,careerState().cycleNumber);if(!s.records)initWorldRecords(s);s.seasonLeads=s.seasonLeads||{};if(!s.news.length)seedOpeningNews(s);s.news.forEach(n=>{n.unread??=true});if(!s.appointment)s.appointment={contractSigned:true,weekOneStarted:true,introSeeded:true,completed:true,tasks:{systems:true,squad:true,pool:true,calendar:true,training:true}};s.appointment.tasks=s.appointment.tasks||{systems:false,squad:false,pool:false,calendar:false,training:false};s.athletes.forEach(a=>{if(!Array.isArray(a.profileResults))a.profileResults=(s.performances||[]).filter(p=>p.athleteId===a.id&&p.disc===a.disc).map(p=>({season:p.season,week:p.week,perf:p.perf,event:p.event,source:p.source,achievements:p.achievements||[]}))});scoutingState();pruneOldEmails();hydrateVisualIdentity(s);careerState();ensureNationalIdentities();s.version=7}
-function save(){localStorage.setItem(SAVE_KEY,JSON.stringify(s));renderMenu()}
+function save(){
+ try{const json=JSON.stringify(s);localStorage.setItem(SAVE_KEY,window.AMCareerSaveCodec?window.AMCareerSaveCodec.encode(json):json)}
+ catch(err){
+  const status=document.getElementById('careerSaveStatus');if(status)status.textContent='NOT SAVED';
+  if(!document.getElementById('careerSaveFailure')){
+   console.error('[Athletics Manager] Career save failed',err);
+   const notice=document.createElement('div');notice.id='careerSaveFailure';notice.setAttribute('role','alert');
+   notice.style.cssText='position:fixed;bottom:12px;left:12px;right:12px;z-index:100000;padding:14px;background:#39202a;color:#fff;border:1px solid #f18d9d;border-radius:8px';
+   notice.innerHTML='<strong>Career changes could not be saved.</strong> Keep this tab open. Download a recovery copy before reloading. <button type="button" class="btn secondary" data-save-download>DOWNLOAD RECOVERY SAVE</button> <button type="button" class="btn secondary" data-save-retry>RETRY SAVE</button>';
+   notice.querySelector('[data-save-retry]').onclick=()=>save();
+   notice.querySelector('[data-save-download]').onclick=()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(s)],{type:'application/json'})),link=document.createElement('a');link.href=url;link.download='athletics-manager-recovery.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+   document.body.appendChild(notice);
+  }
+  return false;
+ }
+ document.getElementById('careerSaveFailure')?.remove();const status=document.getElementById('careerSaveStatus');if(status)status.innerHTML='<span class="save-dot"></span>AUTOSAVED';
+ renderMenu();return true;
+}
 function toast(t){let el=$('toast');el.textContent=t;el.classList.add('on');setTimeout(()=>el.classList.remove('on'),1800)}
 function flag(n){return FLAGS[n]||'🏳️'}
 function discLabel(d){return DISCIPLINES[d]?.label||d}
