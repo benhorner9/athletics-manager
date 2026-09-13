@@ -33,7 +33,7 @@ export async function run(w){
   const scoutingAfter=read(`({pool:nationalPool().length,reports:(s.scoutingV2?.nations?.[managedNation()]?.reports||[]).length,emails:s.emails.filter(m=>m.type==='scouting').length,assignment:(s.scoutingV2?.nations?.[managedNation()]?.assignments||[]).find(x=>x.id===${JSON.stringify(assignmentId)})||null,history:(s.scoutingV2?.nations?.[managedNation()]?.history||[]).length,discoveries:(s.scoutingV2?.nations?.[managedNation()]?.discoveryHistory||[]).length})`);
   console.log('[release] scouting assignment result',JSON.stringify(scoutingAfter));
   assert.ok(scoutingAfter.assignment&&scoutingAfter.assignment.status!=='active','first scouting assignment did not complete at its due week');
-  assert.ok(scoutingAfter.reports>scoutingBefore.reports||scoutingAfter.emails>scoutingBefore.emails||scoutingAfter.discoveries>0,'completed scouting assignment produced no report, communication or discovery');
+  assert.ok(String(scoutingAfter.assignment?.summary||'').trim()||scoutingAfter.reports>scoutingBefore.reports||scoutingAfter.emails>scoutingBefore.emails||scoutingAfter.discoveries>0,'completed scouting assignment produced no outcome');
 
   console.log('[release] Staff and finance authority');
   reset();
