@@ -3,7 +3,7 @@
 Dev base: `d709ec98` (includes the owner's removal of the dev alpha gate).
 Work branch: `audit/dev-stability-20260913`. No production deployment or promotion is authorized.
 
-This is a live audit log, not a release certificate. Status: **Improved but requires more work**. Dev repair PRs #58–#61 passed CI and were deployed only to dev. Calendar follow-up verification is tracked below. Production was not modified, deployed, or merged.
+This is a live audit log, not a release certificate. Status: **Improved but requires more work**. Dev repair PRs #58–#61 passed CI and were deployed only to dev. Calendar follow-up verification is tracked below; its first browser retest exposed the historical route guard and led to an additional targeted repair. Production was not modified, deployed, or merged.
 
 | ID | Priority | System | Issue | Root cause | Fix | Verification |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -25,14 +25,14 @@ This is a live audit log, not a release certificate. Status: **Improved but requ
 | AUD-17 | P0 | Existing-save startup | Reload can abort core script and leave expansion constants undefined | Initial UI and qualification read expanded saved disciplines before their definitions load | Defer initial presentation and qualification reconciliation until DOMContentLoaded | Verified: seeded startup smoke and latest dev browser reload; no new game console errors |
 | AUD-18 | P2 | Commentary | Instant/recovered official result still says waiting or provisional | Instant completion omits official speech; legacy saved logs lack final commentary | Reuse current finish path and derive final commentary from official rows | Verified: official-commentary regression; browser retest pending |
 | AUD-19 | P2 | Programme results | Unselected domestic rivals appear as Your Programme and inflate medals | Player result filtering uses nation alone | Filter by recorded event entries in result, Calendar and onboarding summaries | Verified: same-nation rival and No Entry regression; browser retest pending |
-| AUD-20 | P3 | Calendar | Completed meeting has no results navigation | New calendar only renders a status label | Open existing competition results route with recorded event ID | Fixed: targeted regression; hosted browser retest pending |
+| AUD-20 | P3 | Calendar | Completed meeting has no results navigation | Calendar only renders a status label; legacy guard redirects historical requests to current Event Day | Open existing results route; preserve explicit historical request until leaving competition | Fixed: targeted regression; hosted browser retest pending |
 | AUD-21 | P2 | Calendar / Summit | Calendar advertises obsolete weeks 17/19/21 | Hardcoded legacy league schedule | Read current Summit meeting schedule | Verified: current weeks 14/20/26/32/38/44 and absence of old weeks in regression |
 | AUD-09 | P3 | Large selection confirmation | Long final review can hide submission controls | Fixed dialog clips unbounded confirmation summary | Scrollable summary within bounded flex confirmation; actions remain available | Verified at desktop: all 36 Summit slots reviewed/submitted; submit button inside viewport; tablet/mobile pending |
 
 ## Evidence and scope
 
 - Repository hygiene, static asset/load-order checks and baseline runtime smoke pass.
-- Fourteen targeted regression scenarios pass: `node tools/dev-stability-regression.mjs` (requires jsdom@26, as existing runtime smoke does).
+- Fifteen targeted regression scenarios pass: `node tools/dev-stability-regression.mjs` (requires jsdom@26, as existing runtime smoke does).
 - Extended integration: `AM_AUDIT_SOAK=1 node tools/runtime-smoke.mjs`. Uses actual runtime and selection DOM handlers, but a post-onboarding fixture and instant competition simulation. It is not browser journey verification.
 - Initial soak reproduced storage failure around week 10, then around week 17 after legacy growth was stopped. A subsequent run exposed invalidated/relocked selection at week 12.
 - Hosted dev browser: new career, Great Britain nation, manager details, appointment, Home, squad sorting/profile, week 2, inbox reading and Training visited. Training guidance blocker reproduced on original dev assets.
@@ -68,7 +68,7 @@ Fresh browser retest on c68c03ec: appointment, Home/Squad guidance clicks, profi
 - Week 4 manual selection: Maya Thompson in W100, remaining W100 slots explicitly No Entry, all W200 slots No Entry. Submission succeeded and remained locked after reopening.
 - Week 5 live 100m: Pause remained active beyond the old watchdog timeout; 4x/Resume controls worked; playback progressed, with Maya Thompson first at 11.27s in official result and scoreboard. No premature playback recovery. Reload retained the 1/2 meeting result and selection.
 - Skipping the unentered W200 completed the meeting; career returned Home and advanced through week 7. The domestic-rival summary bug and dev-badge overlap were found in this journey and repaired in the final follow-up.
-- Existing-save seeded startup smoke reproduced errors in initial Home/qualification; passes after deferred initialisation. Normal smoke and all 14 targeted scenarios pass.
+- Existing-save seeded startup smoke reproduced errors in initial Home/qualification; passes after deferred initialisation. Normal smoke and all 15 targeted scenarios pass.
 - Browser viewport available: 1363 × 936. No supported viewport resizing capability was exposed; tablet/mobile visual verification remains incomplete.
 
 ## Scope and final review limits

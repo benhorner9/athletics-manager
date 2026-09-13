@@ -98,7 +98,7 @@ function competitionStateCleanup(){
  const cw=careerWeek();if(lastCareerWeek===cw)return;lastCareerWeek=cw;
  const id=st.uiCompetitionV2?.eventId,e=id?(st.events||[]).find(x=>String(x.id)===String(id)):null;
  const current=safe(()=>typeof currentEvent==='function'?currentEvent():null,null);
- if(e?.completed&&Number(e.week)<Number(st.game?.week||1)&&current&&String(current.id)!==String(e.id)){
+ if(e?.completed&&!window.__athleticsCompetitionJourneyRouteGuard?.isHistorical(e.id)&&Number(e.week)<Number(st.game?.week||1)&&current&&String(current.id)!==String(e.id)){
   st.uiCompetitionV2.eventId=current.id;st.uiCompetitionV2.tab='overview';st.uiCompetitionV2.page=0;
   try{competitionMode='overview';activeEventDisc=null}catch(_){}
  }

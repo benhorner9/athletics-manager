@@ -193,4 +193,12 @@ await test('Calendar uses recorded entrants, current Summit weeks and historical
   f.w.eval(source.split('\n').find(line=>line.startsWith('function bind(')));f.w.bind(f.w.document.getElementById('calendar'),[]);f.w.document.querySelector('button').click();assert.equal(JSON.stringify(f.w.opened),'[["past","results"]]');
  }finally{f.dom.window.close()}
 });
+await test('Historical results remain accessible during Event Day without trapping future navigation',()=>{
+ const f=fixture();try{
+  f.w.eval(`var s={uiCompetitionV2:{eventId:'past'}},competitionMode='overview',currentEvent=()=>({id:'current'}),drawCompetition=()=>s.uiCompetitionV2.eventId,view=()=>{};`);
+  f.w.eval(fs.readFileSync('scripts/competition-journey-route-guard-v1.js','utf8'));
+  f.w.__athleticsCompetitionJourneyRouteGuard.setHistoricalEvent('past');assert.equal(f.w.drawCompetition(),'past');
+  f.w.view('home');assert.equal(f.w.drawCompetition(),'current');
+ }finally{f.dom.window.close()}
+});
 process.exitCode=failures?1:0;
