@@ -60,6 +60,9 @@ async function boot(){
   const attentionResponse=await fetch('scripts/training-attention-decisions-v2.js?v='+VERSION,{cache:'no-store'});
   if(!attentionResponse.ok)throw new Error('training-attention-decisions-v2.js '+attentionResponse.status);
   await run(await attentionResponse.text(),'attention-decisions');
+  const notificationResponse=await fetch('scripts/training-notification-authority-v1.js?v=20260913-notify1',{cache:'no-store'});
+  if(!notificationResponse.ok)throw new Error('training-notification-authority-v1.js '+notificationResponse.status);
+  await run(await notificationResponse.text(),'notification-authority');
   if(typeof currentView!=='undefined'&&currentView==='training'&&typeof drawTraining==='function')drawTraining();
   if(typeof currentView!=='undefined'&&currentView==='calendar'&&window.__athleticsSquadTestingTraining?.calendar)window.__athleticsSquadTestingTraining.calendar();
   await loadScoutingV2();
