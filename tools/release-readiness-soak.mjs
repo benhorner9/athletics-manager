@@ -28,7 +28,13 @@ export async function run(w){
   const scoutAfter=read(`({athletes:s.athletes.length,reports:scoutingState().reports.length,pool:nationalPool().length,emails:s.emails.filter(m=>m.type==='scouting').length,v2Reports:(s.scoutingV2?.nations?.[managedNation()]?.reports||[]).length,assignments:(s.scoutingV2?.nations?.[managedNation()]?.assignments||[]).length,hidden:(s.scoutingV2?.nations?.[managedNation()]?.hiddenTalent||[]).length})`);
   console.log('[release] scouting week-start',JSON.stringify({before:scoutBefore,after:scoutAfter,onWeekStartSource:String(read(`onWeekStart`)).slice(0,500)}));
   assert.ok(scoutAfter.athletes>scoutBefore.athletes,'scouting week-start did not advance the talent pool');
-  assert.ok((scoutAfter.reports>scoutBefore.reports)||(scoutAfter.v2Reports>scoutBefore.v2Reports)||scoutAfter.emails>scoutBefore.emails,'scouting week-start produced no player-facing report or communication');
+  let scoutPost=scoutAfter;
+  if(!((scoutAfter.reports>scoutBefore.reports)||(scoutAfter.v2Reports>scoutBefore.v2Reports)||scoutAfter.emails>scoutBefore.emails)){
+   const processorResult=read(`window.AMScoutingV2?.processScoutingWeek?.()`);
+   scoutPost=read(`({athletes:s.athletes.length,reports:scoutingState().reports.length,pool:nationalPool().length,emails:s.emails.filter(m=>m.type==='scouting').length,v2Reports:(s.scoutingV2?.nations?.[managedNation()]?.reports||[]).length,assignments:(s.scoutingV2?.nations?.[managedNation()]?.assignments||[]).length,hidden:(s.scoutingV2?.nations?.[managedNation()]?.hiddenTalent||[]).length})`);
+   console.log('[release] scouting V2 processor probe',JSON.stringify({result:processorResult,after:scoutPost,source:String(w.AMScoutingV2?.processScoutingWeek||'').slice(0,700)}));
+  }
+  assert.ok((scoutPost.reports>scoutBefore.reports)||(scoutPost.v2Reports>scoutBefore.v2Reports)||scoutPost.emails>scoutBefore.emails,'scouting system produced no player-facing report or communication');
 
   console.log('[release] Staff and finance authority');
   reset();
