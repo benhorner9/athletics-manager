@@ -53,7 +53,7 @@ jobs:
           path = Path('game.html')
           html = path.read_text(encoding='utf-8')
           marker = '<!-- AM_DEV_BUILD_STATUS -->'
-          tag = f'{marker}\n<script src="scripts/dev-build-status-v1.js?v={os.environ["GITHUB_SHA"][:8]}"></script>'
+          tag = f'{marker}\n<script src="scripts/dev/dev-build-status-v1.js?v={os.environ["GITHUB_SHA"][:8]}"></script>'
           if marker in html:
               before, _, tail = html.partition(marker)
               tail = tail.split('\n', 2)
@@ -148,7 +148,7 @@ jobs:
           curl --fail --silent --show-error --ssl-reqd --ftp-create-dirs \
             --user "$FTP_USERNAME:$FTP_PASSWORD" \
             -T .deploy-status/dev-runtime-build.js \
-            "$BASE/scripts/dev-runtime-build.js"
+            "$BASE/scripts/dev/dev-runtime-build.js"
 
           # Publish the manifest last. Its presence means the complete dev build is live.
           curl --fail --silent --show-error --ssl-reqd --ftp-create-dirs \
