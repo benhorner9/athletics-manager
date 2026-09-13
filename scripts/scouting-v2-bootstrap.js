@@ -3,7 +3,7 @@
 'use strict';
 if(window.__amScoutingV2Bootstrap)return;
 window.__amScoutingV2Bootstrap=1;
-const V='20260911-scouting2-recovery1';
+const V='20260913-scouting2-weekbridge1';
 const scoutingRoot=()=>document.getElementById('scouting');
 function claimRoute(state='loading'){
  const root=scoutingRoot();if(!root)return null;
@@ -39,6 +39,55 @@ function runJS(code){
  });
 }
 
+function careerWeek(){
+ try{return Number(s?.game?.careerWeek||s?.game?.week||1)||1}catch(_){return 1}
+}
+function scoutingIntegrationState(){
+ try{
+  if(!s)return null;
+  s.scoutingV2??={version:2,nations:{},debug:false,analytics:{recommendations:[],discoveries:[],reportAccuracy:[]}};
+  s.scoutingV2.integration??={};
+  return s.scoutingV2.integration;
+ }catch(_){return null}
+}
+function suppressLegacyDiscovery(){
+ /* Scouting V2 owns discovery once loaded. Keep the old state current so the
+    legacy eight-week generator cannot seed hidden talent behind V2's back. */
+ try{
+  if(typeof scoutingState!=='function')return;
+  const legacy=scoutingState();
+  if(legacy)legacy.lastCareerWeek=careerWeek();
+ }catch(_){}
+}
+function runScoutingWeek(){
+ const A=window.AMScoutingV2;if(!A)return;
+ const mark=scoutingIntegrationState(),cw=careerWeek();
+ if(mark?.lastProcessedCareerWeek===cw)return;
+ try{A.seedFirstAssignment?.()}catch(err){console.error('[Athletics Manager] Scouting first assignment recovery',err)}
+ try{A.processAssignmentWeek?.()}catch(err){console.error('[Athletics Manager] Scouting search progression recovery',err)}
+ try{A.processScoutingWeek?.()}catch(err){console.error('[Athletics Manager] Scouting assessment progression recovery',err)}
+ try{A.processInvitedTesting?.()}catch(err){console.error('[Athletics Manager] Scouting testing progression recovery',err)}
+ try{A.processAssessmentCamps?.()}catch(err){console.error('[Athletics Manager] Scouting camp progression recovery',err)}
+ try{A.processPathwayWeek?.()}catch(err){console.error('[Athletics Manager] Scouting pathway progression recovery',err)}
+ try{A.processLongTermWeek?.()}catch(err){console.error('[Athletics Manager] Scouting long-term progression recovery',err)}
+ try{A.processCommunications?.()}catch(err){console.error('[Athletics Manager] Scouting communication recovery',err)}
+ if(mark)mark.lastProcessedCareerWeek=cw;
+ try{A.refreshScoutingIntegration?.()}catch(_){}
+ try{if(typeof save==='function')save()}catch(_){}
+}
+function installWeekBridge(){
+ if(window.__amScoutingV2WeekBridge)return;
+ if(typeof onWeekStart!=='function')return;
+ const previous=onWeekStart;
+ onWeekStart=function(){
+  suppressLegacyDiscovery();
+  const out=previous.apply(this,arguments);
+  runScoutingWeek();
+  return out;
+ };
+ window.__amScoutingV2WeekBridge=1;
+}
+
 async function boot(){
  try{
   const [js,css]=await Promise.all([
@@ -54,6 +103,9 @@ async function boot(){
    const style=document.createElement('style');style.dataset.amScoutingV2='1';style.textContent=css;document.head.appendChild(style);
   }
   await runJS(js);
+  try{window.AMScoutingV2?.seedFirstAssignment?.()}catch(err){console.error('[Athletics Manager] Scouting first assignment recovery',err)}
+  suppressLegacyDiscovery();
+  installWeekBridge();
   if(typeof window.AMScoutingV2?.refreshScoutingIntegration==='function')window.AMScoutingV2.refreshScoutingIntegration();
   claimRoute('ready');
   /* Redraw Scouting directly when it is the active route. Generic render() is not
