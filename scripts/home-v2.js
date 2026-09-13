@@ -22,6 +22,8 @@ function moneyText(n){return safe(()=>window.AthleticsUI?.format?.money?.(n),saf
 function eventLabel(e){if(!e)return'No scheduled competition';const n=Number(e.week)-week();if(e.completed)return'Completed';if(n<0)return'Awaiting review';if(n===0)return'This week';if(n===1)return'Next week';return`In ${n} weeks`}
 function seasonStage(){const w=week();if(cycleYear()===4&&w>=32)return'Olympic phase';if(w<=8)return'Early season';if(w<=20)return'Foundation';if(w<=34)return'Competition phase';return'Championship phase'}
 function trainingQueue(){return safe(()=>window.__athleticsTrainingAttentionDecisions?.queue?.()||[],[])}
+function financeSummary(){return safe(()=>window.AMProgrammeEconomy?.homeSummary?.(),null)}
+function openFinance(tab='overview'){const pe=window.AMProgrammeEconomy;if(typeof pe?.openFinanceView==='function'){pe.openFinanceView(tab);return}try{view('finance')}catch(_){}}
 function unreadBy(type){return (s?.emails||[]).filter(m=>m.unread&&safe(()=>mailCategory(m),String(m.type||''))===type)}
 function recentScoutMail(){return [...(s?.emails||[])].reverse().find(m=>m.unread&&['scouting','scout'].includes(safe(()=>mailCategory(m),String(m.type||''))))||null}
 function eventDiscs(e){return (e?.disc||[]).filter(d=>d&&d!=='ALL')}
@@ -38,9 +40,10 @@ function worldRows(mode){
  const rows=safe(()=>typeof latestNews==='function'?latestNews(6):[...(s.news||[])].reverse().slice(0,6),[]);
  return rows.length?rows.map(n=>`<button class="home-v2-headline" data-home-v2-news="${esc(n.id||'')}"><small>${esc(n.category||'World')} · W${Number(n.week)||week()}</small><strong>${esc(n.headline||n.title||'Athletics update')}</strong><span>${esc(String(n.summary||n.body||n.deck||'').replace(/\s+/g,' ').slice(0,92))}</span></button>`).join(''):'<div class="home-v2-clear"><div><b>No headlines yet</b>The athletics world will develop as the season progresses.</div></div>';
 }
-function buildAgenda(a,e,tq,scout){
+function buildAgenda(a,e,tq,scout,finance){
  const rows=[];
  for(const x of a.slice(0,4))rows.push({kind:'action',id:x.actionId,time:actionDue(x),title:x.title,meta:x.blocks?'Required before progression':x.reason||'Decision pending'});
+ for(const x of finance?.priorities?.slice(0,2)||[])rows.push({kind:'finance',id:x.tab,time:x.severity==='opportunity'?'OPPORTUNITY':String(x.severity||'').toUpperCase(),title:x.title,meta:x.meta});
  if(e)rows.push({kind:'event',time:`W${e.week}`,title:e.name||'Competition',meta:eventLabel(e)});
  if(tq.length)rows.push({kind:'training',time:'NOW',title:`Training needs attention`,meta:`${tq.length} athlete${tq.length===1?'':'s'} require review`});
  if(scout)rows.push({kind:'mail',id:scout.id,time:`W${scout.week||week()}`,title:scout.subject||'Scouting report',meta:'New scouting information'});
@@ -48,19 +51,19 @@ function buildAgenda(a,e,tq,scout){
 }
 function renderHome(){
  const root=$('home');if(!root)return;
- const a=actions(),b=blockers(),squad=team(),np=pool(),e=next(),tq=trainingQueue(),scout=recentScoutMail();
+ const a=actions(),b=blockers(),squad=team(),np=pool(),e=next(),tq=trainingQueue(),scout=recentScoutMail(),fin=financeSummary();
  const injured=squad.filter(x=>Number(x.injury)>0).length;
  const avgFitness=squad.length?Math.round(squad.reduce((n,x)=>n+Number(x.fitness||0),0)/squad.length):0;
  const avgForm=squad.length?Math.round(squad.reduce((n,x)=>n+Number(x.form||0),0)/squad.length):0;
  const unread=(s.emails||[]).filter(m=>m.unread).length;
  const important=unreadBy('medical').length+unreadBy('selection').length;
- const agenda=buildAgenda(a,e,tq,scout);
+ const agenda=buildAgenda(a,e,tq,scout,fin);
  const selected=e?selectedCount(e):0,discCount=eventDiscs(e).length;
  const nation=safe(()=>nationName(managedNation()),'National Programme');
  root.innerHTML=`<div class="home-v2" data-am-ui-screen="home-v2">
    <header class="home-v2-top">
     <div class="home-v2-title"><small>${esc(nation.toUpperCase())} · PERFORMANCE HQ</small><h1>Week ${week()}</h1><p>${esc(seasonStage())} · Olympic Cycle Year ${cycleYear()} of 4</p></div>
-    <div class="home-v2-context"><span><small>Actions</small><b>${a.length}</b></span><span><small>Unread</small><b>${unread}</b></span><span><small>Squad</small><b>${squad.length}</b></span><span><small>Funding</small><b>${esc(moneyText(s.funding))}</b></span></div>
+    <div class="home-v2-context"><span><small>Actions</small><b>${a.length}</b></span><span><small>Unread</small><b>${unread}</b></span><span><small>Runway</small><b>${fin?Math.max(0,Math.round(fin.runway))+'W':'—'}</b></span><span><small>Funding</small><b>${esc(moneyText(s.funding))}</b></span></div>
    </header>
    <div class="home-v2-grid">
     <div class="home-v2-primary">
@@ -80,6 +83,7 @@ function renderHome(){
     </div>
     <aside class="home-v2-side">
      <section class="home-v2-card"><div class="home-v2-card-head"><strong>Communications</strong><span>${unread} unread</span></div><div class="home-v2-card-body"><div class="home-v2-metrics"><div class="home-v2-metric ${a.length?'bad':'good'}"><small>Required</small><strong>${a.length}</strong><span>Decisions</span></div><div class="home-v2-metric"><small>Unread</small><strong>${unread}</strong><span>Messages</span></div><div class="home-v2-metric"><small>Medical</small><strong>${unreadBy('medical').length}</strong><span>Unread</span></div><div class="home-v2-metric"><small>Scouting</small><strong>${unreadBy('scouting').length}</strong><span>Unread</span></div></div></div><button class="home-v2-footer-link" data-home-v2-inbox>OPEN INBOX</button></section>
+     <section class="home-v2-card home-v2-finance ${esc(fin?.health||'healthy')}"><div class="home-v2-card-head"><strong>Programme Finance</strong><span>${fin?esc((fin.health||'healthy').toUpperCase()):'LOADING'}</span></div><div class="home-v2-card-body"><div class="home-v2-finance-grid"><div><small>AVAILABLE</small><strong>${fin?esc(moneyText(fin.available)):'—'}</strong></div><div><small>WEEKLY COST</small><strong>${fin?esc(moneyText(fin.weekly)):'—'}</strong></div><div><small>SEASON END</small><strong class="${fin&&fin.projected<0?'bad':''}">${fin?esc(moneyText(fin.projected)):'—'}</strong></div><div><small>BOARD</small><strong>${fin?Math.round(fin.boardTrust)+'/100':'—'}</strong></div></div><div class="home-v2-finance-note">${fin?.restricted?`Spending controls active${fin.restrictionWeeks?` · ${fin.restrictionWeeks} weeks remaining`:''}.`:fin?.priorities?.[0]?esc(fin.priorities[0].title):'No immediate financial action.'}</div></div><button class="home-v2-footer-link" data-home-v2-finance>OPEN FINANCE</button></section>
      <section class="home-v2-card home-v2-world"><div><div class="home-v2-card-head"><strong>Athletics World</strong><span>Outside your programme</span></div><div class="home-v2-world-tabs"><button class="on" data-home-v2-world="news">HEADLINES</button><button data-home-v2-world="leads">WORLD LEADS</button></div></div><div class="home-v2-world-body" id="homeV2World">${worldRows('news')}</div><button class="home-v2-footer-link" data-home-v2-world-open>OPEN WORLD</button></section>
     </aside>
    </div>
@@ -91,9 +95,10 @@ function bind(root,a,e,agenda){
  root.querySelector('[data-home-v2-calendar]')?.addEventListener('click',()=>view('calendar'));
  root.querySelector('[data-home-v2-squad]')?.addEventListener('click',()=>view('squad'));
  root.querySelector('[data-home-v2-inbox]')?.addEventListener('click',()=>view('inbox'));
+ root.querySelector('[data-home-v2-finance]')?.addEventListener('click',()=>openFinance('overview'));
  root.querySelector('[data-home-v2-world-open]')?.addEventListener('click',()=>view('news'));
  root.querySelectorAll('[data-home-v2-action]').forEach(b=>b.addEventListener('click',()=>{const x=a.find(v=>String(v.actionId)===String(b.dataset.homeV2Action));if(x)actionDestination(x)}));
- root.querySelectorAll('[data-agenda-kind]').forEach(b=>b.addEventListener('click',()=>{const x=agenda[Number(b.dataset.agendaIndex)];if(!x)return;if(x.kind==='action'){const z=a.find(v=>String(v.actionId)===String(x.id));if(z)actionDestination(z)}else if(x.kind==='event')view(e&&validEventAction(e)?'competition':'calendar');else if(x.kind==='training')view('training');else if(x.kind==='mail'){try{openMail=x.id}catch(_){}view('inbox')}}));
+ root.querySelectorAll('[data-agenda-kind]').forEach(b=>b.addEventListener('click',()=>{const x=agenda[Number(b.dataset.agendaIndex)];if(!x)return;if(x.kind==='action'){const z=a.find(v=>String(v.actionId)===String(x.id));if(z)actionDestination(z)}else if(x.kind==='event')view(e&&validEventAction(e)?'competition':'calendar');else if(x.kind==='training')view('training');else if(x.kind==='finance')openFinance(x.id||'overview');else if(x.kind==='mail'){try{openMail=x.id}catch(_){}view('inbox')}}));
  root.querySelectorAll('[data-home-v2-world]').forEach(b=>b.addEventListener('click',()=>{root.querySelectorAll('[data-home-v2-world]').forEach(x=>x.classList.toggle('on',x===b));const body=$('homeV2World');if(body)body.innerHTML=worldRows(b.dataset.homeV2World)}));
  root.addEventListener('click',ev=>{if(ev.target.closest('[data-home-v2-news]'))view('news')});
 }
@@ -102,6 +107,6 @@ function drawCandidate(){
  catch(err){console.error('[Athletics Manager] Home V2 recovered to legacy Home',err);legacyDrawHome();window.AthleticsUI?.registerScreen?.('home',{status:'fallback',replacement:'home-v2'})}
 }
 drawHome=drawCandidate;
-window.__athleticsHomeV2={version:2,render:renderHome,legacy:legacyDrawHome,debug:()=>({actions:actions(),blockers:blockers(),nextEvent:next(),trainingAttention:trainingQueue().length})};
+window.__athleticsHomeV2={version:2,render:renderHome,legacy:legacyDrawHome,debug:()=>({actions:actions(),blockers:blockers(),nextEvent:next(),trainingAttention:trainingQueue().length,finance:financeSummary()})};
 if(typeof currentView!=='undefined'&&currentView==='home')requestAnimationFrame(drawCandidate);
 })();
