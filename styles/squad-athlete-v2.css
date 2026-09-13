@@ -44,3 +44,14 @@
  .sav2-toolbar input,.sav2-toolbar select,.sav2-toolbar button{height:38px;min-height:38px;box-sizing:border-box}
 }
 
+/* Athlete profile development projection — keep the original profile typography, tint the full card by staff grade. */
+.apv2-rating>div:has(.development-grade) .development-grade,
+.apv2-metric:has(.development-grade) .development-grade{display:inline;min-width:0;height:auto;padding:0;border:0;border-radius:0;background:transparent;color:inherit;font:inherit;line-height:inherit;letter-spacing:inherit}
+.apv2-rating>div:has(.development-grade.grade-a),.apv2-metric:has(.development-grade.grade-a){border-color:#3e8068;background:linear-gradient(180deg,#15382f,#0d2922)}
+.apv2-rating>div:has(.development-grade.grade-b),.apv2-metric:has(.development-grade.grade-b){border-color:#3d617b;background:linear-gradient(180deg,#132d41,#0c2131)}
+.apv2-rating>div:has(.development-grade.grade-c),.apv2-metric:has(.development-grade.grade-c){border-color:#7a653d;background:linear-gradient(180deg,#382f1b,#251f12)}
+.apv2-rating>div:has(.development-grade.grade-d),.apv2-metric:has(.development-grade.grade-d){border-color:#76414a;background:linear-gradient(180deg,#381d24,#251319)}
+.apv2-rating>div:has(.development-grade.grade-a) strong,.apv2-metric:has(.development-grade.grade-a) strong{color:#a8e8ca}
+.apv2-rating>div:has(.development-grade.grade-b) strong,.apv2-metric:has(.development-grade.grade-b) strong{color:#b9daf0}
+.apv2-rating>div:has(.development-grade.grade-c) strong,.apv2-metric:has(.development-grade.grade-c) strong{color:#e5cb8b}
+.apv2-rating>div:has(.development-grade.grade-d) strong,.apv2-metric:has(.development-grade.grade-d) strong{color:#efafb7}
