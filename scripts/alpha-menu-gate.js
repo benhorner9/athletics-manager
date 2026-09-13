@@ -6,6 +6,7 @@ if(window.__amAlphaMenuGate)return;window.__amAlphaMenuGate=1;
 const ACCESS_KEY='athletics_manager_alpha_menu_access_v2';
 const ACCESS_GENERATION='16';
 const ACCESS_HASH='d7f66b709efd8b0cb4d1e81cc13d5ed34bfa59137d1ee65ecbb3dddd610680ee';
+const DEV_CLIENT=/^dev\./i.test(location.hostname)||/(^|\/)dev(\/|$)/i.test(location.pathname);
 
 const menu=document.querySelector('.menu-side');
 const form=document.getElementById('alphaAccessForm');
@@ -15,6 +16,7 @@ const submit=document.getElementById('alphaAccessSubmit');
 if(!menu||!form||!input||!status||!submit)return;
 
 function storedAccessIsCurrent(){
+ if(DEV_CLIENT)return true;
  try{return localStorage.getItem(ACCESS_KEY)===ACCESS_GENERATION}catch(_){return false}
 }
 function rememberAccess(){
@@ -32,19 +34,32 @@ async function hashCode(value){
  return String(h>>>0);
 }
 function unlock(remember=true){
- if(remember)rememberAccess();
+ if(remember&&!DEV_CLIENT)rememberAccess();
  menu.classList.remove('alpha-locked');
  menu.classList.add('alpha-unlocked');
  form.classList.add('is-unlocked');
  input.disabled=true;
  submit.disabled=true;
- status.textContent='Access granted on this device.';
+ if(DEV_CLIENT){
+  form.hidden=true;
+  form.setAttribute('aria-hidden','true');
+  menu.dataset.devAutoAccess='true';
+ }else{
+  form.hidden=false;
+  form.removeAttribute('aria-hidden');
+  delete menu.dataset.devAutoAccess;
+ }
+ status.textContent=DEV_CLIENT?'Development client — access unlocked.':'Access granted on this device.';
  status.className='alpha-access-status good';
 }
 function lock(){
+ if(DEV_CLIENT){unlock(false);return}
  menu.classList.add('alpha-locked');
  menu.classList.remove('alpha-unlocked');
  form.classList.remove('is-unlocked');
+ form.hidden=false;
+ form.removeAttribute('aria-hidden');
+ delete menu.dataset.devAutoAccess;
  input.disabled=false;
  submit.disabled=false;
  status.textContent='Enter the current Closed Alpha code to unlock career access.';
@@ -55,6 +70,7 @@ if(storedAccessIsCurrent())unlock(false);else lock();
 
 form.addEventListener('submit',async(e)=>{
  e.preventDefault();
+ if(DEV_CLIENT){unlock(false);return}
  const value=input.value;
  if(!value.trim()){
   status.textContent='Enter an Alpha access code.';
@@ -88,9 +104,9 @@ form.addEventListener('submit',async(e)=>{
 /* If another menu renderer changes the startup DOM state, keep access authority here. */
 const observer=new MutationObserver(()=>{
  if(storedAccessIsCurrent()){
-  if(menu.classList.contains('alpha-locked'))unlock(false);
+  if(menu.classList.contains('alpha-locked')||DEV_CLIENT&&!form.hidden)unlock(false);
  }else if(!menu.classList.contains('alpha-locked'))lock();
 });
-observer.observe(document.getElementById('startup')||document.body,{attributes:true,subtree:true,attributeFilter:['class','disabled']});
+observer.observe(document.getElementById('startup')||document.body,{attributes:true,subtree:true,attributeFilter:['class','disabled','hidden']});
 })();
 /* ===== End Main Menu Alpha Access Gate ===== */
