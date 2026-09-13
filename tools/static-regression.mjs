@@ -142,6 +142,8 @@ if(!html.includes('styles/relay-v1.css'))fail('Relay V1 stylesheet is not loaded
 const relayPresentation=read('scripts/relay-v1.js');
 if(relayPresentation.includes('function renderRelayDiscipline'))fail('Relay V1 must use the canonical Broadcast V4 sprint presentation, not a bespoke Event Day renderer.');
 if(!relayPresentation.includes('function relayAvailability(e,d)'))fail('Relay V1 must explain a locked-team withdrawal instead of silently dropping the nation.');
+for(const token of ["function syncCanonicalRelayRecords(st)","function relayRankingRows(d)","function relaySeasonLead(d)","function drawRelayRankings(d)","function patchRankingsRelayNavigation()","worldHolder:'Jamaica'","worldHolder:'United States'"])if(!relayPresentation.includes(token))fail(`Relay rankings/records contract missing: ${token}`);
+if(!html.includes('scripts/relay-v1.js?v=20260913-relay6'))fail('Relay rankings/records cache-bust is missing from game.html.');
 const selectionAuthority=read('scripts/selection-decision-v3.js');
 if(!selectionAuthority.includes('relaySelectionSnapshot'))fail('Selection V3 must preserve the submitted relay lineup for withdrawal recovery.');
 const economyAuthority=read('scripts/programme-economy-v2.js');
