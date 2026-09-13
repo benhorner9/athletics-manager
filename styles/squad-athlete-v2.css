@@ -55,3 +55,7 @@
 .apv2-rating>div:has(.development-grade.grade-b) strong,.apv2-metric:has(.development-grade.grade-b) strong{color:#b9daf0}
 .apv2-rating>div:has(.development-grade.grade-c) strong,.apv2-metric:has(.development-grade.grade-c) strong{color:#e5cb8b}
 .apv2-rating>div:has(.development-grade.grade-d) strong,.apv2-metric:has(.development-grade.grade-d) strong{color:#efafb7}
+
+
+/* Athlete Programme Agreements */
+.apv2-contract-hero{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.apv2-contract-hero>div,.apv2-contract-club{padding:10px;border:1px solid #203d51;border-radius:8px;background:#081823}.apv2-contract-hero small,.apv2-contract-club small{display:block;color:#738fa2;font-size:7px;font-weight:950;letter-spacing:.08em}.apv2-contract-hero strong,.apv2-contract-club strong{display:block;margin:4px 0 2px;color:#edf5f8;font-size:13px}.apv2-contract-hero span,.apv2-contract-club span{display:block;color:#7892a3;font-size:7px;line-height:1.4}.apv2-contract-actions{display:flex;gap:7px;margin-top:10px}.apv2-contract-actions .btn{min-height:38px}.apv2-contract-history>div>b{min-width:62px;color:#79bfe7}.apv2-contract-history>div>em{color:#7490a3}@media(max-width:820px){.apv2-contract-hero{grid-template-columns:1fr 1fr}.apv2-contract-actions{display:grid;grid-template-columns:1fr}.apv2-contract-actions .btn{width:100%}}@media(max-width:520px){.apv2-contract-hero{grid-template-columns:1fr}}
