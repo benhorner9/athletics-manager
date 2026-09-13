@@ -36,6 +36,7 @@ const COMPONENTS={
 };
 let ticket=0;
 
+// Programme Economy is loaded statically in game.html. This remains a recovery loader for partial restores.
 function loadProgrammeEconomy(){
  if(!document.querySelector('link[href*="programme-economy-v1.css"]')&&!$('amProgrammeEconomyStyle')){const link=document.createElement('link');link.id='amProgrammeEconomyStyle';link.rel='stylesheet';link.href='styles/programme-economy-v1.css?v=20260913-staffmarket2';document.head.appendChild(link)}
  if(!window.__amProgrammeEconomyV2&&!$('amProgrammeEconomyScript')){const script=document.createElement('script');script.id='amProgrammeEconomyScript';script.src='scripts/programme-economy-v2.js?v=20260913-staffmarket2';script.async=false;document.body.appendChild(script)}
