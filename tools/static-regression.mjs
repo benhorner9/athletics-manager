@@ -50,6 +50,7 @@ const requiredScripts=[
  'scripts/ui-platform-v1.js',
  'scripts/home-v2.js',
  'scripts/inbox-v3.js',
+ 'scripts/inbox-character-voices-v1.js',
  'scripts/squad-athlete-v2.js',
  'scripts/calendar-v2.js',
  'scripts/live-event-engine-v3.js',
@@ -96,6 +97,10 @@ before('scripts/staff-finance-v2.js','scripts/world-season-v2.js');
 before('scripts/world-season-v2.js','scripts/club-world-v1.js');
 before('scripts/club-world-v1.js','scripts/manager-career-v1.js');
 before('scripts/manager-career-v1.js','scripts/first-time-experience-v2.js');
+before('scripts/first-time-experience-v2.js','scripts/language-system-v1.js');
+before('scripts/language-system-v1.js','scripts/inbox-character-voices-v1.js');
+before('scripts/inbox-character-voices-v1.js','scripts/release-baseline.js');
+before('scripts/inbox-character-voices-v1.js','scripts/programme-economy-v2.js');
 before('scripts/first-time-experience-v2.js','scripts/release-baseline.js');
 before('scripts/release-baseline.js','scripts/integration-regression-v1.js');
 for(const script of requiredScripts.filter(x=>!['scripts/integration-regression-v1.js','scripts/ui-cutover-v1.js'].includes(x)))before(script,'scripts/integration-regression-v1.js');
@@ -143,6 +148,22 @@ const economyAuthority=read('scripts/programme-economy-v2.js');
 if(!economyAuthority.includes('Funds available today')||!economyAuthority.includes('currentProjected'))fail('Contract offers must show current-to-post-decision programme funding impact.');
 const economyCss=read('styles/programme-economy-v1.css');
 if(economyCss.includes('.pe-contract-summary>div{'))fail('Contract impact layout must not inherit the generic direct-child flex rule.');
+
+
+const languageQualityContracts={
+ 'scripts/training-system-v4.js':['meaningful development stimulus','hidden Overall score','free attribute points','Stronger attribute stimulus'],
+ 'scripts/scouting-v3.js':['legacy hidden Overall'],
+ 'scripts/manager-career-v1.js':['meaningful moments','Meaningful career events','meaningful career thresholds','achievement spam'],
+ 'scripts/selection-immersion-v1.js':['stronger headline option','sensible chance','genuine option','owns the stronger season mark','would give ${b.name} the opportunity here','new selection battle without much previous selection history'],
+ 'scripts/programme-economy-v2.js':['significant high-performance appointment','appointment adds new expertise'],
+ 'scripts/first-time-experience-v2.js':['five assignment slots','game will not drop you into a random discipline']
+};
+for(const [file,banned] of Object.entries(languageQualityContracts)){
+ const text=read(file);for(const phrase of banned)if(text.includes(phrase))fail(`Text & Language QA: ${file} still contains banned player-facing copy: ${phrase}`);
+}
+const voiceAuthority=read('scripts/inbox-character-voices-v1.js');
+for(const token of ["medical:{label:'Medical & Physio'","scout:{label:'National Scout'","finance:{label:'Finance'","selection:{label:'Selection Committee'","function inferRole(m)","rewrite:true,rename:false"])
+ if(!voiceAuthority.includes(token))fail(`Inbox character voice authority is incomplete: ${token}`);
 
 const sourceContracts={
  'scripts/people-biography-v1.js':[

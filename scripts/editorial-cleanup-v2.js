@@ -26,6 +26,9 @@ const UI_EXACT=new Map([
 const HUMAN_REPLACEMENTS=[
  [/elite athletes\s*extraordinary stor(?:y|ies)\.?/gi,''],
  [/competitive story/gi,'competitive form'],
+ [/recovery stories/gi,'recovery updates'],
+ [/rehabilitation storyline/gi,'rehabilitation timeline'],
+ [/recovery story/gi,'recovery history'],
  [/the story continues/gi,'career update'],
  [/current storyline/gi,'current situation'],
  [/storyline/gi,'situation'],

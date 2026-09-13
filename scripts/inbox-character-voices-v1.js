@@ -55,6 +55,7 @@ function inferRole(m){
  if(type==='medical'||sameSender(sender,p.medical)||/medical report|medical clearance|fitness review|rehabilitation|injury/.test(hay))return'medical';
  if(type==='scouting'||type==='scout'||sameSender(sender,p.pathway)||/scout|prospect/.test(hay))return'scout';
  if(type==='selection'||sameSender(sender,p.selection)||/^selection required:|^replacement required:/i.test(subject))return'selection';
+ if(type==='contract'&&athleteForMail(m)&&/programme agreement|funded national programme|agreement worth|contract decision/.test(hay))return'finance';
  if(/sponsorship|funding|budget|facility upgraded|investment/.test(hay))return'finance';
  if(/staff appointment|contract renewed|contract decision|contract expired/.test(hay)&&sameSender(sender,p.performance))return'operations';
  if(/indoor testing|squad testing|training report|training response|performance test/.test(hay))return'sportsScience';
@@ -148,7 +149,7 @@ pushMail=function(st,senderName,subject,body,type='info',eventId=null,html=null,
 };
 pushMail.__amCharacterVoicesV1=true;
 
-function tagExisting(){for(const m of safe(()=>s?.emails,[])||[])applyVoice(m,{rewrite:false,rename:false});for(const m of safe(()=>s?.inboxDecisionSystem?.archive,[])||[])applyVoice(m,{rewrite:false,rename:false})}
+function tagExisting(){for(const m of safe(()=>s?.emails,[])||[])applyVoice(m,{rewrite:true,rename:false});for(const m of safe(()=>s?.inboxDecisionSystem?.archive,[])||[])applyVoice(m,{rewrite:true,rename:false})}
 function roleLabel(m){return m?.voiceLabel||VOICES[m?.voiceRole]?.label||''}
 function mailById(id){return (safe(()=>s?.emails,[])||[]).find(m=>String(m.id)===String(id))||(safe(()=>s?.inboxDecisionSystem?.archive,[])||[]).find(m=>String(m.id)===String(id))}
 function decorateInbox(){
