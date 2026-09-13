@@ -21,6 +21,7 @@ This is a live audit log, not a release certificate. First repair batch merged i
 | AUD-13 | P1 | Live controls | Pause/speed buttons disappear during interaction | Broadcast redraw replaces controls every painted frame | Preserve controls while updating canvas; bind each handler once | Verified: control node identity and pause/speed regression; browser retest pending |
 | AUD-14 | P1 | Competition navigation | Footer overview does not consistently leave discipline screen | Footer relies on legacy draw state instead of current competition route | Use canonical openEvent for programme/results return | Verified: targeted route regression; browser retest pending |
 | AUD-15 | P3 | Live header | Programme text overflows narrow back button | Journey changes icon to long label despite V4 fixed icon dimensions | Keep V4 icon and descriptive accessible label | Fixed: screenshot retest pending |
+| AUD-16 | P3 | Selection | Locked slots still say Tap to clear and look editable | Handler rejects changes but controls retain draft affordance | Disable locked athlete/slot controls and label Selection locked | Verified: regression; browser retest pending |
 | AUD-09 | P3 | Large selection confirmation | Long final review can hide submission controls | Fixed dialog clips unbounded confirmation summary | Scrollable summary within bounded flex confirmation; actions remain available | Fixed: browser layout verification pending |
 
 ## Evidence and scope

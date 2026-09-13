@@ -96,6 +96,7 @@ await test('Withdrawals reopen selection and single No Entry resolves a slot',()
   assert.equal(e.selectionDecisionV3.slots.M100[0].mode,'no_entry');
   f.w.document.querySelector('[data-review]').click();f.w.document.querySelector('[data-submit]').click();
   assert.equal(e.decision,true);assert.equal(e.selectionCentreV2.locked,true);
+  f.w.__athleticsExplicitSelectionV3.openEvent(e);assert.ok([...f.w.document.querySelectorAll('[data-clear-slot],[data-athlete]')].every(b=>b.disabled),'submitted choices still look editable');
   assert.equal(f.w.__athleticsInboxDecisionCore.getUnresolvedActions().length,0);
  }finally{f.dom.window.close()}
 });
