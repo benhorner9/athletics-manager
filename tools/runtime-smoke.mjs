@@ -276,7 +276,9 @@ try{
    const on=[...w.document.querySelectorAll('.view.on')];
    if(on.length!==1)fail(`Route ${target} left ${on.length} active views.`);
    if(target==='staff'){
+    if(w.AMProgrammeEconomy?.renderStaff){try{w.AMProgrammeEconomy.renderStaff();await new Promise(resolve=>setTimeout(resolve,20))}catch(err){fail(`Canonical Staff Market render threw: ${err?.stack||err}`)}}
     const profile=w.document.querySelector('#staff [data-cp]'),marketTab=w.document.querySelector('#staff [data-stab="market"]'),legacyShortlist=w.document.querySelector('#staff .sfv2-shortlist,#staff [data-sfv2-appoint]');
+    if(!w.AMProgrammeEconomy)fail('Programme Economy Staff authority was not loaded before Staff route validation.');
     if(!marketTab)fail('Staff route did not expose the canonical Staff Market tab.');
     if(legacyShortlist)fail('Staff route exposed the retired three-coach shortlist.');
     if(profile){
