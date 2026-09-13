@@ -96,6 +96,7 @@ await test('Withdrawals reopen selection and single No Entry resolves a slot',()
   assert.equal(e.selectionDecisionV3.slots.M100[0].mode,'no_entry');
   f.w.document.querySelector('[data-review]').click();f.w.document.querySelector('[data-submit]').click();
   assert.equal(e.decision,true);assert.equal(e.selectionCentreV2.locked,true);
+  f.w.__athleticsExplicitSelectionV3.openEvent(e);assert.ok([...f.w.document.querySelectorAll('[data-clear-slot],[data-athlete]')].every(b=>b.disabled),'submitted choices still look editable');
   assert.equal(f.w.__athleticsInboxDecisionCore.getUnresolvedActions().length,0);
  }finally{f.dom.window.close()}
 });
@@ -140,6 +141,16 @@ await test('Live playback preserves interactive controls across animation frames
   f.w.render(f.w.live);const pause=f.w.document.querySelector('[data-pause]');f.w.render(f.w.live);f.w.render(f.w.live);
   assert.equal(f.w.document.querySelector('[data-pause]'),pause);pause.click();assert.equal(f.w.live.paused,true);assert.equal(pause.textContent,'RESUME');
   f.w.document.querySelector('[data-speed]').click();assert.equal(f.w.live.speed,4);
+ }finally{f.dom.window.close()}
+});
+await test('Competition footer opens canonical programme and results routes',()=>{
+ const f=fixture();try{
+  f.w.document.body.insertAdjacentHTML('beforeend','<div id="competition"><div class="v3event lv4event"><header class="v3head"><button id="v3back"></button></header><button id="v3day"></button><button id="v3start"></button></div></div>');
+  f.w.eval(`var $=id=>document.getElementById(id),disciplineRunning=false,opened=[],openEvent=(id,tab)=>opened.push([id,tab]),safe=fn=>fn(),register=()=>{},competitionType=()=> 'Meeting';`);
+  const source=fs.readFileSync('scripts/competition-journey-v2.js','utf8');f.w.eval(source.slice(source.indexOf('function decorateLive(e,d){'),source.indexOf('function drawV2(){')));
+  const e={id:'meet',week:5,results:{W100:[]},completed:false};f.w.decorateLive(e,'W100');f.w.document.getElementById('v3day').click();
+  assert.equal(JSON.stringify(f.w.opened),'[["meet","programme"]]');assert.equal(f.w.document.getElementById('v3back').textContent,'‹');
+  e.completed=true;f.w.decorateLive(e,'W100');f.w.document.getElementById('v3day').click();assert.equal(JSON.stringify(f.w.opened[1]),'["meet","results"]');
  }finally{f.dom.window.close()}
 });
 process.exitCode=failures?1:0;
