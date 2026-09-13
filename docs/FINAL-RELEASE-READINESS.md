@@ -28,3 +28,15 @@ The standard runtime-smoke watchdog is now 120 seconds so the final release-read
 Browserless responsive checks protect route/runtime structure but do not replace real Safari/iPad visual and touch verification. The final dev build must still receive a short manual iPad pass before any production promotion.
 
 `main` is outside this verification task and must remain untouched until explicit release approval.
+
+## Scouting V2 weekly integration finding
+
+The release gate also exposed a real cutover defect in Scouting V2. The V2 assignment system was loaded, but it was not connected to the weekly career lifecycle; meanwhile the retired eight-week legacy discovery hook could still call V2's compatibility generator and seed hidden talent without producing the intended assignment outcome.
+
+The Scouting V2 bootstrap now owns weekly scouting progression once V2 is ready. It seeds the first assignment, advances search, assessment, testing, camp, pathway, long-term and communication processors once per career week, and suppresses the retired legacy eight-week discovery trigger while V2 is active. The release gate verifies that the first search assignment is created, reaches its due week and resolves to a valid outcome.
+
+## Final automated result
+
+The exact merge candidate passed repository hygiene, static asset/load-order regression, Live Event Broadcast V4.6 validation, JavaScript syntax checks and the browserless runtime gate. The release-readiness soak passed National Pool agreement expiry, Scouting V2 assignment progression, Staff/Finance authority, annual and Olympic-cycle rollover, a 40-season / ten-cycle career, representative live-event families and phone/tablet/desktop route structure.
+
+A real iPad Safari visual/touch pass remains the final device sign-off before any later production promotion.
