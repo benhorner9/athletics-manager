@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 // rendered layout, or browser animation. It exercises the shipped runtime graph.
 export async function run(w){
  const read=code=>w.eval(code);
- read(`s=fresh('GREAT BRITAIN');ensureState();s.appointment.contractSigned=true;s.appointment.completed=true;s.appointment.introSeeded=true;s.induction.completed=true;s.managerName='Dev QA';save();`);
+ if(process.env.AM_AUDIT_RESUME!=='1')read(`s=fresh('GREAT BRITAIN');ensureState();s.appointment.contractSigned=true;s.appointment.completed=true;s.appointment.introSeeded=true;s.induction.completed=true;s.managerName='Dev QA';save();`);
  const selected=[];
  function select(event){
   w.__athleticsExplicitSelectionV3.openEvent(event);
@@ -24,7 +24,7 @@ export async function run(w){
  let completed=0;
  const weeks=[];
  for(let i=0;i<Number(process.env.AM_AUDIT_WEEKS||16);i++){
-  const before=read('s.game.week');
+  const before=read('s.game.week'),beforeSeason=read('s.game.season'),beforeCareer=read('s.game.careerWeek');
   const legacyHistory=read('s.athletes.reduce((n,a)=>n+(a.trainingV2?.history||[]).filter(h=>h.type==="training").length,0)');
   const decisions=w.__athleticsInboxDecisionCore.getUnresolvedActions();
   for(const a of decisions){
@@ -53,8 +53,8 @@ export async function run(w){
    completed++;
   }
   w.view('inbox');w.advanceWeek();
-  const after=read('s.game.week');assert.equal(after,before+1,`week ${before} failed to advance`);weeks.push(after);
-  assert.equal(read('s.athletes.reduce((n,a)=>n+(a.trainingV2?.history||[]).filter(h=>h.type==="training").length,0)'),legacyHistory,'retired training engine still processes weeks');
+  const after=read('s.game.week');assert.equal(after,before===52?1:before+1,`season ${beforeSeason} week ${before} failed to advance`);assert.equal(read('s.game.careerWeek'),beforeCareer+1);assert.equal(read('s.game.season'),beforeSeason+(before===52?1:0));weeks.push(read('s.game.season')+':'+after);if(read('careerState().pendingReview')){read('acceptCareerJob(managedNation())');assert.equal(read('careerState().pendingReview'),null)}
+  if(before!==52)assert.equal(read('s.athletes.reduce((n,a)=>n+(a.trainingV2?.history||[]).filter(h=>h.type==="training").length,0)'),legacyHistory,'retired training engine still processes weeks');
   assert.ok(read('managedTeam().some(a=>a.attributeDevelopment?.lastWeek>0)'),'current attribute training did not process the squad');
   const ids=read('s.emails.map(m=>m.id)');assert.equal(new Set(ids).size,ids.length,'duplicate mail IDs');
   const eventIds=read('s.events.map(e=>e.id)');assert.equal(new Set(eventIds).size,eventIds.length,'duplicate events');
