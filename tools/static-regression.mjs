@@ -144,6 +144,9 @@ if(relayPresentation.includes('function renderRelayDiscipline'))fail('Relay V1 m
 if(!relayPresentation.includes('function relayAvailability(e,d)'))fail('Relay V1 must explain a locked-team withdrawal instead of silently dropping the nation.');
 for(const token of ["function syncCanonicalRelayRecords(st)","function relayRankingRows(d)","function relaySeasonLead(d)","function drawRelayRankings(d)","function patchRankingsRelayNavigation()","worldHolder:'Jamaica'","worldHolder:'United States'"])if(!relayPresentation.includes(token))fail(`Relay rankings/records contract missing: ${token}`);
 if(!html.includes('scripts/relay-v1.js?v=20260913-relay6'))fail('Relay rankings/records cache-bust is missing from game.html.');
+const worldSeasonRankings=read('scripts/world-season-v2.js');
+for(const token of ['function rankingDisciplines()','function isRelayRankingEvent(d)','function relayTeamRows(d)','Ranked Teams','No ranked relay teams','const ds=rankingDisciplines()'])if(!worldSeasonRankings.includes(token))fail(`Active Rankings V2 relay contract missing: ${token}`);
+if(!html.includes('scripts/world-season-v2.js?v=20260913-relayrank1'))fail('Active Rankings V2 relay cache-bust is missing from game.html.');
 const selectionAuthority=read('scripts/selection-decision-v3.js');
 if(!selectionAuthority.includes('relaySelectionSnapshot'))fail('Selection V3 must preserve the submitted relay lineup for withdrawal recovery.');
 const economyAuthority=read('scripts/programme-economy-v2.js');
