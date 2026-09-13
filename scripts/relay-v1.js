@@ -57,8 +57,9 @@ function addRelayToEvents(events,{futureOnly=false}={}){
  for(const e of events||[]){
   if(!RELAY_EVENT_IDS.has(e?.id)||e.completed)continue;
   if(futureOnly&&num(e.week)<num(s?.game?.week))continue;
-  e.disc??=[];e.entries??={};e.results??={};
-  for(const d of Object.keys(RELAYS))if(!e.disc.includes(d))e.disc.push(d);
+  e.disc??=[];e.entries??={};e.results??={};let added=false;
+  for(const d of Object.keys(RELAYS))if(!e.disc.includes(d)){e.disc.push(d);added=true}
+  if(added&&futureOnly){e.decision=false;if(e.selectionDecisionV3?.locked)e.selectionDecisionV3.locked=false;if(e.selectionCentreV2?.locked)e.selectionCentreV2.locked=false}
  }
  return events;
 }
@@ -164,7 +165,7 @@ if(baseSim)simulateDiscipline=function(e,d){if(!isRelay(d))return baseSim.apply(
 function recordRelayMark(e,d,row){
  if(row.dq||!Number.isFinite(row.perf))return [];
  const st=relayState(),ach=[];let wr=st.records.world[d];if(!wr||row.perf<wr.value-.0001){st.records.world[d]={value:row.perf,holder:row.name,nation:row.nation,season:s.game.season,week:s.game.week,event:e.name};ach.push('WR')}
- st.records.national[row.nation]??={};const nr=st.records.national[row.nation][d];if(!nr||row.perf<nr.value-.0001){st.records.national[row.nation][d]={value:row.perf,holder:row.name,nation:row.nation,season:s.game.season,week:s.game.week,event:e.name};if(!ach.includes('WR'))ach.push('NR')}
+ st.records.national[row.nation]??={};const nr=st.records.national[row.nation][d];if(!nr){st.records.national[row.nation][d]={value:row.perf,holder:row.name,nation:row.nation,season:s.game.season,week:s.game.week,event:e.name}}else if(row.perf<nr.value-.0001){st.records.national[row.nation][d]={value:row.perf,holder:row.name,nation:row.nation,season:s.game.season,week:s.game.week,event:e.name};if(!ach.includes('WR'))ach.push('NR')}
  return ach;
 }
 const baseCommit=typeof commitDisciplineResults==='function'?commitDisciplineResults:null;
