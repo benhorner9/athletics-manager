@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Athletics Manager · Dev viewport checks</title>
+<style>body{margin:0;background:#171c24;color:#fff;font:14px system-ui}header{padding:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}button,select{padding:10px}#stage{margin:0 auto;position:relative}iframe{border:0;transform-origin:top left;position:absolute;inset:0}p{margin:0}</style>
+<header><strong>DEV viewport checks</strong><label>Viewport <select id="size"><option value="1366,1024">iPad landscape · 1366 × 1024</option><option value="1024,1366">iPad portrait · 1024 × 1366</option><option value="1180,820">Tablet landscape · 1180 × 820</option><option value="820,1180">Tablet portrait · 820 × 1180</option><option value="390,844">Mobile · 390 × 844</option><option value="1440,900">Desktop · 1440 × 900</option></select></label><button id="reload">Reload game</button><p>Real CSS viewport inside Chrome. This does not emulate Safari or a physical touch device.</p><output id="dimensions"></output></header>
+<div id="stage"></div>
+<script>
+'use strict';
+if(!['dev.athleticsmanagergame.com','localhost','127.0.0.1'].includes(location.hostname)){
+ document.getElementById('stage').textContent='This test page is available only on development hosts.';
+}else{
+ const frame=document.createElement('iframe');frame.id='gameFrame';frame.title='Athletics Manager development game';frame.src='../../game.html';document.getElementById('stage').appendChild(frame);
+ function size(){const [w,h]=document.getElementById('size').value.split(',').map(Number),scale=Math.min(1,(innerWidth-24)/w,(innerHeight-document.querySelector('header').offsetHeight-12)/h);frame.style.width=w+'px';frame.style.height=h+'px';frame.style.transform=`scale(${scale})`;const stage=document.getElementById('stage');stage.style.width=w*scale+'px';stage.style.height=h*scale+'px';document.getElementById('dimensions').textContent=`${w} × ${h} CSS pixels · preview ${Math.round(scale*100)}%`}
+ document.getElementById('size').onchange=size;addEventListener('resize',size);document.getElementById('reload').onclick=()=>frame.contentWindow.location.reload();size();
+}
+</script></html>
