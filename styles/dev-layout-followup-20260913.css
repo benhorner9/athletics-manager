@@ -299,3 +299,96 @@
     max-height:100dvh;
   }
 }
+
+/* Final iPad athlete-table fit
+   The table's old 890px minimum width guarantees horizontal scrolling once the fixed
+   desktop rail is accounted for on an iPad viewport. Fit the nine columns to the actual
+   workspace instead; keep vertical scrolling only. */
+@media(min-width:701px) and (max-width:1180px){
+  #squad .sav2-table-wrap,
+  #pool .sav2-table-wrap{
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+  }
+
+  #squad .sav2-table,
+  #pool .sav2-table{
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    table-layout:fixed!important;
+  }
+
+  #squad .sav2-table th,
+  #squad .sav2-table td,
+  #pool .sav2-table th,
+  #pool .sav2-table td{
+    box-sizing:border-box!important;
+    min-width:0!important;
+    padding-left:6px!important;
+    padding-right:6px!important;
+    overflow:hidden;
+  }
+
+  #squad .sav2-table th:nth-child(1),#pool .sav2-table th:nth-child(1){width:22%}
+  #squad .sav2-table th:nth-child(2),#pool .sav2-table th:nth-child(2){width:9%}
+  #squad .sav2-table th:nth-child(3),#pool .sav2-table th:nth-child(3){width:14%}
+  #squad .sav2-table th:nth-child(4),#pool .sav2-table th:nth-child(4){width:7%}
+  #squad .sav2-table th:nth-child(5),#pool .sav2-table th:nth-child(5){width:8%}
+  #squad .sav2-table th:nth-child(6),#pool .sav2-table th:nth-child(6){width:10%}
+  #squad .sav2-table th:nth-child(7),#pool .sav2-table th:nth-child(7){width:9%}
+  #squad .sav2-table th:nth-child(8),#pool .sav2-table th:nth-child(8){width:10%}
+  #squad .sav2-table th:nth-child(9),#pool .sav2-table th:nth-child(9){width:11%}
+
+  #squad .sav2-person,
+  #pool .sav2-person{
+    grid-template-columns:32px minmax(0,1fr)!important;
+    gap:6px!important;
+    min-width:0!important;
+  }
+  #squad .sav2-face,
+  #pool .sav2-face{
+    width:32px!important;
+    height:32px!important;
+  }
+  #squad .sav2-bar,
+  #pool .sav2-bar{
+    grid-template-columns:minmax(18px,1fr) 18px!important;
+    gap:3px!important;
+    min-width:0!important;
+  }
+  #squad .sav2-state,
+  #pool .sav2-state{
+    box-sizing:border-box;
+    max-width:100%;
+    padding:4px 5px!important;
+    gap:3px!important;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  #squad .sav2-keyattrs,
+  #pool .sav2-keyattrs{
+    display:flex!important;
+    flex-wrap:wrap!important;
+    gap:2px!important;
+    min-width:0!important;
+    overflow:hidden!important;
+  }
+  #squad .sav2-keyattrs span,
+  #pool .sav2-keyattrs span{
+    min-width:0!important;
+    padding:2px 3px!important;
+    font-size:7px!important;
+    line-height:1.15!important;
+  }
+}
+
+/* Clearer wording for the long-block training decision. */
+.am-training-block-explain{
+  display:block!important;
+  margin-top:3px!important;
+  max-width:420px;
+  color:#7898aa!important;
+  font-size:9px!important;
+  line-height:1.35!important;
+}
