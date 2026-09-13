@@ -102,3 +102,14 @@ Release considerations (maximum five):
 - Final test suite: 15 targeted scenarios, static regression, repository hygiene and runtime route smoke passed. The earlier 45-week integration is retained as progression evidence; final Calendar/route changes received targeted and browser retests rather than repeating the entire soak.
 
 **Recommendation: Improved but requires more work.** The repaired dev build is available for owner review; this audit does not certify complete device, event-family or long-career coverage. No production action was taken.
+
+## Release-readiness continuation
+
+Owner requested completion of remaining testing. Work remains dev-only.
+
+| ID | Priority | System | Issue | Root cause | Fix | Verification |
+| --- | --- | --- | --- | --- | --- | --- |
+| AUD-22 | P0 | Startup / storage | Blocked localStorage access aborts core initialisation | Unprotected read in load and main menu | Catch unavailable storage reads, retain in-memory play and show recovery warning | Fixed: blocked-storage full runtime smoke passes |
+| AUD-23 | P0 | Save recovery | Corrupt original deleted even when backup fails | Unconditional remove after swallowed backup error | Verify backup before removal/overwrite; retain earlier backups; offer original download | Fixed: fault-injection regression passes |
+
+Dev-only responsive test page: `tools/dev/responsive.html`. Uses genuine CSS viewport dimensions in an iframe; does not emulate Safari or native touch hardware. Initial mobile inbox, selection and pool profile interactions verified; extended testing in progress.

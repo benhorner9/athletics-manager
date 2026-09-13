@@ -75,6 +75,7 @@ try{
   virtualConsole,
   beforeParse(window){
    if(process.env.AM_SMOKE_SAVE_FIXTURE)window.localStorage.setItem("rto_full_game_v1",fs.readFileSync(process.env.AM_SMOKE_SAVE_FIXTURE,"utf8"));
+   if(process.env.AM_SMOKE_STORAGE_MODE==='blocked')Object.defineProperty(window,'localStorage',{get(){throw new window.DOMException('Storage unavailable','SecurityError')}});
    window.TextEncoder=TextEncoder;window.TextDecoder=TextDecoder;
    window.fetch=(input,init)=>globalThis.fetch(new URL(String(input),window.location.href),init);
    if(globalThis.Response)window.Response=globalThis.Response;

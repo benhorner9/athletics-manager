@@ -53,7 +53,7 @@ await test('Training attention has one authority and recovery resolves it',()=>{
 await test('Storage failure retains the last save and offers recovery and retry',()=>{
  const f=fixture();try{
   const source=fs.readFileSync('scripts/game.js','utf8'),start=source.indexOf('function save(){'),end=source.indexOf('function toast(',start);
-  f.w.eval("var SAVE_KEY='test-save',renderMenu=()=>{};");f.w.eval(source.slice(start,end));
+  f.w.eval("var SAVE_KEY='test-save',renderMenu=()=>{},preserveDamagedCareerSave=()=>{};");f.w.eval(source.slice(start,end));
   f.w.document.body.insertAdjacentHTML('beforeend','<span id="careerSaveStatus">AUTOSAVED</span>');
   f.w.localStorage.setItem('test-save','previous valid save');
   const original=f.w.Storage.prototype.setItem;f.w.Storage.prototype.setItem=function(){throw new f.w.DOMException('Quota reached','QuotaExceededError')};
@@ -199,6 +199,17 @@ await test('Historical results remain accessible during Event Day without trappi
   f.w.eval(fs.readFileSync('scripts/competition-journey-route-guard-v1.js','utf8'));
   f.w.__athleticsCompetitionJourneyRouteGuard.setHistoricalEvent('past');assert.equal(f.w.drawCompetition(),'past');
   f.w.view('home');assert.equal(f.w.drawCompetition(),'current');
+ }finally{f.dom.window.close()}
+});
+await test('Blocked reads and failed corrupt-save backups cannot destroy original saves',()=>{
+ const f=fixture();try{
+  f.w.eval(`var SAVE_KEY='career',CORRUPT_SAVE_KEY='backup',saveLoadWarning='',damagedCareerSave=null,damagedCareerBackupKey=null,fresh=()=>({fresh:true}),ensureState=()=>{throw Error('invalid career')};`);
+  const source=fs.readFileSync('scripts/game.js','utf8');f.w.eval(source.slice(source.indexOf('function readCareerSave(){'),source.indexOf('function ensureState(){')));
+  f.w.localStorage.setItem('career','broken original');f.w.localStorage.setItem('backup','previous backup');
+  const write=f.w.Storage.prototype.setItem;f.w.Storage.prototype.setItem=function(){throw Error('quota')};
+  f.w.load();assert.equal(f.w.localStorage.getItem('career'),'broken original');assert.equal(f.w.localStorage.getItem('backup'),'previous backup');assert.ok(f.w.s.fresh);
+  f.w.Storage.prototype.setItem=write;f.w.preserveDamagedCareerSave();assert.equal(f.w.localStorage.getItem(f.w.damagedCareerBackupKey),'broken original');assert.equal(f.w.localStorage.getItem('backup'),'previous backup');
+  f.w.Storage.prototype.getItem=function(){throw Error('blocked')};f.w.load();assert.ok(f.w.s.fresh);assert.match(f.w.saveLoadWarning,/unavailable/);
  }finally{f.dom.window.close()}
 });
 process.exitCode=failures?1:0;
