@@ -7,7 +7,7 @@ if(window.__amUICutoverV1)return;window.__amUICutoverV1=1;
 
 const $=id=>document.getElementById(id);
 const GENERATION='production';
-const BUILD='2026.09.14-ux3';
+const BUILD='2026.09.14-nickname1';
 const ROUTES={
  home:{selector:'.home-v2,[data-am-ui-screen="home-v2"]',delay:650},
  inbox:{selector:'.am-inbox-v3,[data-am-ui-screen="inbox-v3"]',delay:650},
@@ -27,6 +27,7 @@ const ROUTES={
 };
 const COMPONENTS={
  athleteProfile:'squad-athlete-v2',
+ athleteNickname:'athlete-nickname-v1',
  staffProfile:'programme-economy-v2',
  competitionOverview:'competition-journey-v2',
  inboxReader:'inbox-v3 + inbox-single-render-v1',
@@ -50,6 +51,10 @@ function loadPoolRatingLayout(){
 function loadUXConsistency(){
  if(window.__amUXConsistencyV1||$('amUXConsistencyScript'))return;
  const script=document.createElement('script');script.id='amUXConsistencyScript';script.src='scripts/ux-consistency-v1.js?v=20260914-ux2';script.async=false;document.body.appendChild(script);
+}
+function loadAthleteNickname(){
+ if(window.__amAthleteNicknameV1||$('amAthleteNicknameScript'))return;
+ const script=document.createElement('script');script.id='amAthleteNicknameScript';script.src='scripts/athlete-nickname-v1.js?v=20260914-nickname1';script.async=false;document.body.appendChild(script);
 }
 function ensureStyles(){
  if($('amUICutoverStyles'))return;const style=document.createElement('style');style.id='amUICutoverStyles';style.textContent=`
@@ -123,6 +128,7 @@ loadProgrammeEconomy();
 loadPoolRatingLayout();
 markProduction();
 loadUXConsistency();
+loadAthleteNickname();
 const originalView=typeof view==='function'?view:null;
 if(originalView){
  view=function(route,...args){const out=originalView.call(this,route,...args);schedule(currentRoute());return out};
@@ -130,9 +136,9 @@ if(originalView){
 const observer=new MutationObserver(()=>schedule());
 observer.observe(document.documentElement,{attributes:true,attributeFilter:['data-am-route']});
 const content=document.querySelector('.content');if(content)observer.observe(content,{childList:true,subtree:false});
-window.addEventListener('pageshow',()=>{loadProgrammeEconomy();loadPoolRatingLayout();markProduction();loadUXConsistency();schedule()});
+window.addEventListener('pageshow',()=>{loadProgrammeEconomy();loadPoolRatingLayout();markProduction();loadUXConsistency();loadAthleteNickname();schedule()});
 window.addEventListener('orientationchange',()=>setTimeout(()=>schedule(),120));
 
-window.__athleticsUICutover={version:1,generation:GENERATION,build:BUILD,verify,active,errorBoundary,schedule,silentCompetitionRecovery,loadUXConsistency,loadPoolRatingLayout};
+window.__athleticsUICutover={version:1,generation:GENERATION,build:BUILD,verify,active,errorBoundary,schedule,silentCompetitionRecovery,loadUXConsistency,loadPoolRatingLayout,loadAthleteNickname};
 schedule();
 })();
