@@ -6,7 +6,7 @@
 if(window.__amUXConsistencyV1)return;window.__amUXConsistencyV1=1;
 
 const VERSION=1;
-const BUILD='2026.09.14-ux1';
+const BUILD='2026.09.14-ux2';
 const $=id=>document.getElementById(id);
 const safe=(fn,fallback)=>{try{const v=fn();return v==null?fallback:v}catch(_){return fallback}};
 const route=()=>safe(()=>typeof currentView==='string'?currentView:'home','home');
@@ -152,6 +152,19 @@ function installStyles(){
  .am-ux-owner-copy{display:grid;gap:8px;padding:14px}.am-ux-owner-copy>strong{color:#e8f3f7;font-size:13px}.am-ux-owner-copy p{margin:0;max-width:680px;color:#91aebb;font-size:11px;line-height:1.55}.am-ux-owner-copy .btn{justify-self:start}
  .am-ux-confirm{width:min(520px,calc(100vw - 28px));max-width:none;border:1px solid rgba(114,201,238,.22);border-radius:14px;padding:0;background:#071722;color:#eaf5f8;box-shadow:0 30px 90px rgba(0,0,0,.55)}.am-ux-confirm::backdrop{background:rgba(0,8,14,.72);backdrop-filter:blur(3px)}.am-ux-confirm-shell{padding:22px}.am-ux-confirm-kicker{color:#72c9ee;font-size:9px;font-weight:900;letter-spacing:.14em}.am-ux-confirm h2{margin:7px 0 8px;font-size:23px;line-height:1.1}.am-ux-confirm p{margin:0;color:#a3bbc6;font-size:12px;line-height:1.55}.am-ux-confirm-meta{margin-top:12px;padding:11px 12px;border:1px solid rgba(124,171,193,.14);border-radius:9px;background:rgba(255,255,255,.025);color:#829daa;font-size:10px;line-height:1.5}.am-ux-confirm-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
  @media (pointer:coarse){.am-ux-back{min-height:40px}.wsv2-table button,.sav2-table button,.scv3-row button,.pe-contracts button,.cj-disc-row button{min-height:40px;min-width:40px}}
+ @media (min-width:1181px) and (max-width:1500px){
+  #pool .sav2-table-wrap{overflow-x:hidden!important;overflow-y:auto!important}
+  #pool .sav2-table{width:100%!important;min-width:0!important;max-width:100%!important;table-layout:fixed!important}
+  #pool .sav2-table th,#pool .sav2-table td{box-sizing:border-box!important;min-width:0!important;padding-left:6px!important;padding-right:6px!important;overflow:hidden!important}
+  #pool .sav2-table th:nth-child(1){width:20%}#pool .sav2-table th:nth-child(2){width:9%}#pool .sav2-table th:nth-child(3){width:19%}#pool .sav2-table th:nth-child(4){width:7%}#pool .sav2-table th:nth-child(5){width:9%}#pool .sav2-table th:nth-child(6){width:9%}#pool .sav2-table th:nth-child(7){width:8%}#pool .sav2-table th:nth-child(8){width:9%}#pool .sav2-table th:nth-child(9){width:10%}
+  #pool .sav2-table td{height:68px!important}
+  #pool .sav2-person{grid-template-columns:32px minmax(0,1fr)!important;gap:6px!important;min-width:0!important}#pool .sav2-face{width:32px!important;height:32px!important}
+  #pool .sav2-bar{grid-template-columns:minmax(18px,1fr) 18px!important;gap:3px!important;min-width:0!important}
+  #pool .sav2-keyattrs{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;align-content:center!important;gap:3px!important;min-width:0!important;overflow:hidden!important}
+  #pool .sav2-keyattrs span{box-sizing:border-box!important;display:flex!important;justify-content:space-between!important;width:100%!important;max-width:100%!important;min-width:0!important;gap:3px!important;padding:3px 4px!important;white-space:nowrap!important;overflow:hidden!important;font-size:7px!important;line-height:1!important}
+  #pool .sav2-keyattrs span:nth-child(3){grid-column:1 / -1}
+  #pool .sav2-keyattrs b{flex:0 0 auto!important;font-size:8px!important;line-height:1!important}
+ }
  @media(max-width:620px){.am-ui-cutover #pageKicker{max-width:116px}.am-ux-back{padding:0 8px}.am-ux-confirm-shell{padding:18px}.am-ux-confirm-actions{display:grid;grid-template-columns:1fr 1fr}.am-ux-confirm-actions .btn{width:100%}}
  `;document.head.appendChild(style)
 }
