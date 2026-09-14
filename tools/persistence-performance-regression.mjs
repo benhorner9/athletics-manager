@@ -7,6 +7,7 @@ const oldArchive=Array.from({length:100},(_,i)=>({id:`old-${i}`,body:'archived b
 const emailMeta=Object.fromEntries(oldArchive.map(m=>[m.id,{emailId:m.id,read:'read'}]));
 emailMeta.live={emailId:'live',read:'unread'};
 
+const profileResults=Array.from({length:150},(_,i)=>({season:2027+Math.floor(i/60),week:(i%52)+1,perf:10+i/1000,event:`Meet ${i}`,source:'event',achievements:i===149?['PB']:[]}));
 const state={
  game:{season:2028,week:30,careerWeek:82},
  history:[{year:2,week:20,event:'International Meeting',results:{M100:[
@@ -23,7 +24,12 @@ const state={
    4:{week:30,completed:true,fields:{M100:['a','b']},results:{M100:[{id:'a',name:'A Runner',nation:'GBR',perf:10.11,points:10,throwAttempts:[1,2,3]}]}}
   }}
  },
- athletes:[{id:'a',traitState:{processedResults:{'2027:old:1:M100':true,'2028:current:20:M100':true}}}],
+ athletes:[{
+  id:'a',profileResults,
+  story:{memories:Array.from({length:50},(_,i)=>({week:i,text:`Memory ${i}`}))},
+  attributeDevelopment:{history:Array.from({length:35},(_,i)=>({careerWeek:i,key:'speed',from:10,to:11}))},
+  traitState:{history:Array.from({length:20},(_,i)=>({week:i,type:'confidence'})),processedResults:{'2027:old:1:M100':true,'2028:current:20:M100':true}}
+ }],
  rivalries:{processed:{'2027:old:1:M100':true,'2028:current:20:M100':true}},
  programmeEconomies:{GBR:{bonusPaid:{'2027:old:M100:a:1':1000,'2028:meet:M100:a:1':1000}}},
  inboxDecisionSystem:{archive:oldArchive,emailMeta,actions:{live:{emailId:'live',resolution:'awaiting_response'}}},
@@ -62,6 +68,15 @@ assert.equal(physical,1,'Summit meeting should collapse repeated save calls into
 let metrics=context.AMPersistencePerformance.metrics();
 assert.equal(metrics.physicalSaves,1,'physical save metric should record one Summit save');
 assert.ok(metrics.deferredSaves>=20,'Summit save calls were not deferred inside the batch');
+
+const athlete=context.s.athletes[0];
+assert.equal(athlete.profileResults.length,120,'athlete result history must be bounded to the 120 results exposed by the profile UI');
+assert.equal(athlete.profileResults[0].event,'Meet 30','athlete result compaction did not retain the newest 120 rows');
+assert.equal(athlete.profileResults.at(-1).event,'Meet 149','latest athlete result was lost');
+assert.deepEqual(athlete.profileResults.at(-1).achievements,['PB'],'latest result achievement was lost');
+assert.equal(athlete.story.memories.length,40,'athlete story memories exceeded their player-facing retention window');
+assert.equal(athlete.attributeDevelopment.history.length,30,'attribute development history exceeded its UI retention window');
+assert.equal(athlete.traitState.history.length,12,'trait history exceeded its UI retention window');
 
 const oldSummit=context.s.summitSeries[2028].meetings[1];
 assert.ok(!oldSummit.fields,'completed past Summit fields should be released after the week has passed');
@@ -108,6 +123,7 @@ assert.ok(context.lastPersisted.includes('International Meeting'),'direct save d
 console.log('PERSISTENCE PERFORMANCE REGRESSION: PASSED');
 console.log(`✓ Summit operation: 20 save requests → 1 physical save`);
 console.log(`✓ Week operation: 8 save requests → 1 physical save`);
+console.log('✓ Athlete profile, story, development and trait histories bounded to visible retention windows');
 console.log('✓ Historical standings retained while replay-only duplicate payloads are compacted');
 console.log('✓ Current-week Summit attempt detail retained, then compacted after progression');
 console.log('✓ Technical dedupe maps and hidden decision archive bounded');
