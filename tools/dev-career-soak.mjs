@@ -34,6 +34,16 @@ export async function run(w){
   assert.ok(resolved,`staff contract decision could not be resolved for ${role}`);
   staffDecisions++;
  }
+ function objectBreakdown(node,limit=12){
+  if(!node||typeof node!=='object')return [];
+  return Object.entries(node).map(([key,value])=>{
+   const size=JSON.stringify(value)?.length||0;
+   const shape=Array.isArray(value)?`array(${value.length})`:value&&typeof value==='object'?`object(${Object.keys(value).length})`:typeof value;
+   let children=[];
+   if(value&&typeof value==='object')children=Object.entries(value).map(([child,entry])=>[child,JSON.stringify(entry)?.length||0]).sort((a,b)=>b[1]-a[1]).slice(0,6);
+   return {key,size,shape,children};
+  }).sort((a,b)=>b.size-a.size).slice(0,limit);
+ }
  function stateBreakdown(state){
   const athleteKeys={};
   for(const athlete of state.athletes||[]){
@@ -54,6 +64,16 @@ export async function run(w){
    scoutingKeys,
    scoutingNations
   };
+ }
+ function logScoutingNationDetails(state){
+  const nations=Object.entries(state.scoutingV2?.nations||{}).map(([nation,value])=>[nation,JSON.stringify(value)?.length||0]).sort((a,b)=>b[1]-a[1]).slice(0,4);
+  for(const [nation,size] of nations){
+   const rows=objectBreakdown(state.scoutingV2.nations[nation],14).map(row=>{
+    const children=row.children.length?` [${row.children.map(([key,bytes])=>`${key}:${bytes}`).join(', ')}]`:'';
+    return `${row.key}:${row.size}:${row.shape}${children}`;
+   });
+   console.log(`[audit-soak] scouting nation detail ${nation}:${size} ${rows.join(' | ')}`);
+  }
  }
  let completed=0;
  const weeks=[];
@@ -120,6 +140,8 @@ export async function run(w){
   }
   await new Promise(resolve=>setTimeout(resolve,25));
  }
+ const finalState=read('s');
+ logScoutingNationDetails(finalState);
  if(auditWeeks>=52)assert.ok(expiryDecisions>0,'long soak crossed the expiry window without exercising an athlete contract decision');
  if(auditWeeks>=52)assert.ok(staffDecisions>0,'long soak crossed the staff expiry window without exercising a staff contract decision');
  w.save();
