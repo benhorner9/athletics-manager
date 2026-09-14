@@ -7,7 +7,7 @@ if(window.__amUICutoverV1)return;window.__amUICutoverV1=1;
 
 const $=id=>document.getElementById(id);
 const GENERATION='production';
-const BUILD='2026.09.13-staffmarket2';
+const BUILD='2026.09.14-ux1';
 const ROUTES={
  home:{selector:'.home-v2,[data-am-ui-screen="home-v2"]',delay:650},
  inbox:{selector:'.am-inbox-v3,[data-am-ui-screen="inbox-v3"]',delay:650},
@@ -17,8 +17,8 @@ const ROUTES={
  calendar:{selector:'.calv2,[data-am-ui-screen="calendar-v2"]',delay:650},
  training:{selector:'.tr2-shell,.tr4-shell,[data-am-ui-screen="training-v4"],[data-am-ui-screen="training-v3"]',delay:1800},
  scouting:{selector:'.scouting-v2-active,[data-am-ui-screen="scouting-v2"]',delay:6500},
- staff:{selector:'.pe-shell,[data-am-ui-screen="programme-staff-v2"],.sfv2,[data-am-ui-screen="staff-v2"]',delay:1800},
- finance:{selector:'.pe-shell,[data-am-ui-screen="programme-economy-v2"],.sfv2,[data-am-ui-screen="finance-v2"]',delay:1800},
+ staff:{selector:'.pe-shell,[data-am-ui-screen="programme-staff-v2"]',delay:1800},
+ finance:{selector:'.pe-shell,[data-am-ui-screen="programme-economy-v2"]',delay:1800},
  league:{selector:'.wsv2,[data-am-ui-screen="summit-v2"]',delay:650},
  rankings:{selector:'.wsv2,[data-am-ui-screen="rankings-v2"]',delay:650},
  olympics:{selector:'.wsv2,[data-am-ui-screen="qualification-v3"]',delay:650},
@@ -32,7 +32,8 @@ const COMPONENTS={
  inboxReader:'inbox-v3 + inbox-single-render-v1',
  progressionGate:'inbox-decision-core-v1',
  selection:'selection-decision-v3 + competition-journey-v2',
- programmeEconomy:'programme-economy-v2'
+ programmeEconomy:'programme-economy-v2',
+ uxConsistency:'ux-consistency-v1'
 };
 let ticket=0;
 
@@ -40,6 +41,10 @@ let ticket=0;
 function loadProgrammeEconomy(){
  if(!document.querySelector('link[href*="programme-economy-v1.css"]')&&!$('amProgrammeEconomyStyle')){const link=document.createElement('link');link.id='amProgrammeEconomyStyle';link.rel='stylesheet';link.href='styles/programme-economy-v1.css?v=20260913-staffmarket2';document.head.appendChild(link)}
  if(!window.__amProgrammeEconomyV2&&!$('amProgrammeEconomyScript')){const script=document.createElement('script');script.id='amProgrammeEconomyScript';script.src='scripts/programme-economy-v2.js?v=20260913-staffmarket2';script.async=false;document.body.appendChild(script)}
+}
+function loadUXConsistency(){
+ if(window.__amUXConsistencyV1||$('amUXConsistencyScript'))return;
+ const script=document.createElement('script');script.id='amUXConsistencyScript';script.src='scripts/ux-consistency-v1.js?v=20260914-ux1';script.async=false;document.body.appendChild(script);
 }
 function ensureStyles(){
  if($('amUICutoverStyles'))return;const style=document.createElement('style');style.id='amUICutoverStyles';style.textContent=`
@@ -94,6 +99,7 @@ function active(){return Object.keys(ROUTES).reduce((out,r)=>(out[r]=candidate(r
 
 loadProgrammeEconomy();
 markProduction();
+loadUXConsistency();
 const originalView=typeof view==='function'?view:null;
 if(originalView){
  view=function(route,...args){const out=originalView.call(this,route,...args);schedule(currentRoute());return out};
@@ -101,9 +107,9 @@ if(originalView){
 const observer=new MutationObserver(()=>schedule());
 observer.observe(document.documentElement,{attributes:true,attributeFilter:['data-am-route']});
 const content=document.querySelector('.content');if(content)observer.observe(content,{childList:true,subtree:false});
-window.addEventListener('pageshow',()=>{loadProgrammeEconomy();markProduction();schedule()});
+window.addEventListener('pageshow',()=>{loadProgrammeEconomy();markProduction();loadUXConsistency();schedule()});
 window.addEventListener('orientationchange',()=>setTimeout(()=>schedule(),120));
 
-window.__athleticsUICutover={version:1,generation:GENERATION,build:BUILD,verify,active,errorBoundary,schedule};
+window.__athleticsUICutover={version:1,generation:GENERATION,build:BUILD,verify,active,errorBoundary,schedule,loadUXConsistency};
 schedule();
 })();
