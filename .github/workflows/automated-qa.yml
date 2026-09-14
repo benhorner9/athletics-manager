@@ -40,6 +40,29 @@ jobs:
       - name: Run critical automated QA
         run: node tools/automated-qa.mjs critical
 
+  career-soak:
+    name: 60-Week Career Persistence QA
+    needs: gameplay
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install headless runtime dependency
+        run: npm install --no-save --no-package-lock jsdom@26
+
+      - name: Run 60-week career soak
+        env:
+          AM_AUDIT_SOAK: '1'
+          AM_AUDIT_WEEKS: '60'
+        run: node tools/runtime-smoke.mjs
+
   browser:
     name: Chromium + WebKit UI QA
     needs: gameplay
