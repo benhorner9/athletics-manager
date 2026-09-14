@@ -39,11 +39,16 @@ export async function run(w){
   for(const athlete of state.athletes||[]){
    for(const [key,value] of Object.entries(athlete||{}))athleteKeys[key]=(athleteKeys[key]||0)+(JSON.stringify(value)?.length||0);
   }
-  const emailTypes={};
-  for(const mail of state.emails||[]){const key=String(mail.type||'info');emailTypes[key]=(emailTypes[key]||0)+1}
+  const emailTypes={},emailSubjects={};
+  for(const mail of state.emails||[]){
+   const type=String(mail.type||'info'),subject=String(mail.subject||'');
+   emailTypes[type]=(emailTypes[type]||0)+1;
+   emailSubjects[subject]=(emailSubjects[subject]||0)+1;
+  }
   return{
    athleteKeys:Object.entries(athleteKeys).sort((a,b)=>b[1]-a[1]).slice(0,12),
-   emailTypes:Object.entries(emailTypes).sort((a,b)=>b[1]-a[1]).slice(0,12)
+   emailTypes:Object.entries(emailTypes).sort((a,b)=>b[1]-a[1]).slice(0,12),
+   emailSubjects:Object.entries(emailSubjects).sort((a,b)=>b[1]-a[1]).slice(0,12)
   };
  }
  let completed=0;
@@ -86,6 +91,7 @@ export async function run(w){
    }
    completed++;
   }
+  const trainingEligible=read('managedTeam().filter(a=>!a.retired&&!a.camp&&Number(a.injury||0)<=0).map(a=>String(a.id))');
   w.view('inbox');
   w.AMPersistencePerformance?.resetMetrics?.();
   w.advanceWeek();
@@ -93,14 +99,17 @@ export async function run(w){
   if(advanceMetrics)assert.ok(advanceMetrics.physicalSaves<=1,`week advance used ${advanceMetrics.physicalSaves} physical saves`);
   const after=read('s.game.week');assert.equal(after,before===52?1:before+1,`season ${beforeSeason} week ${before} failed to advance`);assert.equal(read('s.game.careerWeek'),beforeCareer+1);assert.equal(read('s.game.season'),beforeSeason+(before===52?1:0));weeks.push(read('s.game.season')+':'+after);if(read('careerState().pendingReview')){read('acceptCareerJob(managedNation())');assert.equal(read('careerState().pendingReview'),null)}
   if(before!==52)assert.equal(read('s.athletes.reduce((n,a)=>n+(a.trainingV2?.history||[]).filter(h=>h.type==="training").length,0)'),legacyHistory,'retired training engine still processes weeks');
-  assert.ok(read('managedTeam().some(a=>a.attributeDevelopment?.lastWeek>0)'),'current attribute training did not process the squad');
+  if(trainingEligible.length){
+   const processed=read(`(()=>{const ids=${JSON.stringify(trainingEligible)},week=${beforeCareer};return ids.every(id=>{const a=s.athletes.find(x=>String(x.id)===id);return !a||a.retired||Number(a.attributeDevelopment?.lastWeek||0)===week})})()`);
+   assert.ok(processed,`current attribute training did not process every eligible athlete for career week ${beforeCareer}`);
+  }
   const ids=read('s.emails.map(m=>m.id)');assert.equal(new Set(ids).size,ids.length,'duplicate mail IDs');
   const eventIds=read('s.events.map(e=>e.id)');assert.equal(new Set(eventIds).size,eventIds.length,'duplicate events');
   const s=read('s');assert.ok(Number.isFinite(s.funding));assert.ok(s.athletes.every(a=>Number.isFinite(a.fatigue)));
   const saveSize=JSON.stringify(s).length;maxSaveSize=Math.max(maxSaveSize,saveSize);
   if(auditWeeks>=52)assert.ok(saveSize<12_000_000,`career save exceeded 12 MB long-save budget at ${s.game.season} W${after}: ${saveSize}`);
   console.log(`[audit-soak] week ${after}: ${ids.length} emails, ${completed} meetings completed; save ${saveSize} characters; physical saves ${advanceMetrics?.physicalSaves??'n/a'}; largest ${Object.entries(s).map(([k,v])=>[k,JSON.stringify(v)?.length||0]).sort((a,b)=>b[1]-a[1]).slice(0,5).map(x=>x.join(':')).join(', ')}`);
-  if(ids.length>100||saveSize>8_000_000){const breakdown=stateBreakdown(s);console.log(`[audit-soak] detail athlete keys ${breakdown.athleteKeys.map(x=>x.join(':')).join(', ')}; email types ${breakdown.emailTypes.map(x=>x.join(':')).join(', ')}`)}
+  if(ids.length>100||saveSize>8_000_000){const breakdown=stateBreakdown(s);console.log(`[audit-soak] detail athlete keys ${breakdown.athleteKeys.map(x=>x.join(':')).join(', ')}; email types ${breakdown.emailTypes.map(x=>x.join(':')).join(', ')}; top subjects ${breakdown.emailSubjects.map(([subject,count])=>`${count}× ${subject}`).join(' | ')}`)}
   await new Promise(resolve=>setTimeout(resolve,25));
  }
  if(auditWeeks>=52)assert.ok(expiryDecisions>0,'long soak crossed the expiry window without exercising an athlete contract decision');
