@@ -11,6 +11,7 @@ Thumbs.db
 *.temp
 coverage/
 dist/
+.qa-artifacts/
 
 # Local dependency installs
 node_modules/
