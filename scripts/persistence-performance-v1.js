@@ -54,6 +54,23 @@ function compactAthletes(){
  }
  return changed;
 }
+function compactExpiryEmails(){
+ const emails=s?.emails;if(!Array.isArray(emails)||emails.length<2)return 0;
+ const kept=[],byAction=new Map();let changed=0;
+ for(const mail of emails){
+  const actionId=String(mail?.programmeAction?.actionId||'');
+  const expiry=mail?.contractExpiryDecision===true||actionId.startsWith('economy:athlete-expiry:');
+  if(!expiry||!actionId){kept.push(mail);continue}
+  const existing=byAction.get(actionId);
+  if(!existing){byAction.set(actionId,mail);kept.push(mail);continue}
+  existing.unread=!!(existing.unread||mail.unread);
+  if(!existing.contractExpiryResolution&&mail.contractExpiryResolution)existing.contractExpiryResolution=mail.contractExpiryResolution;
+  if(!existing.programmeAction&&mail.programmeAction)existing.programmeAction=mail.programmeAction;
+  changed++;
+ }
+ if(changed)s.emails=kept;
+ return changed;
+}
 function compactHistory(){
  let changed=0;
  for(const item of s?.history||[]){
@@ -132,6 +149,7 @@ function compactState(){
  if(typeof s==='undefined'||!s)return {changed:0};
  let changed=0;
  changed+=compactAthletes();
+ changed+=compactExpiryEmails();
  changed+=compactHistory();
  changed+=compactManagement();
  changed+=compactSummit();
