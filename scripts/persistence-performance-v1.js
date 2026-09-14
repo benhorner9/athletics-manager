@@ -51,13 +51,13 @@ function compactManagement(){
  const management=s?.management;
  if(!management)return changed;
  for(const result of Object.values(management.results||{})){
-  if(!result||!Array.isArray(result.rows))continue;
-  result.rows=compactRows(result.rows);changed++;
+  if(!result||!Array.isArray(result.rows)||result.persistenceCompactV1)continue;
+  result.rows=compactRows(result.rows);result.persistenceCompactV1=1;changed++;
  }
  for(const dossier of Object.values(management.coachArchive||{})){
   for(const result of Object.values(dossier?.results||{})){
-   if(!result||!Array.isArray(result.rows))continue;
-   result.rows=compactRows(result.rows);changed++;
+   if(!result||!Array.isArray(result.rows)||result.persistenceCompactV1)continue;
+   result.rows=compactRows(result.rows);result.persistenceCompactV1=1;changed++;
   }
  }
  return changed;
@@ -68,13 +68,13 @@ function compactSummit(){
  for(const [seasonKey,series] of Object.entries(s?.summitSeries||{})){
   const season=Number(seasonKey)||Number(series?.season)||0;
   for(const meeting of Object.values(series?.meetings||{})){
-   if(!meeting?.completed)continue;
+   if(!meeting?.completed||meeting.persistenceCompactV1)continue;
    const historical=season&&season<currentSeason;
    const passedThisSeason=season===currentSeason&&Number(meeting.week||0)<currentWeek;
    if(!historical&&!passedThisSeason)continue;
    if(meeting.results)compactResultMap(meeting.results);
-   if(meeting.fields&&Object.keys(meeting.fields).length){delete meeting.fields;changed++}
-   if(!meeting.persistenceCompactV1){meeting.persistenceCompactV1=1;changed++}
+   if(meeting.fields&&Object.keys(meeting.fields).length)delete meeting.fields;
+   meeting.persistenceCompactV1=1;changed++;
   }
  }
  return changed;
