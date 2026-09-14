@@ -9,6 +9,10 @@ window.__amPersistencePerformanceV1=1;
 const VERSION=1;
 const KEEP_DECISION_ARCHIVE=80;
 const KEEP_DECISION_COMPLETED_ACTIONS=80;
+const KEEP_ATHLETE_RESULTS=120;
+const KEEP_STORY_MEMORIES=40;
+const KEEP_DEVELOPMENT_HISTORY=30;
+const KEEP_TRAIT_HISTORY=12;
 const safe=(fn,fallback)=>{try{const v=fn();return v==null?fallback:v}catch(_){return fallback}};
 const nowSeason=()=>Number(safe(()=>s.game.season,0))||0;
 const nowWeek=()=>Number(safe(()=>s.game.week,1))||1;
@@ -35,6 +39,20 @@ function compactResultMap(results){
  if(!results||typeof results!=='object')return results;
  for(const [disc,rows] of Object.entries(results))if(Array.isArray(rows))results[disc]=compactRows(rows);
  return results;
+}
+function trimArray(owner,key,limit){
+ const rows=owner?.[key];if(!Array.isArray(rows)||rows.length<=limit)return 0;
+ const removed=rows.length-limit;owner[key]=rows.slice(-limit);return removed;
+}
+function compactAthletes(){
+ let changed=0;
+ for(const athlete of s?.athletes||[]){
+  changed+=trimArray(athlete,'profileResults',KEEP_ATHLETE_RESULTS);
+  changed+=trimArray(athlete?.story,'memories',KEEP_STORY_MEMORIES);
+  changed+=trimArray(athlete?.attributeDevelopment,'history',KEEP_DEVELOPMENT_HISTORY);
+  changed+=trimArray(athlete?.traitState,'history',KEEP_TRAIT_HISTORY);
+ }
+ return changed;
 }
 function compactHistory(){
  let changed=0;
@@ -113,6 +131,7 @@ function compactDecisionSystem(){
 function compactState(){
  if(typeof s==='undefined'||!s)return {changed:0};
  let changed=0;
+ changed+=compactAthletes();
  changed+=compactHistory();
  changed+=compactManagement();
  changed+=compactSummit();
