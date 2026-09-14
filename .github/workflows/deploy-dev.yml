@@ -54,13 +54,17 @@ jobs:
           html = path.read_text(encoding='utf-8')
           build = os.environ['GITHUB_SHA'][:8]
 
-          # Dev is tested heavily on Safari/iPad. Give the route authority a build-specific
-          # URL so a freshly deployed fix cannot be masked by an older cached guard.
-          html = re.sub(
-              r'scripts/competition-journey-route-guard-v1\.js\?v=[^"\']+',
-              f'scripts/competition-journey-route-guard-v1.js?v={build}',
-              html,
-          )
+          # Dev is tested heavily on Safari/iPad. Give hand-off authority scripts a
+          # build-specific URL so freshly deployed routing fixes cannot be masked by cache.
+          for asset in (
+              'competition-journey-route-guard-v1.js',
+              'ui-cutover-v1.js',
+          ):
+              html = re.sub(
+                  rf'scripts/{re.escape(asset)}\?v=[^"\']+',
+                  f'scripts/{asset}?v={build}',
+                  html,
+              )
 
           marker = '<!-- AM_DEV_BUILD_STATUS -->'
           tag = f'{marker}\n<script src="scripts/dev/dev-build-status-v1.js?v={build}"></script>'
