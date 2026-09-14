@@ -1,0 +1,73 @@
+name: Automated QA Gate
+
+on:
+  pull_request:
+    branches: [dev]
+    paths:
+      - 'game.html'
+      - 'scripts/**'
+      - 'styles/**'
+      - 'tools/**'
+      - '.github/workflows/automated-qa.yml'
+      - '.github/workflows/deploy-dev.yml'
+      - '.github/workflows/ui-regression.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: athletics-manager-automated-qa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gameplay:
+    name: Gameplay + Runtime QA
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install headless runtime dependency
+        run: npm install --no-save --no-package-lock jsdom@26
+
+      - name: Run critical automated QA
+        run: node tools/automated-qa.mjs critical
+
+  browser:
+    name: Chromium + WebKit UI QA
+    needs: gameplay
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Playwright
+        run: npm install --no-save --no-package-lock playwright@1.55.0
+
+      - name: Install Chromium and WebKit
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Run real-browser QA
+        run: node tools/browser-qa.mjs
+
+      - name: Upload QA screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: athletics-manager-browser-qa-${{ github.run_id }}
+          path: .qa-artifacts/
+          if-no-files-found: ignore
+          retention-days: 14
