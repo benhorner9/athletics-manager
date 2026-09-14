@@ -14,8 +14,46 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  qa:
+    name: Automated QA before Dev Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out dev build
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install QA dependencies
+        run: npm install --no-save --no-package-lock jsdom@26 playwright@1.55.0
+
+      - name: Install Chromium and WebKit
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Run deterministic tests and 16-week career soak
+        env:
+          AM_AUDIT_WEEKS: '16'
+        run: node tools/automated-qa.mjs soak
+
+      - name: Run real-browser desktop, iPad and iPhone QA
+        run: node tools/browser-qa.mjs
+
+      - name: Upload QA screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: athletics-manager-dev-qa-${{ github.run_id }}
+          path: .qa-artifacts/
+          if-no-files-found: ignore
+          retention-days: 14
+
   deploy:
     name: Deploy Dev via FTPS
+    needs: qa
     runs-on: ubuntu-latest
 
     steps:
@@ -94,6 +132,7 @@ jobs:
             **/.github/**
             **/README.md
             **/docs/**
+            **/.qa-artifacts/**
 
       - name: Publish live dev build marker
         shell: bash
