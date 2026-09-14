@@ -3,7 +3,7 @@
 'use strict';
 if(window.__amTrainingV2Bootstrap)return;window.__amTrainingV2Bootstrap=1;
 const BASE='scripts/training-v2/';
-const VERSION='20260913-audit1';
+const VERSION='20260914-attention1';
 async function text(path){
  const response=await fetch(BASE+path+'?v='+VERSION,{cache:'no-store'});
  if(!response.ok)throw new Error(path+' '+response.status);
@@ -60,6 +60,9 @@ async function boot(){
   const attentionResponse=await fetch('scripts/training-attention-decisions-v2.js?v='+VERSION,{cache:'no-store'});
   if(!attentionResponse.ok)throw new Error('training-attention-decisions-v2.js '+attentionResponse.status);
   await run(await attentionResponse.text(),'attention-decisions');
+  const attentionV4Response=await fetch('scripts/training-attention-v4-authority.js?v='+VERSION,{cache:'no-store'});
+  if(!attentionV4Response.ok)throw new Error('training-attention-v4-authority.js '+attentionV4Response.status);
+  await run(await attentionV4Response.text(),'attention-v4-authority');
   const notificationResponse=await fetch('scripts/training-notification-authority-v1.js?v=20260913-notify1',{cache:'no-store'});
   if(!notificationResponse.ok)throw new Error('training-notification-authority-v1.js '+notificationResponse.status);
   await run(await notificationResponse.text(),'notification-authority');
