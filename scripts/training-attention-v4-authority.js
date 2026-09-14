@@ -9,7 +9,7 @@ window.__amTrainingAttentionV4Authority=1;
 
 let attentionOpen=false,scheduled=false,applying=false;
 const root=()=>document.getElementById('training');
-const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[ch]));
+const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const labelFor=a=>{try{return typeof discLabel==='function'?discLabel(a?.disc):a?.disc||'Athlete'}catch(_){return a?.disc||'Athlete'}};
 
 function rows(){
