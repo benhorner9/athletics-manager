@@ -16,6 +16,7 @@ let api=null;
 let baseDecisionActions=null;
 let financeObserver=null;
 let decorateQueued=false;
+const mailCreation=new Set();
 
 function state(){return safe(()=>api?.state?.(),null)}
 function athlete(id){return safe(()=>s?.athletes?.find(a=>String(a.id)===String(id)),null)}
@@ -30,15 +31,21 @@ function existingMail(id){return (s?.emails||[]).find(m=>String(m?.programmeActi
 function saveNow(){safe(()=>save(),null)}
 function urgentMail(a,c){
  const id=actionId(c),found=existingMail(id);if(found){c.expiryActionMailId=found.id;return found}
- const remaining=left(c),before=new Set((s?.emails||[]).map(m=>String(m.id)));
- safe(()=>newMail(sender('performance'),`URGENT — Contract decision: ${a.name}`,`${a.name}'s ${c.status||'national programme'} agreement has ${remaining} week${remaining===1?'':'s'} remaining and will expire automatically if it is not renewed. You must now either review and renew the terms or explicitly allow the agreement to expire. The career cannot advance until you make that decision.`,'contract'),null);
- const m=(s?.emails||[]).find(x=>!before.has(String(x.id)))||null;
- if(m){
-  m.programmeAction={actionId:id,tab:'contracts',priority:'critical',deadlineCareerWeek:cw(),athleteId:a.id,contractId:c.id,kind:'athlete-contract-expiry'};
-  m.contractExpiryDecision=true;
-  c.expiryActionMailId=m.id;
- }
- c.urgentWarned=true;saveNow();return m;
+ /* newMail() refreshes the Inbox badge synchronously. That refresh asks the decision
+    system for actions again, so guard this action until its first mail has been tagged. */
+ if(mailCreation.has(id))return null;
+ mailCreation.add(id);c.urgentWarned=true;
+ try{
+  const remaining=left(c),before=new Set((s?.emails||[]).map(m=>String(m.id)));
+  safe(()=>newMail(sender('performance'),`URGENT — Contract decision: ${a.name}`,`${a.name}'s ${c.status||'national programme'} agreement has ${remaining} week${remaining===1?'':'s'} remaining and will expire automatically if it is not renewed. You must now either review and renew the terms or explicitly allow the agreement to expire. The career cannot advance until you make that decision.`,'contract'),null);
+  const m=(s?.emails||[]).find(x=>!before.has(String(x.id)))||null;
+  if(m){
+   m.programmeAction={actionId:id,tab:'contracts',priority:'critical',deadlineCareerWeek:cw(),athleteId:a.id,contractId:c.id,kind:'athlete-contract-expiry'};
+   m.contractExpiryDecision=true;
+   c.expiryActionMailId=m.id;
+  }
+  saveNow();return m;
+ }finally{mailCreation.delete(id)}
 }
 function contractActions(){
  return pendingRows().map(({a,c})=>{
