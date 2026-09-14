@@ -7,7 +7,7 @@ if(window.__amUICutoverV1)return;window.__amUICutoverV1=1;
 
 const $=id=>document.getElementById(id);
 const GENERATION='production';
-const BUILD='2026.09.14-ux2';
+const BUILD='2026.09.14-ux3';
 const ROUTES={
  home:{selector:'.home-v2,[data-am-ui-screen="home-v2"]',delay:650},
  inbox:{selector:'.am-inbox-v3,[data-am-ui-screen="inbox-v3"]',delay:650},
@@ -90,12 +90,29 @@ function verify(route=currentRoute()){
  if(!def||!root||startupOpen())return {route,managed:!!def,present:def?candidate(route):null,recovered:false};
  const ok=candidate(route);return {route,managed:true,present:ok,recovered:root.querySelector('.am-cutover-error')!==null};
 }
+function silentCompetitionRecovery(route,my){
+ if(route!=='competition')return false;
+ try{
+  if(typeof renderView==='function')renderView(route);
+  else if(typeof drawCompetition==='function')drawCompetition();
+  else if(typeof view==='function')view(route);
+ }catch(err){console.warn('[Athletics Manager] Silent Competition recovery render failed',err)}
+ try{window.__athleticsCompetitionJourneyRouteGuard?.scheduleRecovery?.()}catch(err){console.warn('[Athletics Manager] Competition route recovery scheduling failed',err)}
+ setTimeout(()=>{
+  if(my!==ticket||startupOpen()||currentRoute()!==route)return;
+  const root=$(route);if(!root||candidate(route)||root.querySelector('.am-cutover-error'))return;
+  console.error('[Athletics Manager] Production UI missing after silent Competition recovery',route);
+  errorBoundary(route);
+ },700);
+ return true;
+}
 function schedule(route=currentRoute()){
  const def=ROUTES[route];if(!def||startupOpen())return;
  const my=++ticket;
  setTimeout(()=>{
   if(my!==ticket||startupOpen()||currentRoute()!==route)return;
   const root=$(route);if(!root||candidate(route)||root.querySelector('.am-cutover-error'))return;
+  if(silentCompetitionRecovery(route,my))return;
   console.error('[Athletics Manager] Production UI missing; legacy presentation suppressed',route);
   errorBoundary(route);
  },def.delay);
@@ -116,6 +133,6 @@ const content=document.querySelector('.content');if(content)observer.observe(con
 window.addEventListener('pageshow',()=>{loadProgrammeEconomy();loadPoolRatingLayout();markProduction();loadUXConsistency();schedule()});
 window.addEventListener('orientationchange',()=>setTimeout(()=>schedule(),120));
 
-window.__athleticsUICutover={version:1,generation:GENERATION,build:BUILD,verify,active,errorBoundary,schedule,loadUXConsistency,loadPoolRatingLayout};
+window.__athleticsUICutover={version:1,generation:GENERATION,build:BUILD,verify,active,errorBoundary,schedule,silentCompetitionRecovery,loadUXConsistency,loadPoolRatingLayout};
 schedule();
 })();
