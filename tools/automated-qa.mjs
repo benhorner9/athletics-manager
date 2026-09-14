@@ -57,6 +57,7 @@ async function syntaxCheck(){
 await run('Repository hygiene',['tools/repository-hygiene.mjs']);
 await run('Static UI / asset regression',['tools/static-regression.mjs']);
 await syntaxCheck();
+await run('Persistence performance regression',['tools/persistence-performance-regression.mjs']);
 await run('Deterministic gameplay regressions',['tools/automated-gameplay-regression.mjs']);
 await run('Stability regressions',['tools/dev-stability-regression.mjs'],{timeout:480000});
 
