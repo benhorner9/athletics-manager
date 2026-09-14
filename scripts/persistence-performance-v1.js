@@ -201,7 +201,16 @@ function install(){
 }
 function metrics(){return {...counters,depth,dirty,installed}}
 function resetMetrics(){counters.physicalSaves=0;counters.deferredSaves=0;counters.batches=0;counters.compactions=0;counters.lastBatch=null;counters.lastCompaction=null}
+function holdBootstrapUntilContractGate(){
+ const end=begin('bootstrap-contract-gate'),started=Date.now();
+ const poll=()=>{
+  if(window.__amAthleteContractExpiryGateV1||Date.now()-started>=5000){end();return}
+  setTimeout(poll,25);
+ };
+ poll();
+}
 
 window.AMPersistencePerformance={version:VERSION,begin,batch,flush,compact:compactState,metrics,resetMetrics,wrapEconomyDecisions};
 install();
+holdBootstrapUntilContractGate();
 })();
