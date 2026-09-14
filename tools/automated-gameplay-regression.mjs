@@ -24,6 +24,7 @@ function fixture(html='<div></div>'){
  const w=dom.window;
  w.TextEncoder=TextEncoder;
  w.TextDecoder=TextDecoder;
+ w.queueMicrotask=fn=>{fn()};
  w.requestAnimationFrame=fn=>{fn(Date.now());return 1};
  w.cancelAnimationFrame=()=>{};
  w.scrollTo=()=>{};
