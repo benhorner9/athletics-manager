@@ -63,11 +63,20 @@ let metrics=context.AMPersistencePerformance.metrics();
 assert.equal(metrics.physicalSaves,1,'physical save metric should record one Summit save');
 assert.ok(metrics.deferredSaves>=20,'Summit save calls were not deferred inside the batch');
 
+const oldSummit=context.s.summitSeries[2028].meetings[1];
+assert.ok(!oldSummit.fields,'completed past Summit fields should be released after the week has passed');
+assert.ok(!('throwAttempts' in oldSummit.results.M100[0]),'past Summit replay detail was not compacted');
+const currentSummit=context.s.summitSeries[2028].meetings[4];
+assert.ok(currentSummit.fields,'current-week Summit detail must stay intact');
+assert.ok('throwAttempts' in currentSummit.results.M100[0],'current-week Summit attempts must remain available');
+
 context.AMPersistencePerformance.resetMetrics();
 physical=0;
 context.advanceWeek();
 assert.equal(physical,1,'week advance should finish with one physical save');
 assert.equal(context.s.game.week,31,'week advance gameplay state changed unexpectedly');
+assert.ok(!currentSummit.fields,'Summit fields should be released once the career advances beyond the meeting week');
+assert.ok(!('throwAttempts' in currentSummit.results.M100[0]),'Summit replay detail should compact after the meeting week has passed');
 
 const compacted=context.s.history[0].results.M100;
 assert.equal(compacted.length,2,'historical standings must retain every result row');
@@ -82,13 +91,6 @@ assert.ok(!('hugeReplay' in managerRow),'manager result duplicate replay payload
 const coachRow=context.s.management.coachArchive.coach.results['2028:Meet:20:M100'].rows[0];
 assert.equal(coachRow.achievements[0],'PB','coach result achievement was lost');
 assert.ok(!('hugeReplay' in coachRow),'coach result duplicate replay payload was not compacted');
-
-const oldSummit=context.s.summitSeries[2028].meetings[1];
-assert.ok(!oldSummit.fields,'completed past Summit fields should be released after the week has passed');
-assert.ok(!('throwAttempts' in oldSummit.results.M100[0]),'past Summit replay detail was not compacted');
-const currentSummit=context.s.summitSeries[2028].meetings[4];
-assert.ok(currentSummit.fields,'current-week Summit detail must stay intact');
-assert.ok('throwAttempts' in currentSummit.results.M100[0],'current-week Summit attempts must remain available');
 
 assert.deepEqual(Object.keys(context.s.athletes[0].traitState.processedResults),['2028:current:20:M100'],'old trait dedupe keys were not pruned');
 assert.deepEqual(Object.keys(context.s.rivalries.processed),['2028:current:20:M100'],'old rivalry dedupe keys were not pruned');
@@ -107,5 +109,5 @@ console.log('PERSISTENCE PERFORMANCE REGRESSION: PASSED');
 console.log(`✓ Summit operation: 20 save requests → 1 physical save`);
 console.log(`✓ Week operation: 8 save requests → 1 physical save`);
 console.log('✓ Historical standings retained while replay-only duplicate payloads are compacted');
-console.log('✓ Current-week Summit attempt detail retained');
+console.log('✓ Current-week Summit attempt detail retained, then compacted after progression');
 console.log('✓ Technical dedupe maps and hidden decision archive bounded');
