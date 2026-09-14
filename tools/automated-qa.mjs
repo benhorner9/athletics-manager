@@ -59,6 +59,7 @@ await run('Static UI / asset regression',['tools/static-regression.mjs']);
 await syntaxCheck();
 await run('Persistence performance regression',['tools/persistence-performance-regression.mjs']);
 await run('Scouting persistence regression',['tools/scouting-persistence-regression.mjs']);
+await run('Scouting discovery runtime regression',['tools/scouting-discovery-runtime-regression.mjs'],{timeout:180000});
 await run('Scouting V2 storage audit',['tools/scouting-v2-storage-audit.mjs']);
 await run('Contract expiry reentrancy regression',['tools/contract-expiry-reentrancy-regression.mjs']);
 await run('Deterministic gameplay regressions',['tools/automated-gameplay-regression.mjs']);
