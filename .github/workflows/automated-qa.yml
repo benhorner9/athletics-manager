@@ -22,9 +22,9 @@ concurrency:
 
 jobs:
   gameplay:
-    name: Gameplay + Runtime QA
+    name: Full Olympic Cycle QA (208 weeks)
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 30
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -37,8 +37,10 @@ jobs:
       - name: Install headless runtime dependency
         run: npm install --no-save --no-package-lock jsdom@26
 
-      - name: Run critical automated QA
-        run: node tools/automated-qa.mjs critical
+      - name: Run one-off 208-week Olympic cycle soak
+        env:
+          AM_AUDIT_WEEKS: '208'
+        run: node tools/automated-qa.mjs soak
 
   browser:
     name: Chromium + WebKit UI QA
