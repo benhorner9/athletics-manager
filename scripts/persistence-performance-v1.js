@@ -19,6 +19,7 @@ const KEEP_OPPOSITION_DEVELOPMENT_HISTORY=6;
 const KEEP_TRAIT_HISTORY=12;
 const KEEP_LIVING_WORLD_MOMENTS=180;
 const KEEP_LIVING_WORLD_PROCESSED=800;
+const SAVE_KEY_NAME='rto_full_game_v1';
 const STORY_PIN_TYPES=['Call-up','Breakthrough win','Comeback','Rivalry','World record','Olympic medal','Injury','Recovery'];
 const safe=(fn,fallback)=>{try{const v=fn();return v==null?fallback:v}catch(_){return fallback}};
 const nowSeason=()=>Number(safe(()=>s.game.season,0))||0;
@@ -162,6 +163,7 @@ function compactSummit(){
 function compactLivingWorld(){
  const world=s?.livingWorld;if(!world||typeof world!=='object')return 0;
  let changed=0;
+ if(world.persistenceMigrationV1!==1){world.persistenceMigrationV1=1;changed++}
  if(Array.isArray(world.moments)&&world.moments.length>KEEP_LIVING_WORLD_MOMENTS){changed+=world.moments.length-KEEP_LIVING_WORLD_MOMENTS;world.moments=world.moments.slice(-KEEP_LIVING_WORLD_MOMENTS)}
  const processed=world.processed;
  if(processed&&typeof processed==='object'){
@@ -178,6 +180,36 @@ function compactLivingWorld(){
   }
  }
  return changed;
+}
+function persistedLivingWorld(){
+ try{
+  if(typeof localStorage==='undefined')return null;
+  const raw=localStorage.getItem(SAVE_KEY_NAME);if(!raw)return null;
+  const decoded=window.AMCareerSaveCodec?window.AMCareerSaveCodec.decode(raw):raw;
+  const parsed=JSON.parse(decoded),world=parsed?.livingWorld;
+  return world?.persistenceMigrationV1===1?world:null;
+ }catch(_){return null}
+}
+function reconcileLivingWorld(savedWorld){
+ if(!savedWorld||typeof s==='undefined'||!s)return false;
+ const world=s.livingWorld;if(!world||typeof world!=='object')return false;
+ world.moments=Array.isArray(savedWorld.moments)?savedWorld.moments:[];
+ world.processed=savedWorld.processed&&typeof savedWorld.processed==='object'?savedWorld.processed:{};
+ world.athletes=savedWorld.athletes&&typeof savedWorld.athletes==='object'?savedWorld.athletes:{};
+ world.persistenceMigrationV1=1;
+ return true;
+}
+function installLoadReconcile(){
+ const fn=window.load;if(typeof fn!=='function'||fn.__amPersistenceLivingWorldLoadV1)return false;
+ const wrapped=function(...args){
+  const savedWorld=persistedLivingWorld(),out=fn.apply(this,args);
+  const finish=value=>{reconcileLivingWorld(savedWorld);return value};
+  return out&&typeof out.then==='function'?out.then(finish):finish(out);
+ };
+ Object.defineProperty(wrapped,'__amPersistenceLivingWorldLoadV1',{value:true});
+ window.load=wrapped;try{load=wrapped}catch(_){}
+ reconcileLivingWorld(persistedLivingWorld());
+ return true;
 }
 function compactProcessedGuards(){
  let changed=0;
@@ -291,6 +323,7 @@ function install(){
  save=managedSave;
  window.save=managedSave;
  installed=true;
+ installLoadReconcile();
  for(const [name,reason] of [['advanceWeek','advance-week'],['simulateSummitMeeting','summit-meeting'],['simulateWholeEvent','whole-event'],['finishSummitMeeting','summit-finish'],['finaliseEvent','event-finalise'],['render','render']])wrapGlobal(name,reason);
  scheduleEconomyWrap();
  document.addEventListener('click',event=>{
@@ -313,7 +346,7 @@ function holdBootstrapUntilContractGate(){
  poll();
 }
 
-window.AMPersistencePerformance={version:VERSION,begin,batch,flush,compact:compactState,metrics,resetMetrics,wrapEconomyDecisions};
+window.AMPersistencePerformance={version:VERSION,begin,batch,flush,compact:compactState,metrics,resetMetrics,wrapEconomyDecisions,reconcileLivingWorld};
 install();
 holdBootstrapUntilContractGate();
 })();
