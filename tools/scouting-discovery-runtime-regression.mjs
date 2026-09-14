@@ -107,6 +107,10 @@ try{
  console.log('✓ Same athlete ID/name/ability/potential/PB entered the National Pool through the real discovery pipeline');
  console.log('✓ Scout report/opinion remained valid and the discovered athlete survived save/load');
 }finally{
+ // load() can queue a history/navigation microtask in JSDOM. Let it settle before
+ // disposing the document so teardown itself cannot create a false-negative test.
+ await new Promise(resolve=>setTimeout(resolve,250));
+ try{dom?.window?.stop?.()}catch(_){}
  try{dom?.window?.close()}catch(_){}
  await new Promise(resolve=>server.close(resolve));
 }
