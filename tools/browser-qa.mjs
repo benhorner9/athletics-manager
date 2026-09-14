@@ -96,6 +96,8 @@ async function inspectRoute(page,scenario,route,selector){
    docOverflow,
    rootOverflow,
    coachPanel:route==='training'?!!root?.querySelector('.am-coach-plan'):null,
+   attentionTab:route==='training'?!!root?.querySelector('[data-am-tr4-attention-tab]'):null,
+   attentionAuthority:route==='training'?Number(window.__athleticsTrainingAttentionDecisions?.version||0):null,
    poolClipped:route==='pool'?[...root.querySelectorAll('.sav2-attr,.sav2-range,.sav2-keyattrs span')].some(el=>{
     const cell=el.closest('td');if(!cell)return false;
     const a=el.getBoundingClientRect(),b=cell.getBoundingClientRect();
@@ -107,6 +109,8 @@ async function inspectRoute(page,scenario,route,selector){
  if(state.recovery)fail(scenario.name,`${route} displayed the Interface Recovery fallback`);
  if(state.docOverflow>2)fail(scenario.name,`${route} creates ${state.docOverflow}px of page-level horizontal overflow`);
  if(route==='training'&&!state.coachPanel)fail(scenario.name,'Training Overview is missing the Performance Staff recommendation panel');
+ if(route==='training'&&!state.attentionTab)fail(scenario.name,'Training is missing the canonical Needs Attention tab');
+ if(route==='training'&&state.attentionAuthority!==5)fail(scenario.name,`Training attention authority version ${state.attentionAuthority||'none'} loaded instead of V5`);
  if(route==='pool'&&state.poolClipped)fail(scenario.name,'National Pool ratings extend outside their table cells');
  notes.push(`${scenario.name} · ${route} · overflow ${state.docOverflow}px`);
 
@@ -156,4 +160,5 @@ console.log('✓ WebKit iPhone core-route sweep');
 console.log('✓ no Interface Recovery screen appeared');
 console.log('✓ no page-level horizontal overflow appeared');
 console.log('✓ Training Overview exposed coach recommendations');
+console.log('✓ Training V5 attention authority and Needs Attention tab loaded across all browser scenarios');
 console.log('✓ National Pool rating elements remained inside their cells');
