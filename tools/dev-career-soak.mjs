@@ -45,10 +45,14 @@ export async function run(w){
    emailTypes[type]=(emailTypes[type]||0)+1;
    emailSubjects[subject]=(emailSubjects[subject]||0)+1;
   }
+  const scoutingKeys=Object.entries(state.scoutingV2||{}).map(([key,value])=>[key,JSON.stringify(value)?.length||0]).sort((a,b)=>b[1]-a[1]).slice(0,16);
+  const scoutingNations=Object.entries(state.scoutingV2?.nations||{}).map(([nation,value])=>[nation,JSON.stringify(value)?.length||0]).sort((a,b)=>b[1]-a[1]).slice(0,10);
   return{
    athleteKeys:Object.entries(athleteKeys).sort((a,b)=>b[1]-a[1]).slice(0,12),
    emailTypes:Object.entries(emailTypes).sort((a,b)=>b[1]-a[1]).slice(0,12),
-   emailSubjects:Object.entries(emailSubjects).sort((a,b)=>b[1]-a[1]).slice(0,12)
+   emailSubjects:Object.entries(emailSubjects).sort((a,b)=>b[1]-a[1]).slice(0,12),
+   scoutingKeys,
+   scoutingNations
   };
  }
  let completed=0;
@@ -109,7 +113,11 @@ export async function run(w){
   const saveSize=JSON.stringify(s).length;maxSaveSize=Math.max(maxSaveSize,saveSize);
   if(auditWeeks>=52)assert.ok(saveSize<12_000_000,`career save exceeded 12 MB long-save budget at ${s.game.season} W${after}: ${saveSize}`);
   console.log(`[audit-soak] week ${after}: ${ids.length} emails, ${completed} meetings completed; save ${saveSize} characters; physical saves ${advanceMetrics?.physicalSaves??'n/a'}; largest ${Object.entries(s).map(([k,v])=>[k,JSON.stringify(v)?.length||0]).sort((a,b)=>b[1]-a[1]).slice(0,5).map(x=>x.join(':')).join(', ')}`);
-  if(ids.length>100||saveSize>8_000_000){const breakdown=stateBreakdown(s);console.log(`[audit-soak] detail athlete keys ${breakdown.athleteKeys.map(x=>x.join(':')).join(', ')}; email types ${breakdown.emailTypes.map(x=>x.join(':')).join(', ')}; top subjects ${breakdown.emailSubjects.map(([subject,count])=>`${count}× ${subject}`).join(' | ')}`)}
+  if(ids.length>100||saveSize>8_000_000){
+   const breakdown=stateBreakdown(s);
+   console.log(`[audit-soak] detail athlete keys ${breakdown.athleteKeys.map(x=>x.join(':')).join(', ')}; email types ${breakdown.emailTypes.map(x=>x.join(':')).join(', ')}; top subjects ${breakdown.emailSubjects.map(([subject,count])=>`${count}× ${subject}`).join(' | ')}`);
+   console.log(`[audit-soak] scoutingV2 keys ${breakdown.scoutingKeys.map(x=>x.join(':')).join(', ')}; largest nations ${breakdown.scoutingNations.map(x=>x.join(':')).join(', ')}`);
+  }
   await new Promise(resolve=>setTimeout(resolve,25));
  }
  if(auditWeeks>=52)assert.ok(expiryDecisions>0,'long soak crossed the expiry window without exercising an athlete contract decision');
