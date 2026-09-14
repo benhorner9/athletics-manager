@@ -6,7 +6,7 @@ export async function run(w){
  const read=code=>w.eval(code);
  if(process.env.AM_AUDIT_RESUME!=='1')read(`s=fresh('GREAT BRITAIN');ensureState();s.appointment.contractSigned=true;s.appointment.completed=true;s.appointment.introSeeded=true;s.induction.completed=true;s.managerName='Dev QA';save();`);
  const auditWeeks=Number(process.env.AM_AUDIT_WEEKS||16),selected=[];
- let expiryDecisions=0,maxSaveSize=read('JSON.stringify(s).length');
+ let expiryDecisions=0,staffDecisions=0,maxSaveSize=read('JSON.stringify(s).length');
  function select(event){
   w.__athleticsExplicitSelectionV3.openEvent(event);
   const dialog=w.document.getElementById('selectionDecisionV3');
@@ -28,6 +28,24 @@ export async function run(w){
   assert.ok(renewed,`contract expiry decision could not be renewed for ${id}`);
   expiryDecisions++;
  }
+ function resolveStaffDecision(action){
+  const role=String(action.entityId||'');
+  const resolved=w.__athleticsDecisionFinalizer?.resolveStaff?.(role,'release_at_expiry');
+  assert.ok(resolved,`staff contract decision could not be resolved for ${role}`);
+  staffDecisions++;
+ }
+ function stateBreakdown(state){
+  const athleteKeys={};
+  for(const athlete of state.athletes||[]){
+   for(const [key,value] of Object.entries(athlete||{}))athleteKeys[key]=(athleteKeys[key]||0)+(JSON.stringify(value)?.length||0);
+  }
+  const emailTypes={};
+  for(const mail of state.emails||[]){const key=String(mail.type||'info');emailTypes[key]=(emailTypes[key]||0)+1}
+  return{
+   athleteKeys:Object.entries(athleteKeys).sort((a,b)=>b[1]-a[1]).slice(0,12),
+   emailTypes:Object.entries(emailTypes).sort((a,b)=>b[1]-a[1]).slice(0,12)
+  };
+ }
  let completed=0;
  const weeks=[];
  for(let i=0;i<auditWeeks;i++){
@@ -45,6 +63,7 @@ export async function run(w){
     dialog.querySelector('[data-coach-all]').click();dialog.querySelector('[data-review]').click();dialog.querySelector('[data-submit]').click();
     assert.ok(read('summitSeasonState().registrationLocked'));dialog.close();
    }else if(String(a.actionId||'').startsWith('economy:athlete-expiry:'))renewExpiryDecision(a);
+   else if(a.source==='staff')resolveStaffDecision(a);
    else if(a.blocks)throw new Error('Unhandled blocking decision in soak: '+a.source+' '+a.actionId);
   }
   assert.equal(w.__athleticsInboxDecisionCore.getProgressionBlockers().length,0,'blocking decision remained after QA resolution');
@@ -81,10 +100,12 @@ export async function run(w){
   const saveSize=JSON.stringify(s).length;maxSaveSize=Math.max(maxSaveSize,saveSize);
   if(auditWeeks>=52)assert.ok(saveSize<12_000_000,`career save exceeded 12 MB long-save budget at ${s.game.season} W${after}: ${saveSize}`);
   console.log(`[audit-soak] week ${after}: ${ids.length} emails, ${completed} meetings completed; save ${saveSize} characters; physical saves ${advanceMetrics?.physicalSaves??'n/a'}; largest ${Object.entries(s).map(([k,v])=>[k,JSON.stringify(v)?.length||0]).sort((a,b)=>b[1]-a[1]).slice(0,5).map(x=>x.join(':')).join(', ')}`);
+  if(ids.length>100||saveSize>8_000_000){const breakdown=stateBreakdown(s);console.log(`[audit-soak] detail athlete keys ${breakdown.athleteKeys.map(x=>x.join(':')).join(', ')}; email types ${breakdown.emailTypes.map(x=>x.join(':')).join(', ')}`)}
   await new Promise(resolve=>setTimeout(resolve,25));
  }
  if(auditWeeks>=52)assert.ok(expiryDecisions>0,'long soak crossed the expiry window without exercising an athlete contract decision');
+ if(auditWeeks>=52)assert.ok(staffDecisions>0,'long soak crossed the staff expiry window without exercising a staff contract decision');
  w.save();const snapshot=read('JSON.stringify({week:s.game.week,events:s.events.map(e=>({id:e.id,entries:e.entries,completed:e.completed,results:e.results})),emails:s.emails.map(m=>({id:m.id,unread:m.unread,selectionSubmitted:m.selectionSubmitted}))})');
  w.load();assert.equal(read('JSON.stringify({week:s.game.week,events:s.events.map(e=>({id:e.id,entries:e.entries,completed:e.completed,results:e.results})),emails:s.emails.map(m=>({id:m.id,unread:m.unread,selectionSubmitted:m.selectionSubmitted}))})'),snapshot,'save/load changed decisions or results');
- console.log(`[audit-soak] PASS weeks ${weeks.join(',')}; ${selected.length} selections; ${completed} meetings; ${expiryDecisions} expiry decisions; max save ${maxSaveSize}; save/load`);
+ console.log(`[audit-soak] PASS weeks ${weeks.join(',')}; ${selected.length} selections; ${completed} meetings; ${expiryDecisions} athlete expiry decisions; ${staffDecisions} staff decisions; max save ${maxSaveSize}; save/load`);
 }
