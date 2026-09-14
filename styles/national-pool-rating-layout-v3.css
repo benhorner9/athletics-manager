@@ -2,24 +2,24 @@
    Keeps ranged staff assessments readable and visually balanced across tablet widths. */
 
 /* The National Pool must never require horizontal scrolling just to read ratings. */
-#pool,
-#pool > .sav2,
-#pool .sav2-workspace,
-#pool .sav2-table-wrap{
+body.am-ui-cutover #pool,
+body.am-ui-cutover #pool > .sav2,
+body.am-ui-cutover #pool .sav2-workspace,
+body.am-ui-cutover #pool .sav2-table-wrap{
   overflow-x:hidden!important;
 }
 
 /* iPad landscape / compact desktop: all three rating chips stay on one clean row. */
 @media(min-width:1100px) and (max-width:1500px){
-  #pool .sav2-table{
+  body.am-ui-cutover #pool .sav2-table{
     width:100%!important;
     min-width:0!important;
     max-width:100%!important;
     table-layout:fixed!important;
   }
 
-  #pool .sav2-table th,
-  #pool .sav2-table td{
+  body.am-ui-cutover #pool .sav2-table th,
+  body.am-ui-cutover #pool .sav2-table td{
     box-sizing:border-box!important;
     min-width:0!important;
     padding-left:6px!important;
@@ -27,19 +27,19 @@
     overflow:hidden!important;
   }
 
-  #pool .sav2-table th:nth-child(1){width:19%!important}
-  #pool .sav2-table th:nth-child(2){width:8%!important}
-  #pool .sav2-table th:nth-child(3){width:21%!important}
-  #pool .sav2-table th:nth-child(4){width:7%!important}
-  #pool .sav2-table th:nth-child(5){width:9%!important}
-  #pool .sav2-table th:nth-child(6){width:9%!important}
-  #pool .sav2-table th:nth-child(7){width:8%!important}
-  #pool .sav2-table th:nth-child(8){width:9%!important}
-  #pool .sav2-table th:nth-child(9){width:10%!important}
+  body.am-ui-cutover #pool .sav2-table th:nth-child(1){width:19%!important}
+  body.am-ui-cutover #pool .sav2-table th:nth-child(2){width:8%!important}
+  body.am-ui-cutover #pool .sav2-table th:nth-child(3){width:21%!important}
+  body.am-ui-cutover #pool .sav2-table th:nth-child(4){width:7%!important}
+  body.am-ui-cutover #pool .sav2-table th:nth-child(5){width:9%!important}
+  body.am-ui-cutover #pool .sav2-table th:nth-child(6){width:9%!important}
+  body.am-ui-cutover #pool .sav2-table th:nth-child(7){width:8%!important}
+  body.am-ui-cutover #pool .sav2-table th:nth-child(8){width:9%!important}
+  body.am-ui-cutover #pool .sav2-table th:nth-child(9){width:10%!important}
 
-  #pool .sav2-table td{height:58px!important}
+  body.am-ui-cutover #pool .sav2-table td{height:58px!important}
 
-  #pool .sav2-keyattrs{
+  body.am-ui-cutover #pool .sav2-keyattrs{
     display:grid!important;
     grid-template-columns:repeat(3,minmax(0,1fr))!important;
     align-items:center!important;
@@ -49,7 +49,7 @@
     overflow:hidden!important;
   }
 
-  #pool .sav2-keyattrs span{
+  body.am-ui-cutover #pool .sav2-keyattrs span{
     box-sizing:border-box!important;
     display:flex!important;
     align-items:center!important;
@@ -58,16 +58,16 @@
     min-width:0!important;
     max-width:100%!important;
     gap:3px!important;
-    padding:3px 3px!important;
+    padding:3px!important;
     white-space:nowrap!important;
     overflow:hidden!important;
     font-size:6.5px!important;
     line-height:1!important;
   }
 
-  #pool .sav2-keyattrs span:nth-child(3){grid-column:auto!important}
+  body.am-ui-cutover #pool .sav2-keyattrs span:nth-child(3){grid-column:auto!important}
 
-  #pool .sav2-keyattrs b{
+  body.am-ui-cutover #pool .sav2-keyattrs b{
     flex:0 0 auto!important;
     font-size:8px!important;
     line-height:1!important;
@@ -76,9 +76,9 @@
 
 /* Narrower tablets: use three equal rows rather than a visually unbalanced 2 + 1 grid. */
 @media(min-width:701px) and (max-width:1099px){
-  #pool .sav2-table td{height:74px!important}
+  body.am-ui-cutover #pool .sav2-table td{height:74px!important}
 
-  #pool .sav2-keyattrs{
+  body.am-ui-cutover #pool .sav2-keyattrs{
     display:grid!important;
     grid-template-columns:minmax(0,1fr)!important;
     align-content:center!important;
@@ -87,7 +87,7 @@
     overflow:hidden!important;
   }
 
-  #pool .sav2-keyattrs span{
+  body.am-ui-cutover #pool .sav2-keyattrs span{
     box-sizing:border-box!important;
     display:flex!important;
     align-items:center!important;
@@ -100,5 +100,5 @@
     overflow:hidden!important;
   }
 
-  #pool .sav2-keyattrs span:nth-child(3){grid-column:auto!important}
+  body.am-ui-cutover #pool .sav2-keyattrs span:nth-child(3){grid-column:auto!important}
 }
