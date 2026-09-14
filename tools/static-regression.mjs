@@ -367,3 +367,7 @@ if(failures.length){
 }
 console.log('\nATHLETICS MANAGER STATIC REGRESSION: PASSED\n');
 notes.forEach(x=>console.log(`✓ ${x}`));
+
+const shellBrand=read('styles/ui-unification-v1.css');
+for(const token of ['Sidebar brand — one game mark only','background:#edf5f8!important','rail-brand-mark::after{content:none!important;display:none!important}'])if(!shellBrand.includes(token))fail(`Sidebar single-logo contract missing: ${token}`);
+if(!html.includes('styles/ui-unification-v1.css?v=20260914-sidebarbrand1'))fail('Sidebar single-logo cache-bust is missing from game.html.');

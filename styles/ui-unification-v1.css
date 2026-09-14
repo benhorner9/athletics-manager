@@ -207,3 +207,9 @@ input,select,textarea{border-radius:var(--am-ui-control-radius)!important}
  .am-inbox-v3-copy>strong{font-size:9.5px!important}
 }
 
+
+
+/* Sidebar brand — one game mark only */
+.rail-brand.rail-brand-single .rail-brand-mark{background:#edf5f8!important;color:#07131d!important}
+.rail-brand.rail-brand-single .rail-brand-mark::before,
+.rail-brand.rail-brand-single .rail-brand-mark::after{content:none!important;display:none!important}
