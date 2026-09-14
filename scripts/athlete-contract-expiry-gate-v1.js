@@ -53,7 +53,7 @@ function decisionActions(){
 }
 function markMailDecision(c,text){
  const m=existingMail(actionId(c))||((s?.emails||[]).find(x=>String(x.id)===String(c.expiryActionMailId))||null);if(!m)return;
- m.body=`${m.body||''}\n\nDecision recorded: ${text}`;
+ if(!m.contractExpiryResolution)m.body=`${m.body||''}\n\nDecision recorded: ${text}`;
  m.contractExpiryResolution=text;
 }
 function refreshDecisionUI(){
@@ -66,27 +66,34 @@ async function allowExpiry(id){
  const a=athlete(id),c=activeContractFor(id);if(!a||!c||left(c)<=0)return false;
  const remaining=left(c);
  const spec={title:`Allow ${a.name}'s contract to expire?`,body:`The funded national programme agreement will end automatically in ${remaining} week${remaining===1?'':'s'}. ${a.name} will then leave the national squad and return to club-led competition.`,meta:'You can still renew before the expiry date. This decision removes the progression block so the career can continue.',confirmLabel:'ALLOW EXPIRY'};
- const ok=window.AMUX?.confirm?await window.AMUX.confirm(spec):true;if(!ok)return false;
+ const ok=window.AMUX?.confirm?await window.AMUX.confirm(spec):safe(()=>window.confirm(`${spec.title}\n\n${spec.body}`),false);if(!ok)return false;
  c.expiryDecision='allow';c.expiryDecisionCareerWeek=cw();markMailDecision(c,'Allow agreement to expire');
  safe(()=>rememberAthlete(a,'Programme contract',`Manager confirmed the current agreement may expire at the end of career week ${Number(c.endCareerWeek)||'—'}.`),null);
  safe(()=>toast(`${a.name}'s contract will be allowed to expire`),null);refreshDecisionUI();return true;
+}
+function cleanupRow(row){
+ if(!row)return;row.classList.remove('am-contract-expiry-urgent');row.querySelector('.am-contract-expiry-note')?.remove();
+ const actions=row.querySelector('.am-contract-expiry-actions');if(!actions)return;
+ const renew=actions.querySelector('[data-ar]');actions.querySelector('[data-am-contract-expire]')?.remove();if(renew)actions.replaceWith(renew);else actions.remove();
 }
 function decorateFinance(){
  if(typeof currentView!=='undefined'&&currentView!=='finance')return;
  const root=$('finance');if(!root)return;
  root.querySelectorAll('.pe-contracts [data-ar]').forEach(renew=>{
-  const id=renew.dataset.ar,c=activeContractFor(id),a=athlete(id),row=renew.closest('.pe-contracts>div');if(!c||!a||!row)return;
+  const id=renew.dataset.ar,row=renew.closest('.pe-contracts>div'),c=activeContractFor(id),a=athlete(id);if(!row)return;
+  if(!c||!a){cleanupRow(row);return}
   const remaining=left(c),urgent=remaining>0&&remaining<=DECISION_WEEKS;
-  row.classList.toggle('am-contract-expiry-urgent',urgent&&c.expiryDecision!=='allow');
-  row.querySelector('.am-contract-expiry-note')?.remove();
-  if(!urgent)return;
-  const info=row.firstElementChild,small=info?.querySelector('small');
-  if(small){const note=document.createElement('span');note.className='am-contract-expiry-note';note.textContent=c.expiryDecision==='allow'?'EXPIRY CONFIRMED':'DECISION REQUIRED';small.insertAdjacentElement('afterend',note)}
+  if(!urgent){cleanupRow(row);return}
+  row.classList.toggle('am-contract-expiry-urgent',c.expiryDecision!=='allow');
+  const info=row.firstElementChild,small=info?.querySelector('small');let note=row.querySelector('.am-contract-expiry-note');
+  if(small&&!note){note=document.createElement('span');note.className='am-contract-expiry-note';small.insertAdjacentElement('afterend',note)}
+  if(note)note.textContent=c.expiryDecision==='allow'?'EXPIRY CONFIRMED':'DECISION REQUIRED';
   let actions=row.querySelector('.am-contract-expiry-actions');
   if(!actions){actions=document.createElement('div');actions.className='am-contract-expiry-actions';renew.replaceWith(actions);actions.appendChild(renew)}
   let expiry=actions.querySelector('[data-am-contract-expire]');
   if(!expiry){expiry=document.createElement('button');expiry.type='button';expiry.className='btn ghost';expiry.dataset.amContractExpire=id;actions.appendChild(expiry)}
-  expiry.disabled=c.expiryDecision==='allow';expiry.textContent=c.expiryDecision==='allow'?'EXPIRY CONFIRMED':'ALLOW EXPIRY';
+  const confirmed=c.expiryDecision==='allow';if(expiry.disabled!==confirmed)expiry.disabled=confirmed;
+  const label=confirmed?'EXPIRY CONFIRMED':'ALLOW EXPIRY';if(expiry.textContent!==label)expiry.textContent=label;
  });
 }
 function styles(){
