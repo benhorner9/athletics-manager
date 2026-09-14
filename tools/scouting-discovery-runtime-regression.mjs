@@ -24,9 +24,8 @@ const errors=[];
 virtualConsole.on('jsdomError',err=>{const text=String(err?.message||err);if(/Uncaught \[|Could not load script/i.test(text))errors.push(text)});
 virtualConsole.on('error',(...args)=>{const text=args.map(String).join(' ');if(!/Scouting V2 failed to load|Not implemented:/i.test(text))errors.push(text)});
 
-let dom;
 try{
- dom=await JSDOM.fromURL(`http://127.0.0.1:${port}/game.html`,{
+ const dom=await JSDOM.fromURL(`http://127.0.0.1:${port}/game.html`,{
   runScripts:'dangerously',resources:'usable',pretendToBeVisual:true,virtualConsole,
   beforeParse(window){
    window.TextEncoder=TextEncoder;window.TextDecoder=TextDecoder;
@@ -106,11 +105,14 @@ try{
  console.log(`✓ Compacted real hidden athlete ${bloatedSize} → ${compacted.size} characters with truth unchanged`);
  console.log('✓ Same athlete ID/name/ability/potential/PB entered the National Pool through the real discovery pipeline');
  console.log('✓ Scout report/opinion remained valid and the discovered athlete survived save/load');
-}finally{
- // load() can queue a history/navigation microtask in JSDOM. Let it settle before
- // disposing the document so teardown itself cannot create a false-negative test.
- await new Promise(resolve=>setTimeout(resolve,250));
- try{dom?.window?.stop?.()}catch(_){}
- try{dom?.window?.close()}catch(_){}
+
+ // This is an isolated one-shot QA process. The game intentionally leaves browser
+ // timers/history work alive, so close the HTTP listener and terminate the process
+ // rather than disposing JSDOM mid-microtask and creating a teardown-only failure.
  await new Promise(resolve=>server.close(resolve));
+ process.exit(0);
+}catch(err){
+ console.error(err?.stack||err);
+ try{await new Promise(resolve=>server.close(resolve))}catch(_){}
+ process.exit(1);
 }
