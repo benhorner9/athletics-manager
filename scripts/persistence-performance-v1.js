@@ -21,6 +21,14 @@ const KEEP_LIVING_WORLD_MOMENTS=180;
 const KEEP_LIVING_WORLD_PROCESSED=800;
 const SAVE_KEY_NAME='rto_full_game_v1';
 const STORY_PIN_TYPES=['Call-up','Breakthrough win','Comeback','Rivalry','World record','Olympic medal','Injury','Recovery'];
+const HIDDEN_ATHLETE_KEEP=new Set([
+ 'id','name','nation','disc','age','overall','potential','devProjectionBase','devProjectionScoutLevel',
+ 'fitness','form','fatigue','pb','tier','points','injury','medals','training','inSquad','source',
+ 'assessmentIntroduced','visualGroup','portraitSlot','scoutingHidden','scoutingRegion',
+ 'hiddenEnteredSeason','hiddenEnteredWeek','hiddenVisibility','retired',
+ 'dateOfBirth','birthPlace','athleticsClubId','athleticsClub','athleticsClubHome'
+]);
+const FOREIGN_KNOWLEDGE_KEEP=new Set(['athleteId','evidence','stage','lastObservedCW','stale']);
 const safe=(fn,fallback)=>{try{const v=fn();return v==null?fallback:v}catch(_){return fallback}};
 const nowSeason=()=>Number(safe(()=>s.game.season,0))||0;
 const nowWeek=()=>Number(safe(()=>s.game.week,1))||1;
@@ -97,6 +105,34 @@ function compactAthletes(){
   changed+=compactStoryMemories(athlete);
   changed+=compactDevelopment(athlete);
   changed+=trimArray(athlete?.traitState,'history',KEEP_TRAIT_HISTORY);
+ }
+ return changed;
+}
+function compactScouting(){
+ const root=s?.scoutingV2,nations=root?.nations;if(!nations||typeof nations!=='object')return 0;
+ let changed=0;
+ const managed=String(safe(()=>typeof managedNation==='function'?managedNation():s?.managedNation,s?.managedNation)||'');
+ const activeByNation=new Map();
+ for(const athlete of s?.athletes||[]){
+  if(!athlete||athlete.retired)continue;
+  const nation=String(athlete.nation||'');if(!nation)continue;
+  if(!activeByNation.has(nation))activeByNation.set(nation,new Set());
+  activeByNation.get(nation).add(String(athlete.id));
+ }
+ for(const [nation,org] of Object.entries(nations)){
+  if(!org||typeof org!=='object')continue;
+  if(Array.isArray(org.hiddenTalent))for(const athlete of org.hiddenTalent){
+   if(!athlete||typeof athlete!=='object')continue;
+   for(const key of Object.keys(athlete))if(!HIDDEN_ATHLETE_KEEP.has(key)){delete athlete[key];changed++}
+  }
+  if(String(nation)===managed)continue;
+  const liveIds=activeByNation.get(String(nation))||new Set();
+  const knowledge=org.knowledge;
+  if(knowledge&&typeof knowledge==='object')for(const [id,row] of Object.entries(knowledge)){
+   if(!liveIds.has(String(id))){delete knowledge[id];changed++;continue}
+   if(!row||typeof row!=='object')continue;
+   for(const key of Object.keys(row))if(!FOREIGN_KNOWLEDGE_KEEP.has(key)){delete row[key];changed++}
+  }
  }
  return changed;
 }
@@ -246,6 +282,7 @@ function compactState(){
  if(typeof s==='undefined'||!s)return {changed:0};
  let changed=0;
  changed+=compactAthletes();
+ changed+=compactScouting();
  changed+=compactExpiryEmails();
  changed+=compactHistory();
  changed+=compactManagement();
