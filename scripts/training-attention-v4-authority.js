@@ -9,7 +9,7 @@ window.__amTrainingAttentionV4Authority=1;
 
 let attentionOpen=false,scheduled=false,applying=false;
 const root=()=>document.getElementById('training');
-const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[ch]));
 const labelFor=a=>{try{return typeof discLabel==='function'?discLabel(a?.disc):a?.disc||'Athlete'}catch(_){return a?.disc||'Athlete'}};
 
 function rows(){
@@ -35,7 +35,7 @@ function ensureStyles(){
 function attentionTab(items){
  const tabs=root()?.querySelector('.tr4-tabs');if(!tabs)return null;
  let tab=tabs.querySelector('[data-am-tr4-attention-tab]');
- if(!tab){tab=document.createElement('button');tab.type='button';tab.dataset.amTr4AttentionTab='1';const overview=tabs.querySelector('[data-tr4-tab="overview"]');overview?.after(tab)||tabs.prepend(tab)}
+ if(!tab){tab=document.createElement('button');tab.type='button';tab.dataset.amTr4AttentionTab='1';const overview=tabs.querySelector('[data-tr4-tab="overview"]');if(overview)overview.after(tab);else tabs.prepend(tab)}
  const count=items.length,wanted=String(count);
  if(tab.dataset.amAttentionCount!==wanted){tab.replaceChildren();const text=document.createElement('span');text.textContent='NEEDS ATTENTION';tab.appendChild(text);if(count){const badge=document.createElement('span');badge.className='am-tr4-attention-count';badge.textContent=wanted;badge.setAttribute('aria-hidden','true');tab.appendChild(badge)}tab.dataset.amAttentionCount=wanted}
  tab.setAttribute('aria-label',count?`Needs Attention, ${count} athlete${count===1?'':'s'} require a training decision`:'Needs Attention, no athletes require a training decision');
