@@ -6,10 +6,14 @@ const code=fs.readFileSync('scripts/persistence-performance-v1.js','utf8');
 const oldArchive=Array.from({length:100},(_,i)=>({id:`old-${i}`,body:'archived body '.repeat(10)}));
 const emailMeta=Object.fromEntries(oldArchive.map(m=>[m.id,{emailId:m.id,read:'read'}]));
 emailMeta.live={emailId:'live',read:'unread'};
-
-const profileResults=Array.from({length:150},(_,i)=>({season:2027+Math.floor(i/60),week:(i%52)+1,perf:10+i/1000,event:`Meet ${i}`,source:'event',achievements:i===149?['PB']:[]}));
+const intel=i=>({verdict:`Review ${i}`,note:'Detailed performance review '.repeat(8),factors:[{name:'Readiness',text:'Long explanation '.repeat(5)},{name:'Execution',text:'Long explanation '.repeat(5)}]});
+const profileResults=Array.from({length:150},(_,i)=>({season:2027+Math.floor(i/60),week:(i%52)+1,perf:10+i/1000,event:`Meet ${i}`,source:'event',achievements:i===149?['PB']:[],intel:intel(i),intelContext:{hidden:'duplicate context '.repeat(10)}}));
+const oppositionMemories=Array.from({length:40},(_,i)=>({type:i===0?'Call-up':i===10?'World record':'Routine',week:i+1,season:i<20?2027:2028,text:`Opposition memory ${i} `.repeat(4)}));
+const livingMoments=Array.from({length:220},(_,i)=>({id:`lw-${i}`,athleteId:i%2?'a':'b',season:i<100?2027:2028,week:(i%52)+1,text:`Moment ${i}`}));
+const livingProcessed=Object.fromEntries(Array.from({length:900},(_,i)=>[`processed-${i}`,1]));
 const state={
  game:{season:2028,week:30,careerWeek:82},
+ managedNation:'GBR',
  history:[{year:2,week:20,event:'International Meeting',results:{M100:[
   {id:'a',name:'A Runner',nation:'GBR',perf:10.12,points:10,achievements:['PB'],splits:[2.1,4.2,6.3],animation:{frames:Array(50).fill(1)}},
   {id:'b',name:'B Runner',nation:'USA',perf:10.18,points:8,throwAttempts:[1,2,3]}
@@ -25,11 +29,20 @@ const state={
   }}
  },
  athletes:[{
-  id:'a',profileResults,
-  story:{memories:Array.from({length:50},(_,i)=>({week:i,text:`Memory ${i}`}))},
-  attributeDevelopment:{history:Array.from({length:35},(_,i)=>({careerWeek:i,key:'speed',from:10,to:11}))},
+  id:'a',nation:'GBR',profileResults,
+  story:{memories:Array.from({length:50},(_,i)=>({type:'Managed memory',week:i,text:`Memory ${i}`}))},
+  attributeDevelopment:{history:Array.from({length:35},(_,i)=>({careerWeek:i,key:'speed',from:10,to:11})),lastSession:{week:30,changes:[{key:'speed',from:10,to:11}]}},
   traitState:{history:Array.from({length:20},(_,i)=>({week:i,type:'confidence'})),processedResults:{'2027:old:1:M100':true,'2028:current:20:M100':true}}
+ },{
+  id:'b',nation:'USA',profileResults:Array.from({length:20},(_,i)=>({season:2028,week:i+1,perf:10.3+i/100,event:`Away ${i}`,intel:intel(i)})),
+  story:{memories:oppositionMemories},
+  attributeDevelopment:{history:Array.from({length:35},(_,i)=>({careerWeek:i,key:'speed',from:10,to:11})),lastSession:{week:30,changes:[{key:'speed',from:10,to:11}]}},
+  traitState:{history:[]}
  }],
+ livingWorld:{version:1,moments:livingMoments,processed:livingProcessed,athletes:{
+  a:{heat:20,flags:{'upset:2026':true,'upset:2028':true},lastMoment:livingMoments.at(-1)},
+  b:{heat:10,flags:{callupMessage:true},lastMoment:livingMoments.at(-2)}
+ }},
  rivalries:{processed:{'2027:old:1:M100':true,'2028:current:20:M100':true}},
  programmeEconomies:{GBR:{bonusPaid:{'2027:old:M100:a:1':1000,'2028:meet:M100:a:1':1000}}},
  inboxDecisionSystem:{archive:oldArchive,emailMeta,actions:{live:{emailId:'live',resolution:'awaiting_response'}}},
@@ -74,9 +87,27 @@ assert.equal(athlete.profileResults.length,120,'athlete result history must be b
 assert.equal(athlete.profileResults[0].event,'Meet 30','athlete result compaction did not retain the newest 120 rows');
 assert.equal(athlete.profileResults.at(-1).event,'Meet 149','latest athlete result was lost');
 assert.deepEqual(athlete.profileResults.at(-1).achievements,['PB'],'latest result achievement was lost');
-assert.equal(athlete.story.memories.length,40,'athlete story memories exceeded their player-facing retention window');
-assert.equal(athlete.attributeDevelopment.history.length,30,'attribute development history exceeded its UI retention window');
+assert.equal(athlete.profileResults.filter(row=>row.intel).length,4,'only the four performance reviews exposed by the profile UI should retain detailed intel');
+assert.ok(!('intel' in athlete.profileResults[0]),'old detailed performance review payload was retained');
+assert.ok(!athlete.profileResults.some(row=>'intelContext' in row),'hidden duplicate performance context was retained');
+assert.equal(athlete.story.memories.length,40,'managed athlete story memories exceeded their player-facing retention window');
+assert.equal(athlete.attributeDevelopment.history.length,30,'managed attribute development history exceeded its UI retention window');
+assert.ok(athlete.attributeDevelopment.lastSession,'managed athlete should retain latest training-session detail');
 assert.equal(athlete.traitState.history.length,12,'trait history exceeded its UI retention window');
+
+const opposition=context.s.athletes[1];
+assert.ok(opposition.story.memories.length<=20,'opposition story history should be compact');
+assert.ok(opposition.story.memories.some(m=>m.type==='Call-up'),'important opposition call-up chapter was lost');
+assert.ok(opposition.story.memories.some(m=>m.type==='World record'),'important opposition world-record chapter was lost');
+assert.equal(opposition.attributeDevelopment.history.length,6,'non-managed development history should retain only a short continuity window');
+assert.ok(!('lastSession' in opposition.attributeDevelopment),'non-managed duplicate last-session payload should be released');
+assert.equal(opposition.profileResults.filter(row=>row.intel).length,4,'opposition profile should retain only visible recent performance reviews');
+
+assert.equal(context.s.livingWorld.moments.length,180,'living-world moment archive is not bounded');
+assert.equal(Object.keys(context.s.livingWorld.processed).length,800,'living-world processed dedupe map is not bounded');
+assert.ok(!('lastMoment' in context.s.livingWorld.athletes.a),'living-world athlete state retained duplicate moment payload');
+assert.ok(!context.s.livingWorld.athletes.a.flags['upset:2026'],'stale season-specific living-world flag was retained');
+assert.equal(context.s.livingWorld.athletes.a.flags['upset:2028'],true,'current season living-world flag was lost');
 
 const oldSummit=context.s.summitSeries[2028].meetings[1];
 assert.ok(!oldSummit.fields,'completed past Summit fields should be released after the week has passed');
@@ -123,7 +154,9 @@ assert.ok(context.lastPersisted.includes('International Meeting'),'direct save d
 console.log('PERSISTENCE PERFORMANCE REGRESSION: PASSED');
 console.log(`✓ Summit operation: 20 save requests → 1 physical save`);
 console.log(`✓ Week operation: 8 save requests → 1 physical save`);
-console.log('✓ Athlete profile, story, development and trait histories bounded to visible retention windows');
+console.log('✓ Visible athlete result history retained while stale review payloads are released');
+console.log('✓ Managed story/training continuity retained; opposition continuity compacted to recent + key chapters');
+console.log('✓ Living-world moments, dedupe state and duplicate athlete moment payloads bounded');
 console.log('✓ Historical standings retained while replay-only duplicate payloads are compacted');
 console.log('✓ Current-week Summit attempt detail retained, then compacted after progression');
 console.log('✓ Technical dedupe maps and hidden decision archive bounded');
