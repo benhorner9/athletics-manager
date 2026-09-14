@@ -114,7 +114,11 @@ export async function run(w){
  }
  if(auditWeeks>=52)assert.ok(expiryDecisions>0,'long soak crossed the expiry window without exercising an athlete contract decision');
  if(auditWeeks>=52)assert.ok(staffDecisions>0,'long soak crossed the staff expiry window without exercising a staff contract decision');
- w.save();const snapshot=read('JSON.stringify({week:s.game.week,events:s.events.map(e=>({id:e.id,entries:e.entries,completed:e.completed,results:e.results})),emails:s.emails.map(m=>({id:m.id,unread:m.unread,selectionSubmitted:m.selectionSubmitted}))})');
- w.load();assert.equal(read('JSON.stringify({week:s.game.week,events:s.events.map(e=>({id:e.id,entries:e.entries,completed:e.completed,results:e.results})),emails:s.emails.map(m=>({id:m.id,unread:m.unread,selectionSubmitted:m.selectionSubmitted}))})'),snapshot,'save/load changed decisions or results');
- console.log(`[audit-soak] PASS weeks ${weeks.join(',')}; ${selected.length} selections; ${completed} meetings; ${expiryDecisions} athlete expiry decisions; ${staffDecisions} staff decisions; max save ${maxSaveSize}; save/load`);
+ w.save();
+ const snapshot=read('JSON.stringify({week:s.game.week,events:s.events.map(e=>({id:e.id,entries:e.entries,completed:e.completed,results:e.results})),emails:s.emails.map(m=>({id:m.id,unread:m.unread,selectionSubmitted:m.selectionSubmitted}))})');
+ const continuity=read('JSON.stringify({moments:s.livingWorld?.moments?.length||0,heat:Object.fromEntries(Object.entries(s.livingWorld?.athletes||{}).map(([id,x])=>[id,Number(x?.heat||0)]))})');
+ w.load();
+ assert.equal(read('JSON.stringify({week:s.game.week,events:s.events.map(e=>({id:e.id,entries:e.entries,completed:e.completed,results:e.results})),emails:s.emails.map(m=>({id:m.id,unread:m.unread,selectionSubmitted:m.selectionSubmitted}))})'),snapshot,'save/load changed decisions or results');
+ assert.equal(read('JSON.stringify({moments:s.livingWorld?.moments?.length||0,heat:Object.fromEntries(Object.entries(s.livingWorld?.athletes||{}).map(([id,x])=>[id,Number(x?.heat||0)]))})'),continuity,'save/load replayed living-world moments or changed athlete story heat');
+ console.log(`[audit-soak] PASS weeks ${weeks.join(',')}; ${selected.length} selections; ${completed} meetings; ${expiryDecisions} athlete expiry decisions; ${staffDecisions} staff decisions; max save ${maxSaveSize}; save/load + living-world continuity`);
 }
