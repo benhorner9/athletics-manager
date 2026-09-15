@@ -11,12 +11,23 @@ const KEEP_DECISION_ARCHIVE=80;
 const KEEP_DECISION_COMPLETED_ACTIONS=80;
 const KEEP_ATHLETE_RESULTS=120;
 const KEEP_RESULT_INTEL=4;
+const KEEP_OPPOSITION_RESULTS_RECENT=24;
+const KEEP_OPPOSITION_RESULTS_TOTAL=32;
+const KEEP_RETIRED_OPPOSITION_RESULTS_RECENT=12;
+const KEEP_RETIRED_OPPOSITION_RESULTS_TOTAL=20;
+const KEEP_OPPOSITION_RESULT_INTEL=2;
+const KEEP_RETIRED_OPPOSITION_RESULT_INTEL=1;
 const KEEP_STORY_MEMORIES=40;
-const KEEP_OPPOSITION_STORY_RECENT=12;
-const KEEP_OPPOSITION_STORY_TOTAL=20;
+const KEEP_OPPOSITION_STORY_RECENT=8;
+const KEEP_OPPOSITION_STORY_TOTAL=12;
+const KEEP_RETIRED_OPPOSITION_STORY_RECENT=4;
+const KEEP_RETIRED_OPPOSITION_STORY_TOTAL=8;
 const KEEP_DEVELOPMENT_HISTORY=30;
-const KEEP_OPPOSITION_DEVELOPMENT_HISTORY=6;
+const KEEP_OPPOSITION_DEVELOPMENT_HISTORY=2;
+const KEEP_RETIRED_OPPOSITION_DEVELOPMENT_HISTORY=1;
 const KEEP_TRAIT_HISTORY=12;
+const KEEP_OPPOSITION_TRAIT_HISTORY=4;
+const KEEP_RETIRED_OPPOSITION_TRAIT_HISTORY=2;
 const KEEP_LIVING_WORLD_MOMENTS=180;
 const KEEP_LIVING_WORLD_PROCESSED=800;
 const SAVE_KEY_NAME='rto_full_game_v1';
@@ -60,12 +71,33 @@ function trimArray(owner,key,limit){
  const rows=owner?.[key];if(!Array.isArray(rows)||rows.length<=limit)return 0;
  const removed=rows.length-limit;owner[key]=rows.slice(-limit);return removed;
 }
+function retainRecentAndMilestones(rows,recentLimit,totalLimit){
+ if(!Array.isArray(rows)||rows.length<=recentLimit)return rows;
+ const recentFloor=Math.max(0,rows.length-recentLimit),chosen=new Set();
+ for(let i=recentFloor;i<rows.length;i++)chosen.add(i);
+ for(let i=0;i<recentFloor;i++)if(Array.isArray(rows[i]?.achievements)&&rows[i].achievements.length)chosen.add(i);
+ let indexes=[...chosen].sort((a,b)=>a-b);
+ if(indexes.length>totalLimit){
+  const recent=indexes.filter(i=>i>=recentFloor),older=indexes.filter(i=>i<recentFloor);
+  indexes=[...older.slice(-Math.max(0,totalLimit-recent.length)),...recent].sort((a,b)=>a-b);
+ }
+ return indexes.map(i=>rows[i]);
+}
 function compactProfileResults(athlete){
  const rows=athlete?.profileResults;if(!Array.isArray(rows))return 0;
- let changed=trimArray(athlete,'profileResults',KEEP_ATHLETE_RESULTS);
+ const managed=athlete?.nation===s?.managedNation,retired=!managed&&!!athlete?.retired;
+ let changed=0;
+ if(managed)changed+=trimArray(athlete,'profileResults',KEEP_ATHLETE_RESULTS);
+ else{
+  const recent=retired?KEEP_RETIRED_OPPOSITION_RESULTS_RECENT:KEEP_OPPOSITION_RESULTS_RECENT;
+  const total=retired?KEEP_RETIRED_OPPOSITION_RESULTS_TOTAL:KEEP_OPPOSITION_RESULTS_TOTAL;
+  const next=retainRecentAndMilestones(rows,recent,total);
+  if(next.length!==rows.length){changed+=rows.length-next.length;athlete.profileResults=next}
+ }
  const kept=athlete.profileResults||[];
+ const intelLimit=managed?KEEP_RESULT_INTEL:retired?KEEP_RETIRED_OPPOSITION_RESULT_INTEL:KEEP_OPPOSITION_RESULT_INTEL;
  const intelIndexes=kept.map((row,index)=>row?.intel?index:-1).filter(index=>index>=0);
- const keepIntel=new Set(intelIndexes.slice(-KEEP_RESULT_INTEL));
+ const keepIntel=new Set(intelIndexes.slice(-intelLimit));
  for(let i=0;i<kept.length;i++){
   const row=kept[i];if(!row||typeof row!=='object')continue;
   if(row.intel&&!keepIntel.has(i)){delete row.intel;changed++}
@@ -77,34 +109,38 @@ function compactStoryMemories(athlete){
  const story=athlete?.story,rows=story?.memories;if(!Array.isArray(rows))return 0;
  const managed=athlete?.nation===s?.managedNation;
  if(managed)return trimArray(story,'memories',KEEP_STORY_MEMORIES);
+ const recentLimit=athlete?.retired?KEEP_RETIRED_OPPOSITION_STORY_RECENT:KEEP_OPPOSITION_STORY_RECENT;
+ const totalLimit=athlete?.retired?KEEP_RETIRED_OPPOSITION_STORY_TOTAL:KEEP_OPPOSITION_STORY_TOTAL;
  const chosen=new Set();
- for(let i=Math.max(0,rows.length-KEEP_OPPOSITION_STORY_RECENT);i<rows.length;i++)chosen.add(i);
+ for(let i=Math.max(0,rows.length-recentLimit);i<rows.length;i++)chosen.add(i);
  for(const type of STORY_PIN_TYPES){for(let i=rows.length-1;i>=0;i--)if(rows[i]?.type===type){chosen.add(i);break}}
  let indexes=[...chosen].sort((a,b)=>a-b);
- if(indexes.length>KEEP_OPPOSITION_STORY_TOTAL){
-  const recentFloor=Math.max(0,rows.length-KEEP_OPPOSITION_STORY_RECENT);
-  const pinned=new Set();
+ if(indexes.length>totalLimit){
+  const recentFloor=Math.max(0,rows.length-recentLimit),pinned=new Set();
   for(const type of STORY_PIN_TYPES){for(let i=rows.length-1;i>=0;i--)if(rows[i]?.type===type){pinned.add(i);break}}
   const recent=indexes.filter(i=>i>=recentFloor),olderPinned=indexes.filter(i=>i<recentFloor&&pinned.has(i));
-  indexes=[...olderPinned.slice(-(KEEP_OPPOSITION_STORY_TOTAL-recent.length)),...recent].sort((a,b)=>a-b);
+  indexes=[...olderPinned.slice(-Math.max(0,totalLimit-recent.length)),...recent].sort((a,b)=>a-b);
  }
  if(indexes.length===rows.length&&indexes.every((value,index)=>value===index))return 0;
- const next=indexes.map(i=>rows[i]);const changed=Math.max(0,rows.length-next.length);story.memories=next;return changed;
+ const next=indexes.map(i=>rows[i]),changed=Math.max(0,rows.length-next.length);story.memories=next;return changed;
 }
 function compactDevelopment(athlete){
  const development=athlete?.attributeDevelopment;if(!development)return 0;
  const managed=athlete?.nation===s?.managedNation;
- let changed=trimArray(development,'history',managed?KEEP_DEVELOPMENT_HISTORY:KEEP_OPPOSITION_DEVELOPMENT_HISTORY);
+ const limit=managed?KEEP_DEVELOPMENT_HISTORY:athlete?.retired?KEEP_RETIRED_OPPOSITION_DEVELOPMENT_HISTORY:KEEP_OPPOSITION_DEVELOPMENT_HISTORY;
+ let changed=trimArray(development,'history',limit);
  if(!managed&&development.lastSession){delete development.lastSession;changed++}
  return changed;
 }
 function compactAthletes(){
  let changed=0;
  for(const athlete of s?.athletes||[]){
+  const managed=athlete?.nation===s?.managedNation;
   changed+=compactProfileResults(athlete);
   changed+=compactStoryMemories(athlete);
   changed+=compactDevelopment(athlete);
-  changed+=trimArray(athlete?.traitState,'history',KEEP_TRAIT_HISTORY);
+  const traitLimit=managed?KEEP_TRAIT_HISTORY:athlete?.retired?KEEP_RETIRED_OPPOSITION_TRAIT_HISTORY:KEEP_OPPOSITION_TRAIT_HISTORY;
+  changed+=trimArray(athlete?.traitState,'history',traitLimit);
  }
  return changed;
 }
