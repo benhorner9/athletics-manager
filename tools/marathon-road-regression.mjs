@@ -46,10 +46,13 @@ assert.match(road,/GAVIN POTTS • START/,'marathon must retain Gavin Potts as l
 assert.match(road,/Thirty-five kilometres and the damage is showing/,'commentary must recognise the marathon wall');
 assert.match(road,/FINISH • 42\.195 KM/,'commentary must carry the race through the real finish distance');
 
-assert.match(loader,/window\.addEventListener\('load',\(\)=>setTimeout\(loadMarathonRoad,0\)/,'road runtime must install after the remaining UI scripts');
+assert.match(loader,/function loadLateRuntime\(\)\{loadMarathonRoad\(\);loadContractDecisionRouting\(\);loadSeasonEventIntegrity\(\)\}/,'late runtime loader must include Marathon and both recovery guards');
+assert.match(loader,/window\.addEventListener\('load',\(\)=>setTimeout\(loadLateRuntime,0\),\{once:true\}\)/,'road runtime must install after the remaining UI scripts');
 assert.match(loader,/marathon-road-v1\.css\?v=20260915-marathon3/,'road stylesheet must be cache-busted and loaded');
 assert.match(loader,/marathon-road-v1\.js\?v=20260915-marathon3/,'road runtime must be cache-busted and loaded');
 assert.match(loader,/marathon-road-router-v1\.js\?v=20260915-marathon3/,'road router must be cache-busted and loaded');
+assert.match(loader,/contract-decision-routing-v1\.js\?v=20260915-contractrouting1/,'contract routing recovery must share the late runtime load path');
+assert.match(loader,/season-event-integrity-v1\.js\?v=20260915-eventintegrity1/,'season event recovery must share the late runtime load path');
 assert.match(loader,/script\.onload=\(\)=>loadMarathonRoadRouter\(\)/,'road router must install immediately after road runtime');
 assert.match(router,/const roadAwareDisciplineDraw=drawDisciplineScreen/,'router must capture road-aware discipline renderer');
 assert.match(router,/drawCompetition=function\(\)/,'router must intercept competition routing');
