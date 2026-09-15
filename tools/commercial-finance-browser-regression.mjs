@@ -49,15 +49,17 @@ try{
   }catch(err){return 'ERROR: '+String(err?.stack||err)}
  });
  assert.equal(seeded,'ok',seeded);
- await page.waitForSelector('#finance #amCommercialMediaFinance',{timeout:5000});
- await page.waitForSelector('#finance #amCommercialContractTerms',{timeout:5000});
+
+ const income=page.locator('#finance .pe-tabs button[data-tab="income"]');
+ await income.click({timeout:3000});
+ await page.waitForSelector('#finance #amCommercialMediaFinance',{state:'attached',timeout:5000});
+ await page.waitForSelector('#finance #amCommercialContractTerms',{state:'attached',timeout:5000});
 
  for(let i=0;i<8;i++){
-  await page.locator('#finance .pe-tabs button[data-tab="income"]').click({timeout:3000});
-  await page.waitForSelector('#finance #amCommercialContractTerms',{timeout:3000});
   await page.locator('#finance .pe-tabs button[data-tab="overview"]').click({timeout:3000});
   await page.locator('#finance .pe-tabs button[data-tab="income"]').click({timeout:3000});
-  await page.waitForSelector('#finance #amCommercialContractTerms',{timeout:3000});
+  await page.waitForSelector('#finance #amCommercialMediaFinance',{state:'attached',timeout:3000});
+  await page.waitForSelector('#finance #amCommercialContractTerms',{state:'attached',timeout:3000});
  }
 
  const state=await page.evaluate(()=>({
