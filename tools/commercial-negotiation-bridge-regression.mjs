@@ -14,17 +14,19 @@ assert.match(bridge,/m\.stage='final'/,'meeting must reach final terms before si
 assert.match(bridge,/No contract or funding changes until you accept the final offer/,'meeting must explicitly protect against premature signing');
 assert.match(bridge,/addEventListener\('click',intercept,true\)/,'finance sponsor click must be intercepted in capture phase');
 assert.match(bridge,/stopImmediatePropagation\(\)/,'legacy instant-sign click handler must be blocked');
-assert.match(bridge,/amCommercialCommit='1'/,'only the bridge commit path may release the original finance action');
-assert.match(bridge,/button\.click\(\)/,'final acceptance must hand off to the existing finance signing authority');
+assert.match(bridge,/const handler=button\.onclick/,'final acceptance must capture the existing finance signing authority directly');
+assert.match(bridge,/handler\.call\(button\)/,'final acceptance must invoke the finance signing authority without dispatching another click');
+assert.doesNotMatch(bridge,/button\.click\(\)/,'final acceptance must never re-dispatch the intercepted sponsor click');
 assert.match(bridge,/managementState\(\)\.sponsors\?\.\[season\(\)\]/,'bridge must verify the sponsor was actually recorded');
+assert.match(bridge,/m\.status='signed'/,'successful acceptance must permanently close the negotiation as signed');
 assert.match(bridge,/window\.signSponsor=id=>render\(id\)/,'legacy sponsor entry points must also open the meeting');
 assert.match(economy,/data-commercial/,'Programme Economy sponsor buttons must remain available to the bridge');
-assert.match(economy,/signCommercial\(offer\.id\)/,'regression documents the legacy direct-sign path that the bridge must intercept');
+assert.match(economy,/signCommercial\(offer\.id\)/,'regression documents the legacy direct-sign authority used by the bridge');
 assert.match(html,/scripts\/programme-economy-v2\.js/,'Programme Economy runtime must load');
 assert.match(html,/scripts\/commercial-partnership-v1\.js/,'Commercial Partnership runtime must load');
 assert.match(html,/scripts\/annual-career-refresh-v1\.js/,'post-commercial runtime loader must load');
 assert.ok(html.indexOf('scripts/annual-career-refresh-v1.js')>html.indexOf('scripts/commercial-partnership-v1.js'),'bridge loader must execute after Commercial Partnership');
-assert.match(loader,/commercial-negotiation-bridge-v1\.js\?v=20260915-commercialbridge1/,'runtime must load the sponsor negotiation bridge');
+assert.match(loader,/commercial-negotiation-bridge-v1\.js\?v=20260915-commercialbridge2/,'runtime must load the current sponsor negotiation bridge');
 assert.match(loader,/loadCommercialNegotiationBridge\(\);/,'runtime must invoke the sponsor negotiation bridge loader');
 
 console.log('Commercial negotiation bridge regression passed.');
