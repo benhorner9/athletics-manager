@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 const road=fs.readFileSync('scripts/marathon-road-v1.js','utf8');
 const router=fs.readFileSync('scripts/marathon-road-router-v1.js','utf8');
 const loader=fs.readFileSync('scripts/keyboard-shortcuts-v1.js','utf8');
+const summit=fs.readFileSync('scripts/summit-event-unified.js','utf8');
 const css=fs.readFileSync('styles/marathon-road-v1.css','utf8');
 
 assert.match(road,/MMarathon:\{label:"Men's Marathon"/,'men’s marathon discipline must exist');
@@ -21,6 +22,9 @@ assert.match(road,/selectionEntryLimit=function\(e,d\)\{return e\?\.openEntry&&i
 assert.match(road,/NATIONAL POOL/,'open marathon entry UI must include National Pool athletes');
 assert.match(road,/SELECT ALL AVAILABLE/,'open marathon entry UI must support selecting every available marathon athlete');
 assert.match(road,/There is no programme entry cap/,'open-entry rule must be explained in the UI');
+
+assert.match(summit,/Object\.keys\(DISCIPLINES\)\.filter\(d=>DISCIPLINES\[d\]\?\.road!==true&&DISCIPLINES\[d\]\?\.family!=='road'\)/,'Summit Series must exclude marathon and any future road disciplines');
+assert.doesNotMatch(summit,/all=\(\)=>Object\.keys\(DISCIPLINES\),/,'Summit Series must never blindly include every global discipline');
 
 assert.match(road,/function engineRoad\(/,'marathon must have a dedicated road simulation engine');
 assert.match(road,/CHECKPOINTS=\[0,5000,10000,15000,20000,21097\.5,25000,30000,35000,40000,42195\]/,'road engine must use meaningful split checkpoints through the full distance');
