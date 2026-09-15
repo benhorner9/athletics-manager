@@ -37,19 +37,24 @@ function onKeyDown(event){
  button.click();
 }
 
+function loadMarathonRoadRouter(){
+ if(typeof document==='undefined'||window.__amMarathonRoadRouterV1||document.querySelector('script[data-am-marathon-road-router]'))return;
+ const script=document.createElement('script');script.src='scripts/marathon-road-router-v1.js?v=20260915-marathon3';script.dataset.amMarathonRoadRouter='1';script.onerror=()=>console.warn('Marathon road router failed to load');document.body.appendChild(script);
+}
 function loadMarathonRoad(){
  if(typeof document==='undefined')return;
  if(!document.querySelector('link[data-am-marathon-road-style]')){
-  const style=document.createElement('link');style.rel='stylesheet';style.href='styles/marathon-road-v1.css?v=20260915-marathon2';style.dataset.amMarathonRoadStyle='1';document.head.appendChild(style);
+  const style=document.createElement('link');style.rel='stylesheet';style.href='styles/marathon-road-v1.css?v=20260915-marathon3';style.dataset.amMarathonRoadStyle='1';document.head.appendChild(style);
  }
- if(window.__amMarathonRoadV1||document.querySelector('script[data-am-marathon-road]'))return;
- const script=document.createElement('script');script.src='scripts/marathon-road-v1.js?v=20260915-marathon2';script.dataset.amMarathonRoad='1';script.onerror=()=>console.warn('Marathon & Road Racing failed to load');document.body.appendChild(script);
+ if(window.__amMarathonRoadV1){loadMarathonRoadRouter();return}
+ if(document.querySelector('script[data-am-marathon-road]'))return;
+ const script=document.createElement('script');script.src='scripts/marathon-road-v1.js?v=20260915-marathon3';script.dataset.amMarathonRoad='1';script.onerror=()=>console.warn('Marathon & Road Racing failed to load');script.onload=()=>loadMarathonRoadRouter();document.body.appendChild(script);
 }
 
 document.addEventListener('keydown',onKeyDown);
 window.AMKeyboardShortcutsV1={version:'1.0',advanceKey:'Space'};
-/* Install late so the road renderer wraps the final live-event UI rather than
-   being overwritten by presentation modules that load later in game.html. */
+/* Install late so the road renderer and router sit above the completed
+   stadium presentation stack without changing normal track/field events. */
 if(document.readyState==='complete')setTimeout(loadMarathonRoad,0);
 else window.addEventListener('load',()=>setTimeout(loadMarathonRoad,0),{once:true});
 })();
