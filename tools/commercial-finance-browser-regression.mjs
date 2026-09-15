@@ -41,6 +41,8 @@ try{
     s.commercial=s.commercial||{version:1,relationships:{},meetings:{},mediaEvents:[],history:[],proposalMailSeasons:{}};
     s.commercial.relationships=s.commercial.relationships||{};s.commercial.relationships.podium=55;s.commercial.mediaEvents=s.commercial.mediaEvents||[];
     const startup=document.getElementById('startup');if(startup)startup.classList.add('hidden');
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+    document.getElementById('finance')?.classList.add('on');
     AMCommercialMediaPlanning.activateDeal(mgmt.sponsors[season]);
     view('finance');
     AMProgrammeEconomy.renderFinance();
@@ -50,14 +52,23 @@ try{
  });
  assert.equal(seeded,'ok',seeded);
 
- const income=page.locator('#finance .pe-tabs button[data-tab="income"]');
- await income.click({timeout:3000});
+ async function clickFinanceTab(tab){
+  const result=await page.evaluate(name=>{
+   const b=document.querySelector(`#finance .pe-tabs button[data-tab="${name}"]`);
+   if(!b)return `missing:${name}`;
+   b.click();
+   return 'ok';
+  },tab);
+  assert.equal(result,'ok',`Finance ${tab} tab was unavailable`);
+ }
+
+ await clickFinanceTab('income');
  await page.waitForSelector('#finance #amCommercialMediaFinance',{state:'attached',timeout:5000});
  await page.waitForSelector('#finance #amCommercialContractTerms',{state:'attached',timeout:5000});
 
  for(let i=0;i<8;i++){
-  await page.locator('#finance .pe-tabs button[data-tab="overview"]').click({timeout:3000});
-  await page.locator('#finance .pe-tabs button[data-tab="income"]').click({timeout:3000});
+  await clickFinanceTab('overview');
+  await clickFinanceTab('income');
   await page.waitForSelector('#finance #amCommercialMediaFinance',{state:'attached',timeout:3000});
   await page.waitForSelector('#finance #amCommercialContractTerms',{state:'attached',timeout:3000});
  }
