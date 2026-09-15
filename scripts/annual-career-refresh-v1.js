@@ -105,7 +105,8 @@ function loadCommercialNegotiationBridge(){
 }
 function loadCommercialMediaPlanning(){
  if(typeof document==='undefined')return;
- if(window.__amCommercialMediaPlanningV1||document.querySelector('script[data-am-commercial-media-planning]'))return;
+ if(window.__amCommercialMediaPlanningV1){loadCommercialContractLifecycle();return}
+ if(document.querySelector('script[data-am-commercial-media-planning]'))return;
  const script=document.createElement('script');
  script.src='scripts/commercial-media-planning-v1.js?v=20260915-mediaplanning1';
  script.dataset.amCommercialMediaPlanning='1';
