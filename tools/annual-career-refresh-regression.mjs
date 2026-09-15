@@ -14,7 +14,7 @@ const permanent={
  programmeEconomies:{'GREAT BRITAIN':{athleteContracts:{a1:{state:'active'}}}}
 };
 const s={
- game:{season:2027,week:52,careerWeek:53},
+ game:{season:2027,week:52,careerWeek:52},
  ...structuredClone(permanent),
  emails:[{id:'live',unread:false},{id:'pending-mail',unread:true}],
  news:[{id:'n1'},{id:'n2'}],
@@ -28,27 +28,30 @@ const s={
   log:Array.from({length:30},(_,i)=>({kind:'test',i}))
  }
 };
-let pruneCalls=0,compactCalls=0,baseEndSeasonCalls=0;
+let pruneCalls=0,compactCalls=0;
 const context={
  window:{},s,
- pruneOldEmails(){pruneCalls++;return 0},
- endSeason(){baseEndSeasonCalls++;return 'base-end-season'},
+ pruneOldEmails(){pruneCalls++;return 3},
  setTimeout(){},
  console,
  structuredClone
 };
-context.window.endSeason=context.endSeason;
+context.window.pruneOldEmails=context.pruneOldEmails;
 context.window.AMPersistencePerformance={compact(){compactCalls++;return {changed:7}}};
 vm.createContext(context);
 vm.runInContext(source,context,{filename:'annual-career-refresh-v1.js'});
 const need=(ok,msg)=>{if(!ok)throw new Error('Annual career refresh regression: '+msg)};
 const beforePermanent=structuredClone(permanent);
-const endResult=context.window.endSeason();
-need(endResult==='base-end-season'&&baseEndSeasonCalls===1,'wrapped endSeason must run the refresh then call the original rollover');
-need(pruneCalls===1,'four-week email pruning must run once');
-need(compactCalls===1,'persistence compaction must run once');
-need(s.news.length===0,'old World News must clear');
-need(s.events.length===0,'old season event working graph must clear');
+const oldYearResult=context.window.pruneOldEmails();
+need(oldYearResult===3&&pruneCalls===1,'normal email pruning must still work before rollover');
+need(!s.annualCareerRefresh,'refresh must not run during Week 52 before season accounting is complete');
+need(s.news.length===2&&s.events.length===1,'old-season working state must remain intact until new-year boundary');
+s.game.season=2028;s.game.week=1;s.game.careerWeek=53;
+const rolloverResult=context.window.pruneOldEmails();
+need(rolloverResult===3&&pruneCalls===2,'new-year boundary must still run base four-week email pruning exactly once');
+need(compactCalls===1,'persistence compaction must run once at annual refresh');
+need(s.news.length===0,'old World News must clear at new-year boundary');
+need(s.events.length===0,'old season event working graph must clear before new events are created');
 need(s.plans.length===0,'old calendar plans must clear');
 need(Object.keys(s.leagues).length===0,'old league working state must clear');
 need(Object.keys(s.inboxDecisionSystem.actions).length===1&&s.inboxDecisionSystem.actions.pending,'unresolved inbox action must survive while completed actions clear');
@@ -56,8 +59,8 @@ need(s.inboxDecisionSystem.archive.length===1&&s.inboxDecisionSystem.archive[0].
 need(s.inboxDecisionSystem.emailMeta.live&&s.inboxDecisionSystem.emailMeta['pending-mail']&&!s.inboxDecisionSystem.emailMeta.stale,'only live/pending email metadata may survive');
 need(s.inboxDecisionSystem.log.length===20,'technical inbox log must be bounded annually');
 for(const [key,value] of Object.entries(beforePermanent))need(JSON.stringify(s[key])===JSON.stringify(value),`permanent ${key} state must survive unchanged`);
-need(s.annualCareerRefresh.lastCompletedSeason===2027&&s.annualCareerRefresh.runs===1,'refresh audit marker must record completed season');
-const second=context.window.AMAnnualCareerRefresh.run(2027);
-need(second.ran===false&&second.reason==='already-refreshed','same season refresh must be idempotent');
-need(pruneCalls===1&&compactCalls===1,'idempotent call must not repeat cleanup');
+need(s.annualCareerRefresh.lastCompletedSeason===2027&&s.annualCareerRefresh.runs===1,'refresh audit marker must record the completed calendar year');
+context.window.pruneOldEmails();
+need(s.annualCareerRefresh.runs===1&&compactCalls===1,'same new-year boundary must be idempotent');
+need(pruneCalls===3,'base email pruning remains callable even when refresh is already complete');
 console.log('Annual career refresh regression passed');
