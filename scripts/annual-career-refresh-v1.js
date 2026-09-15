@@ -118,7 +118,7 @@ function loadCommercialContractLifecycle(){
  if(typeof document==='undefined')return;
  if(window.__amCommercialContractLifecycleV1||document.querySelector('script[data-am-commercial-contract-lifecycle]'))return;
  const script=document.createElement('script');
- script.src='scripts/commercial-contract-lifecycle-v1.js?v=20260915-contractlife1';
+ script.src='scripts/commercial-contract-lifecycle-v1.js?v=20260915-contractlife2';
  script.dataset.amCommercialContractLifecycle='1';
  script.onerror=()=>console.warn('Commercial contract lifecycle failed to load');
  document.body.appendChild(script);
