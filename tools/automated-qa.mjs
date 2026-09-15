@@ -64,6 +64,7 @@ await run('Commercial partnership regression',['tools/commercial-partnership-reg
 await run('Commercial negotiation bridge regression',['tools/commercial-negotiation-bridge-regression.mjs']);
 await run('Commercial negotiation runtime regression',['tools/commercial-negotiation-runtime-regression.mjs']);
 await run('Commercial media planning regression',['tools/commercial-media-planning-regression.mjs']);
+await run('Commercial finance render regression',['tools/commercial-finance-render-regression.mjs']);
 await run('Scouting persistence regression',['tools/scouting-persistence-regression.mjs']);
 await run('Scouting discovery runtime regression',['tools/scouting-discovery-runtime-regression.mjs'],{timeout:180000});
 await run('Scouting V2 storage audit',['tools/scouting-v2-storage-audit.mjs']);
