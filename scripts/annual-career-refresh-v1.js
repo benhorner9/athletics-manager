@@ -98,7 +98,7 @@ function loadCommercialNegotiationBridge(){
  if(typeof document==='undefined')return;
  if(window.__amCommercialNegotiationBridgeV1||document.querySelector('script[data-am-commercial-negotiation-bridge]'))return;
  const script=document.createElement('script');
- script.src='scripts/commercial-negotiation-bridge-v1.js?v=20260915-commercialbridge3';
+ script.src='scripts/commercial-negotiation-bridge-v1.js?v=20260915-commercialbridge4';
  script.dataset.amCommercialNegotiationBridge='1';
  script.onerror=()=>console.warn('Commercial negotiation bridge failed to load');
  document.body.appendChild(script);
@@ -110,6 +110,16 @@ function loadCommercialMediaPlanning(){
  script.src='scripts/commercial-media-planning-v1.js?v=20260915-mediaplanning1';
  script.dataset.amCommercialMediaPlanning='1';
  script.onerror=()=>console.warn('Commercial media planning failed to load');
+ script.onload=()=>loadCommercialContractLifecycle();
+ document.body.appendChild(script);
+}
+function loadCommercialContractLifecycle(){
+ if(typeof document==='undefined')return;
+ if(window.__amCommercialContractLifecycleV1||document.querySelector('script[data-am-commercial-contract-lifecycle]'))return;
+ const script=document.createElement('script');
+ script.src='scripts/commercial-contract-lifecycle-v1.js?v=20260915-contractlife1';
+ script.dataset.amCommercialContractLifecycle='1';
+ script.onerror=()=>console.warn('Commercial contract lifecycle failed to load');
  document.body.appendChild(script);
 }
 
