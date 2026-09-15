@@ -88,3 +88,4 @@ assert.equal(window.s.funding,afterFirstSync,'Repeated lifecycle sync must not d
 assert.equal(window.managementState().sponsors[2],yearTwo,'Repeated lifecycle sync must reuse the same year-two deal');
 
 console.log('Commercial negotiation runtime regression passed.');
+dom.window.close();
