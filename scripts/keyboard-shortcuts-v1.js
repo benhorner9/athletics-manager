@@ -40,13 +40,16 @@ function onKeyDown(event){
 function loadMarathonRoad(){
  if(typeof document==='undefined')return;
  if(!document.querySelector('link[data-am-marathon-road-style]')){
-  const style=document.createElement('link');style.rel='stylesheet';style.href='styles/marathon-road-v1.css?v=20260915-marathon1';style.dataset.amMarathonRoadStyle='1';document.head.appendChild(style);
+  const style=document.createElement('link');style.rel='stylesheet';style.href='styles/marathon-road-v1.css?v=20260915-marathon2';style.dataset.amMarathonRoadStyle='1';document.head.appendChild(style);
  }
  if(window.__amMarathonRoadV1||document.querySelector('script[data-am-marathon-road]'))return;
- const script=document.createElement('script');script.src='scripts/marathon-road-v1.js?v=20260915-marathon1';script.dataset.amMarathonRoad='1';script.onerror=()=>console.warn('Marathon & Road Racing failed to load');document.body.appendChild(script);
+ const script=document.createElement('script');script.src='scripts/marathon-road-v1.js?v=20260915-marathon2';script.dataset.amMarathonRoad='1';script.onerror=()=>console.warn('Marathon & Road Racing failed to load');document.body.appendChild(script);
 }
 
 document.addEventListener('keydown',onKeyDown);
 window.AMKeyboardShortcutsV1={version:'1.0',advanceKey:'Space'};
-loadMarathonRoad();
+/* Install late so the road renderer wraps the final live-event UI rather than
+   being overwritten by presentation modules that load later in game.html. */
+if(document.readyState==='complete')setTimeout(loadMarathonRoad,0);
+else window.addEventListener('load',()=>setTimeout(loadMarathonRoad,0),{once:true});
 })();
