@@ -19,6 +19,8 @@ assert.match(bridge,/handler\.call\(button\)/,'final acceptance must invoke the 
 assert.doesNotMatch(bridge,/button\.click\(\)/,'final acceptance must never re-dispatch the intercepted sponsor click');
 assert.match(bridge,/managementState\(\)\.sponsors\?\.\[season\(\)\]/,'bridge must verify the sponsor was actually recorded');
 assert.match(bridge,/m\.status='signed'/,'successful acceptance must permanently close the negotiation as signed');
+assert.match(bridge,/MEDIA COMMITMENT/,'negotiation must surface the contracted media requirement');
+assert.match(bridge,/deal\.requiredMedia=Number\(offer\.mediaCommitment\)/,'accepted sponsor must persist its media obligation');
 assert.match(bridge,/window\.signSponsor=id=>render\(id\)/,'legacy sponsor entry points must also open the meeting');
 assert.match(economy,/data-commercial/,'Programme Economy sponsor buttons must remain available to the bridge');
 assert.match(economy,/signCommercial\(offer\.id\)/,'regression documents the legacy direct-sign authority used by the bridge');
@@ -26,7 +28,7 @@ assert.match(html,/scripts\/programme-economy-v2\.js/,'Programme Economy runtime
 assert.match(html,/scripts\/commercial-partnership-v1\.js/,'Commercial Partnership runtime must load');
 assert.match(html,/scripts\/annual-career-refresh-v1\.js/,'post-commercial runtime loader must load');
 assert.ok(html.indexOf('scripts/annual-career-refresh-v1.js')>html.indexOf('scripts/commercial-partnership-v1.js'),'bridge loader must execute after Commercial Partnership');
-assert.match(loader,/commercial-negotiation-bridge-v1\.js\?v=20260915-commercialbridge2/,'runtime must load the current sponsor negotiation bridge');
+assert.match(loader,/commercial-negotiation-bridge-v1\.js\?v=20260915-commercialbridge3/,'runtime must load the current sponsor negotiation bridge');
 assert.match(loader,/loadCommercialNegotiationBridge\(\);/,'runtime must invoke the sponsor negotiation bridge loader');
 
 console.log('Commercial negotiation bridge regression passed.');
