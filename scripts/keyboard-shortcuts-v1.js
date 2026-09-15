@@ -37,6 +37,16 @@ function onKeyDown(event){
  button.click();
 }
 
+function loadMarathonRoad(){
+ if(typeof document==='undefined')return;
+ if(!document.querySelector('link[data-am-marathon-road-style]')){
+  const style=document.createElement('link');style.rel='stylesheet';style.href='styles/marathon-road-v1.css?v=20260915-marathon1';style.dataset.amMarathonRoadStyle='1';document.head.appendChild(style);
+ }
+ if(window.__amMarathonRoadV1||document.querySelector('script[data-am-marathon-road]'))return;
+ const script=document.createElement('script');script.src='scripts/marathon-road-v1.js?v=20260915-marathon1';script.dataset.amMarathonRoad='1';script.onerror=()=>console.warn('Marathon & Road Racing failed to load');document.body.appendChild(script);
+}
+
 document.addEventListener('keydown',onKeyDown);
 window.AMKeyboardShortcutsV1={version:'1.0',advanceKey:'Space'};
+loadMarathonRoad();
 })();
