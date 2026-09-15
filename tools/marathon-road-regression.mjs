@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 
 const road=fs.readFileSync('scripts/marathon-road-v1.js','utf8');
+const router=fs.readFileSync('scripts/marathon-road-router-v1.js','utf8');
 const loader=fs.readFileSync('scripts/keyboard-shortcuts-v1.js','utf8');
 const css=fs.readFileSync('styles/marathon-road-v1.css','utf8');
 
@@ -42,8 +43,14 @@ assert.match(road,/Thirty-five kilometres and the damage is showing/,'commentary
 assert.match(road,/FINISH • 42\.195 KM/,'commentary must carry the race through the real finish distance');
 
 assert.match(loader,/window\.addEventListener\('load',\(\)=>setTimeout\(loadMarathonRoad,0\)/,'road runtime must install after the remaining UI scripts');
-assert.match(loader,/marathon-road-v1\.css\?v=20260915-marathon2/,'road stylesheet must be cache-busted and loaded');
-assert.match(loader,/marathon-road-v1\.js\?v=20260915-marathon2/,'road runtime must be cache-busted and loaded');
+assert.match(loader,/marathon-road-v1\.css\?v=20260915-marathon3/,'road stylesheet must be cache-busted and loaded');
+assert.match(loader,/marathon-road-v1\.js\?v=20260915-marathon3/,'road runtime must be cache-busted and loaded');
+assert.match(loader,/marathon-road-router-v1\.js\?v=20260915-marathon3/,'road router must be cache-busted and loaded');
+assert.match(loader,/script\.onload=\(\)=>loadMarathonRoadRouter\(\)/,'road router must install immediately after road runtime');
+assert.match(router,/const roadAwareDisciplineDraw=drawDisciplineScreen/,'router must capture road-aware discipline renderer');
+assert.match(router,/drawCompetition=function\(\)/,'router must intercept competition routing');
+assert.match(router,/return roadAwareDisciplineDraw\(e,live,discs\)/,'marathon competition routing must use the road renderer');
+assert.match(router,/return previousCompetition\(\)/,'non-road competitions must keep the standard competition renderer');
 assert.match(css,/\.road-live-layout/,'road broadcast layout styling must exist');
 assert.match(css,/\.road-selection-dialog/,'open road selection styling must exist');
 
