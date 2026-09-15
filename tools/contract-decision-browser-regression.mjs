@@ -27,7 +27,7 @@ try{
  const pageErrors=[];
  page.on('pageerror',err=>pageErrors.push(String(err?.stack||err)));
  await page.goto(`http://127.0.0.1:${port}/game.html`,{waitUntil:'load',timeout:30000});
- await page.waitForFunction(()=>window.__athleticsInboxProduction&&window.__athleticsInboxV3&&window.AMProgrammeEconomy&&window.__athleticsInboxSingleRender&&window.AMContractDecisionRouting&&typeof window.fresh==='function',{timeout:20000});
+ await page.waitForFunction(()=>window.__athleticsInboxProduction&&window.__athleticsInboxV3&&window.AMProgrammeEconomy&&window.__athleticsInboxSingleRender&&window.AMContractDecisionRouting,{timeout:20000});
 
  const seeded=await page.evaluate(()=>{
   try{return window.eval(`
