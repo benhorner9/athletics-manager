@@ -32,6 +32,6 @@ assert.match(lifecycle,/mediaCompleted:0,mediaMissed:0/,'a new contract year mus
 assert.match(lifecycle,/You have \$\{d\.requiredMedia\} media\/community commitments to schedule this season/,'multi-season rollover must clearly create a fresh annual media obligation');
 assert.match(loader,/commercial-media-planning-v1\.js\?v=20260915-mediaplanning1/,'runtime loader must load media planning');
 assert.match(loader,/commercial-negotiation-bridge-v1\.js\?v=20260915-commercialbridge4/,'updated sponsor negotiation must be cache-busted');
-assert.match(loader,/commercial-contract-lifecycle-v1\.js\?v=20260915-contractlife1/,'contract lifecycle must be cache-busted');
+assert.match(loader,/commercial-contract-lifecycle-v1\.js\?v=20260915-contractlife2/,'contract lifecycle must be cache-busted');
 
 console.log('Commercial media planning regression passed.');
