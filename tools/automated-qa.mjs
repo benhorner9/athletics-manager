@@ -61,6 +61,7 @@ await run('Persistence performance regression',['tools/persistence-performance-r
 await run('Annual career refresh regression',['tools/annual-career-refresh-regression.mjs']);
 await run('Athlete conversation regression',['tools/athlete-conversation-regression.mjs']);
 await run('Commercial partnership regression',['tools/commercial-partnership-regression.mjs']);
+await run('Commercial negotiation bridge regression',['tools/commercial-negotiation-bridge-regression.mjs']);
 await run('Scouting persistence regression',['tools/scouting-persistence-regression.mjs']);
 await run('Scouting discovery runtime regression',['tools/scouting-discovery-runtime-regression.mjs'],{timeout:180000});
 await run('Scouting V2 storage audit',['tools/scouting-v2-storage-audit.mjs']);
