@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
+// Final QA trigger for the commercial partnership build.
 const js=fs.readFileSync('scripts/commercial-partnership-v1.js','utf8');
 const html=fs.readFileSync('game.html','utf8');
 const calendar=fs.readFileSync('scripts/calendar-v2.js','utf8');
