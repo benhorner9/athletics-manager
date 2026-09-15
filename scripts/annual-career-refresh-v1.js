@@ -98,13 +98,23 @@ function loadCommercialNegotiationBridge(){
  if(typeof document==='undefined')return;
  if(window.__amCommercialNegotiationBridgeV1||document.querySelector('script[data-am-commercial-negotiation-bridge]'))return;
  const script=document.createElement('script');
- script.src='scripts/commercial-negotiation-bridge-v1.js?v=20260915-commercialbridge2';
+ script.src='scripts/commercial-negotiation-bridge-v1.js?v=20260915-commercialbridge3';
  script.dataset.amCommercialNegotiationBridge='1';
  script.onerror=()=>console.warn('Commercial negotiation bridge failed to load');
+ document.body.appendChild(script);
+}
+function loadCommercialMediaPlanning(){
+ if(typeof document==='undefined')return;
+ if(window.__amCommercialMediaPlanningV1||document.querySelector('script[data-am-commercial-media-planning]'))return;
+ const script=document.createElement('script');
+ script.src='scripts/commercial-media-planning-v1.js?v=20260915-mediaplanning1';
+ script.dataset.amCommercialMediaPlanning='1';
+ script.onerror=()=>console.warn('Commercial media planning failed to load');
  document.body.appendChild(script);
 }
 
 window.AMAnnualCareerRefresh={version:VERSION,run,state,cleanupDecisionSystem};
 install();
 loadCommercialNegotiationBridge();
+loadCommercialMediaPlanning();
 })();
