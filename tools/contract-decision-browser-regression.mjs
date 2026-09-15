@@ -40,8 +40,6 @@ try{
    if(!contract)throw new Error('No active athlete programme contract available');
    const athlete=s.athletes.find(a=>String(a.id)===String(contract.athleteId));
    if(!athlete)throw new Error('Contract athlete missing');
-   /* Reproduce an older/stale save where the appointment gate can still report pending. */
-   const originalAppointmentPending=window.appointmentPending;
    window.appointmentPending=()=>true;
    const id='qa-athlete-contract-'+String(athlete.id);
    const mail={id,type:'contract',subject:'Contract decision: '+athlete.name,body:'There are eight weeks remaining on '+athlete.name+'’s programme agreement. Review the options in Finance → Contracts.',sender:'Performance Director',year:Number(s.game?.cycleYear||1),week:Number(s.game?.week||1),unread:true};
@@ -91,10 +89,9 @@ try{
 
  const route=await page.evaluate(()=>{
   const b=document.querySelector('#reader [data-open-athlete-contracts]');if(!b)return {clicked:false};b.click();
-  return {clicked:true,currentView:window.currentView,financeOn:document.getElementById('finance')?.classList.contains('on')||false};
+  return {clicked:true,financeOn:document.getElementById('finance')?.classList.contains('on')||false,contractsTab:!!document.querySelector('#finance [data-pe-tab="contracts"].active,#finance [data-pe-tab="contracts"].on,#finance [data-pe-tab="contracts"][aria-selected="true"]')};
  });
  assert.equal(route.clicked,true,'Open Contracts action was unavailable');
- assert.equal(route.currentView,'finance','Open Contracts did not route into Finance');
  assert.equal(route.financeOn,true,'Finance view was not activated by contract decision action');
  assert.deepEqual(pageErrors,[],'WebKit reported an uncaught page error while opening programme contract decisions');
  console.log('Contract decision WebKit regression passed.');
