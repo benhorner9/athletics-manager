@@ -50,11 +50,20 @@ function loadMarathonRoad(){
  if(document.querySelector('script[data-am-marathon-road]'))return;
  const script=document.createElement('script');script.src='scripts/marathon-road-v1.js?v=20260915-marathon3';script.dataset.amMarathonRoad='1';script.onerror=()=>console.warn('Marathon & Road Racing failed to load');script.onload=()=>loadMarathonRoadRouter();document.body.appendChild(script);
 }
+function loadContractDecisionRouting(){
+ if(typeof document==='undefined'||window.__amContractDecisionRoutingV1||document.querySelector('script[data-am-contract-decision-routing]'))return;
+ const script=document.createElement('script');script.src='scripts/contract-decision-routing-v1.js?v=20260915-contractrouting1';script.dataset.amContractDecisionRouting='1';script.onerror=()=>console.warn('Contract decision routing guard failed to load');document.body.appendChild(script);
+}
+function loadSeasonEventIntegrity(){
+ if(typeof document==='undefined'||window.__amSeasonEventIntegrityV1||document.querySelector('script[data-am-season-event-integrity]'))return;
+ const script=document.createElement('script');script.src='scripts/season-event-integrity-v1.js?v=20260915-eventintegrity1';script.dataset.amSeasonEventIntegrity='1';script.onerror=()=>console.warn('Season event integrity guard failed to load');document.body.appendChild(script);
+}
+function loadLateRuntime(){loadMarathonRoad();loadContractDecisionRouting();loadSeasonEventIntegrity()}
 
 document.addEventListener('keydown',onKeyDown);
 window.AMKeyboardShortcutsV1={version:'1.0',advanceKey:'Space'};
-/* Install late so the road renderer and router sit above the completed
-   stadium presentation stack without changing normal track/field events. */
-if(document.readyState==='complete')setTimeout(loadMarathonRoad,0);
-else window.addEventListener('load',()=>setTimeout(loadMarathonRoad,0),{once:true});
+/* Install late so optional event systems and safety guards sit above the completed
+   presentation stack without changing normal track/field event ownership. */
+if(document.readyState==='complete')setTimeout(loadLateRuntime,0);
+else window.addEventListener('load',()=>setTimeout(loadLateRuntime,0),{once:true});
 })();
