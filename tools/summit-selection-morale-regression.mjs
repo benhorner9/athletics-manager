@@ -17,4 +17,5 @@ assert.match(game,/function activityBusy\(a,week=s\.game\.week\).*week>=16&&week
 assert.match(game,/function eligibleFor\(e,d\).*activityBusy\(a,e\.week\)/s,
   'Canonical eligibleFor must continue to exclude activity-busy athletes for the event week.');
 
+// Shipping contract: an athlete the rules make unavailable cannot be treated as a selection omission.
 console.log('Summit selection morale regression passed: unavailable Summit athletes are neutral, not omitted.');
