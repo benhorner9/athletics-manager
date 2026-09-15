@@ -27,7 +27,7 @@ try{
  const pageErrors=[];
  page.on('pageerror',err=>pageErrors.push(String(err?.stack||err)));
  await page.goto(`http://127.0.0.1:${port}/game.html`,{waitUntil:'load',timeout:30000});
- await page.waitForFunction(()=>window.__athleticsInboxProduction&&window.__athleticsInboxV3&&window.AMProgrammeEconomy&&window.__athleticsInboxSingleRender&&typeof window.fresh==='function',{timeout:20000});
+ await page.waitForFunction(()=>window.__athleticsInboxProduction&&window.__athleticsInboxV3&&window.AMProgrammeEconomy&&window.__athleticsInboxSingleRender&&window.AMContractDecisionRouting&&typeof window.fresh==='function',{timeout:20000});
 
  const seeded=await page.evaluate(()=>{
   try{return window.eval(`
@@ -43,6 +43,7 @@ try{
    window.appointmentPending=()=>true;
    const id='qa-athlete-contract-'+String(athlete.id);
    const mail={id,type:'contract',subject:'Contract decision: '+athlete.name,body:'There are eight weeks remaining on '+athlete.name+'’s programme agreement. Review the options in Finance → Contracts.',sender:'Performance Director',year:Number(s.game?.cycleYear||1),week:Number(s.game?.week||1),unread:true};
+   if(!AMContractDecisionRouting.isAthleteContractDecision(mail))throw new Error('Contract routing guard did not recognise programme contract email');
    s.emails=(s.emails||[]).filter(m=>m.id!==id);s.emails.push(mail);
    view('inbox');drawInbox();
    JSON.stringify({id,subject:mail.subject,athleteId:athlete.id});
@@ -89,7 +90,7 @@ try{
 
  const route=await page.evaluate(()=>{
   const b=document.querySelector('#reader [data-open-athlete-contracts]');if(!b)return {clicked:false};b.click();
-  return {clicked:true,financeOn:document.getElementById('finance')?.classList.contains('on')||false,contractsTab:!!document.querySelector('#finance [data-pe-tab="contracts"].active,#finance [data-pe-tab="contracts"].on,#finance [data-pe-tab="contracts"][aria-selected="true"]')};
+  return {clicked:true,financeOn:document.getElementById('finance')?.classList.contains('on')||false};
  });
  assert.equal(route.clicked,true,'Open Contracts action was unavailable');
  assert.equal(route.financeOn,true,'Finance view was not activated by contract decision action');
