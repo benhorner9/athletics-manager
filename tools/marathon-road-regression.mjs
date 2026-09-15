@@ -41,8 +41,9 @@ assert.match(road,/GAVIN POTTS • START/,'marathon must retain Gavin Potts as l
 assert.match(road,/Thirty-five kilometres and the damage is showing/,'commentary must recognise the marathon wall');
 assert.match(road,/FINISH • 42\.195 KM/,'commentary must carry the race through the real finish distance');
 
-assert.match(loader,/marathon-road-v1\.css\?v=20260915-marathon1/,'road stylesheet must be cache-busted and loaded');
-assert.match(loader,/marathon-road-v1\.js\?v=20260915-marathon1/,'road runtime must be cache-busted and loaded');
+assert.match(loader,/window\.addEventListener\('load',\(\)=>setTimeout\(loadMarathonRoad,0\)/,'road runtime must install after the remaining UI scripts');
+assert.match(loader,/marathon-road-v1\.css\?v=20260915-marathon2/,'road stylesheet must be cache-busted and loaded');
+assert.match(loader,/marathon-road-v1\.js\?v=20260915-marathon2/,'road runtime must be cache-busted and loaded');
 assert.match(css,/\.road-live-layout/,'road broadcast layout styling must exist');
 assert.match(css,/\.road-selection-dialog/,'open road selection styling must exist');
 
