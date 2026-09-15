@@ -95,6 +95,7 @@ function install(){
  return true;
 }
 function loadCommercialNegotiationBridge(){
+ if(typeof document==='undefined')return;
  if(window.__amCommercialNegotiationBridgeV1||document.querySelector('script[data-am-commercial-negotiation-bridge]'))return;
  const script=document.createElement('script');
  script.src='scripts/commercial-negotiation-bridge-v1.js?v=20260915-commercialbridge1';
