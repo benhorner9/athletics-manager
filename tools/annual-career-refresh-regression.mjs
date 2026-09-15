@@ -8,6 +8,7 @@ const permanent={
  performances:[{athleteId:'a1',perf:10.12,season:2027}],
  medals:{g:1,s:0,b:0},
  records:{M100:{world:9.58}},
+ summitRecords:{M100:{id:'a1',name:'Athlete',nation:'GREAT BRITAIN',perf:10.12,meeting:6,season:2027}},
  career:{careerYear:2,cycleNumber:1,seasonHistory:[{season:2027,rank:2}],completedCycles:[]},
  scoutingV2:{nations:{'GREAT BRITAIN':{knowledge:{a1:{stage:4}}}}},
  rivalries:{pairs:{r1:{formed:true,ids:['a1','b1'],wins:{a1:2,b1:1}}}},
@@ -21,6 +22,7 @@ const s={
  events:[{id:'e1',completed:true,results:{M100:[{id:'a1',perf:10.12}]}}],
  plans:[{id:'p1',season:2027,status:'completed'}],
  leagues:{2027:{season:2027,rounds:{17:{}}}},
+ summitSeries:{2027:{season:2027,settled:true,meetings:{6:{number:6,completed:true,results:{M100:[{id:'a1',perf:10.12}]}}}}},
  inboxDecisionSystem:{
   archive:[{id:'old-archive'},{id:'pending-mail'}],
   actions:{done:{actionId:'done',emailId:'old-archive',resolution:'completed'},pending:{actionId:'pending',emailId:'pending-mail',resolution:'awaiting_response'}},
@@ -54,6 +56,7 @@ need(s.news.length===0,'old World News must clear at new-year boundary');
 need(s.events.length===0,'old season event working graph must clear before new events are created');
 need(s.plans.length===0,'old calendar plans must clear');
 need(Object.keys(s.leagues).length===0,'old league working state must clear');
+need(Object.keys(s.summitSeries).length===0,'completed Summit Series working state must clear');
 need(Object.keys(s.inboxDecisionSystem.actions).length===1&&s.inboxDecisionSystem.actions.pending,'unresolved inbox action must survive while completed actions clear');
 need(s.inboxDecisionSystem.archive.length===1&&s.inboxDecisionSystem.archive[0].id==='pending-mail','only archive mail backing a pending action may survive');
 need(s.inboxDecisionSystem.emailMeta.live&&s.inboxDecisionSystem.emailMeta['pending-mail']&&!s.inboxDecisionSystem.emailMeta.stale,'only live/pending email metadata may survive');
