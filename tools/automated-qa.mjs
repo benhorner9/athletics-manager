@@ -67,6 +67,7 @@ await run('Commercial media planning regression',['tools/commercial-media-planni
 await run('Commercial finance render regression',['tools/commercial-finance-render-regression.mjs']);
 await run('Commercial finance WebKit regression',['tools/commercial-finance-browser-regression.mjs'],{timeout:120000});
 await run('Marathon & Road Racing regression',['tools/marathon-road-regression.mjs']);
+await run('Marathon & Road Racing WebKit regression',['tools/marathon-road-browser-regression.mjs'],{timeout:180000});
 await run('Scouting persistence regression',['tools/scouting-persistence-regression.mjs']);
 await run('Scouting discovery runtime regression',['tools/scouting-discovery-runtime-regression.mjs'],{timeout:180000});
 await run('Scouting V2 storage audit',['tools/scouting-v2-storage-audit.mjs']);
