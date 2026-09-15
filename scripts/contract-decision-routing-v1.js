@@ -40,11 +40,14 @@ function renderContract(m){
 function install(){
  const api=window.__athleticsInboxSingleRender;
  if(!api?.render)return false;
- if(api.render.__amContractDecisionRoutingV1)return true;
- const base=api.render.bind(api);
+ const activeReader=(()=>{try{return typeof drawReader==='function'?drawReader:null}catch(_){return null}})()||api.render;
+ if(activeReader?.__amContractDecisionRoutingV1){window.AMContractDecisionRouting??={version:1,isAthleteContractDecision,athleteFor,render:renderContract};return true}
+ const base=activeReader.bind(window);
  const wrapped=function(){const m=currentMail();if(isAthleteContractDecision(m))return renderContract(m);return base()};
  Object.defineProperty(wrapped,'__amContractDecisionRoutingV1',{value:true});
  api.render=wrapped;
+ try{drawReader=wrapped}catch(_){}
+ window.drawReader=wrapped;
  window.AMContractDecisionRouting={version:1,isAthleteContractDecision,athleteFor,render:renderContract};
  return true
 }
