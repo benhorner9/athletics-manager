@@ -41,10 +41,10 @@ jobs:
         run: node tools/automated-qa.mjs critical
 
   career-soak:
-    name: 104-Week Career Persistence QA
+    name: 208-Week Olympic Cycle Persistence QA
     needs: gameplay
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -57,10 +57,10 @@ jobs:
       - name: Install headless runtime dependency
         run: npm install --no-save --no-package-lock jsdom@26
 
-      - name: Run 104-week career soak
+      - name: Run 208-week Olympic cycle soak
         env:
           AM_AUDIT_SOAK: '1'
-          AM_AUDIT_WEEKS: '104'
+          AM_AUDIT_WEEKS: '208'
         run: node tools/runtime-smoke.mjs
 
   browser:
