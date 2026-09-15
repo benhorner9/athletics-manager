@@ -27,13 +27,12 @@ try{
  const pageErrors=[];
  page.on('pageerror',err=>pageErrors.push(String(err?.stack||err)));
  await page.goto(`http://127.0.0.1:${port}/game.html`,{waitUntil:'load',timeout:30000});
- await page.waitForFunction(()=>window.__athleticsInboxProduction&&window.__athleticsInboxV3&&window.AMProgrammeEconomy&&typeof window.fresh==='function',{timeout:20000});
+ await page.waitForFunction(()=>window.__athleticsInboxProduction&&window.__athleticsInboxV3&&window.AMProgrammeEconomy&&window.__athleticsInboxSingleRender&&typeof window.fresh==='function',{timeout:20000});
 
  const seeded=await page.evaluate(()=>{
   try{return window.eval(`
    s=fresh('GREAT BRITAIN');
    ensureState();
-   s.appointment=s.appointment||{};s.appointment.contractSigned=true;s.appointment.completed=true;s.appointment.introSeeded=true;
    s.induction=s.induction||{};s.induction.completed=true;s.managerName='Contract QA';
    const startup=document.getElementById('startup');if(startup)startup.classList.add('hidden');
    const p=AMProgrammeEconomy.state();
@@ -41,14 +40,15 @@ try{
    if(!contract)throw new Error('No active athlete programme contract available');
    const athlete=s.athletes.find(a=>String(a.id)===String(contract.athleteId));
    if(!athlete)throw new Error('Contract athlete missing');
-   const cw=Number(s.game.careerWeek||(((s.game.cycleYear||1)-1)*52+Number(s.game.week||1)));
-   contract.endCareerWeek=cw+8;contract.warned=false;p.lastWeekly=-1;
-   processWeek();
-   const mail=[...(s.emails||[])].reverse().find(m=>String(m.subject||'')==='Contract decision: '+athlete.name);
-   if(!mail)throw new Error('Programme contract decision email not generated');
+   /* Reproduce an older/stale save where the appointment gate can still report pending. */
+   const originalAppointmentPending=window.appointmentPending;
+   window.appointmentPending=()=>true;
+   const id='qa-athlete-contract-'+String(athlete.id);
+   const mail={id,type:'contract',subject:'Contract decision: '+athlete.name,body:'There are eight weeks remaining on '+athlete.name+'’s programme agreement. Review the options in Finance → Contracts.',sender:'Performance Director',year:Number(s.game?.cycleYear||1),week:Number(s.game?.week||1),unread:true};
+   s.emails=(s.emails||[]).filter(m=>m.id!==id);s.emails.push(mail);
    view('inbox');drawInbox();
-   JSON.stringify({id:mail.id,subject:mail.subject,athleteId:athlete.id});
-  `)}catch(err){return 'ERROR: '+String(err?.stack||err)}
+   JSON.stringify({id,subject:mail.subject,athleteId:athlete.id});
+  `)}catch(err){return 'ERROR: '+String(err?.message||err)+' | '+String(err?.stack||'')}
  });
  assert.ok(!String(seeded).startsWith('ERROR:'),seeded);
  const info=JSON.parse(seeded);
@@ -61,7 +61,7 @@ try{
     if(!row)return 'missing-row';
     row.click();
     return 'ok';
-   }catch(err){return 'ERROR: '+String(err?.stack||err)}
+   }catch(err){return 'ERROR: '+String(err?.message||err)+' | '+String(err?.stack||'')}
   },info.id);
   assert.equal(open,'ok',`Contract decision open failed on pass ${i+1}: ${open}`);
   await page.waitForFunction(subject=>document.querySelector('#reader h2')?.textContent?.includes(subject),info.subject,{timeout:5000});
@@ -71,6 +71,9 @@ try{
    readerHeads:document.querySelectorAll('#reader .reader-head').length,
    readerBodies:document.querySelectorAll('#reader .amv2-reader-body').length,
    readerActions:document.querySelectorAll('#reader .amv2-sticky-actions').length,
+   contractButton:document.querySelectorAll('#reader [data-open-athlete-contracts]').length,
+   appointmentSign:document.querySelectorAll('#reader #signContract,#reader #signContractBtn').length,
+   contractDocs:document.querySelectorAll('#reader .contract-doc,#reader [data-appointment-contract]').length,
    inboxRows:document.querySelectorAll('#inbox [data-v3-mail]').length
   }));
   assert.ok(reader.heading.includes(info.subject),'Contract decision reader heading disappeared');
@@ -78,11 +81,21 @@ try{
   assert.equal(reader.readerHeads,1,'Contract decision reader header duplicated during repeated opens');
   assert.equal(reader.readerBodies,1,'Contract decision reader body duplicated during repeated opens');
   assert.equal(reader.readerActions,1,'Contract decision reader actions duplicated during repeated opens');
+  assert.equal(reader.contractButton,1,'Athlete contract decision did not expose exactly one Open Contracts action');
+  assert.equal(reader.appointmentSign,0,'Athlete contract decision leaked into appointment contract signing');
+  assert.equal(reader.contractDocs,0,'Athlete contract decision rendered legacy appointment contract content');
   assert.ok(reader.inboxRows>=1,'Inbox rows disappeared after opening contract decision');
   const pulse=await page.evaluate(()=>({alive:true,now:performance.now()}));
   assert.equal(pulse.alive,true,'WebKit became unresponsive after opening contract decision');
  }
 
+ const route=await page.evaluate(()=>{
+  const b=document.querySelector('#reader [data-open-athlete-contracts]');if(!b)return {clicked:false};b.click();
+  return {clicked:true,currentView:window.currentView,financeOn:document.getElementById('finance')?.classList.contains('on')||false};
+ });
+ assert.equal(route.clicked,true,'Open Contracts action was unavailable');
+ assert.equal(route.currentView,'finance','Open Contracts did not route into Finance');
+ assert.equal(route.financeOn,true,'Finance view was not activated by contract decision action');
  assert.deepEqual(pageErrors,[],'WebKit reported an uncaught page error while opening programme contract decisions');
  console.log('Contract decision WebKit regression passed.');
 }finally{
