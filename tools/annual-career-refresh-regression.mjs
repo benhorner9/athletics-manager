@@ -28,11 +28,11 @@ const s={
   log:Array.from({length:30},(_,i)=>({kind:'test',i}))
  }
 };
-let pruneCalls=0,compactCalls=0;
+let pruneCalls=0,compactCalls=0,baseEndSeasonCalls=0;
 const context={
  window:{},s,
  pruneOldEmails(){pruneCalls++;return 0},
- endSeason(){return 'base-end-season'},
+ endSeason(){baseEndSeasonCalls++;return 'base-end-season'},
  setTimeout(){},
  console,
  structuredClone
@@ -43,8 +43,8 @@ vm.createContext(context);
 vm.runInContext(source,context,{filename:'annual-career-refresh-v1.js'});
 const need=(ok,msg)=>{if(!ok)throw new Error('Annual career refresh regression: '+msg)};
 const beforePermanent=structuredClone(permanent);
-const result=context.window.AMAnnualCareerRefresh.run(2027);
-need(result.ran===true,'first refresh should run');
+const endResult=context.window.endSeason();
+need(endResult==='base-end-season'&&baseEndSeasonCalls===1,'wrapped endSeason must run the refresh then call the original rollover');
 need(pruneCalls===1,'four-week email pruning must run once');
 need(compactCalls===1,'persistence compaction must run once');
 need(s.news.length===0,'old World News must clear');
