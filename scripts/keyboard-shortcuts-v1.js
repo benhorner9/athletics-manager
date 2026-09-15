@@ -40,3 +40,14 @@ function onKeyDown(event){
 document.addEventListener('keydown',onKeyDown);
 window.AMKeyboardShortcutsV1={version:'1.0',advanceKey:'Space'};
 })();
+
+/* Dev live-event cinematic prototype loader. */
+(function(){
+'use strict';
+if(window.__amLiveEventCinematicLoaderV1)return;
+window.__amLiveEventCinematicLoaderV1=1;
+const script=document.createElement('script');
+script.src='scripts/live-event-cinematic-v1.js?v=20260915-live2d1';
+script.dataset.amLiveCinematic='1';
+document.head.appendChild(script);
+})();
