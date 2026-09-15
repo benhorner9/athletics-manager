@@ -68,12 +68,16 @@ try{
   const reader=await page.evaluate(()=>({
    heading:document.querySelector('#reader h2')?.textContent||'',
    active:[...document.querySelectorAll('.view.on')].map(x=>x.id),
-   readerCount:document.querySelectorAll('#reader .am-reader-card').length,
+   readerHeads:document.querySelectorAll('#reader .reader-head').length,
+   readerBodies:document.querySelectorAll('#reader .amv2-reader-body').length,
+   readerActions:document.querySelectorAll('#reader .amv2-sticky-actions').length,
    inboxRows:document.querySelectorAll('#inbox [data-v3-mail]').length
   }));
   assert.ok(reader.heading.includes(info.subject),'Contract decision reader heading disappeared');
   assert.ok(reader.active.includes('inbox'),'Opening contract decision left Inbox unexpectedly');
-  assert.equal(reader.readerCount,1,'Contract decision reader duplicated during repeated opens');
+  assert.equal(reader.readerHeads,1,'Contract decision reader header duplicated during repeated opens');
+  assert.equal(reader.readerBodies,1,'Contract decision reader body duplicated during repeated opens');
+  assert.equal(reader.readerActions,1,'Contract decision reader actions duplicated during repeated opens');
   assert.ok(reader.inboxRows>=1,'Inbox rows disappeared after opening contract decision');
   const pulse=await page.evaluate(()=>({alive:true,now:performance.now()}));
   assert.equal(pulse.alive,true,'WebKit became unresponsive after opening contract decision');
