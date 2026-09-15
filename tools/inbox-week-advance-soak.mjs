@@ -2,6 +2,7 @@ import fs from 'node:fs';
 
 const game=fs.readFileSync('scripts/game.js','utf8');
 const inbox=fs.readFileSync('scripts/inbox-v3.js','utf8');
+const decisionCore=fs.readFileSync('scripts/inbox-decision-core-v1.js','utf8');
 const need=(ok,msg)=>{if(!ok)throw new Error('Inbox week-advance regression: '+msg)};
 const start=game.indexOf('function advanceWeek(){');
 const end=game.indexOf('function processWeek(){',start);
@@ -14,4 +15,9 @@ need(fn.includes('if(inboxTarget)openMail=inboxTarget.id;'),'new Inbox target mu
 need(fn.indexOf('if(inboxTarget)openMail=inboxTarget.id;')<fn.indexOf('save();render();'),'new mail must be selected before the Inbox render pass');
 need(fn.includes('__athleticsInboxV3?.openMessage?.(inboxTarget.id)'),'week advance must explicitly open the selected Inbox V3 message');
 need(inbox.includes('render:renderInbox,openMessage,legacy:legacyDrawInbox'),'Inbox V3 must expose its canonical message opener');
+need(decisionCore.includes('const EMAIL_RETENTION_WEEKS=4;'),'Inbox retention must remain four in-game weeks');
+need(decisionCore.includes('createdCareerWeek'),'Inbox retention must use absolute career-week age across Olympic-cycle rollovers');
+need(decisionCore.includes("z.resolution==='awaiting_response'"),'unresolved decision emails must be protected from age deletion');
+need(decisionCore.includes('age<=EMAIL_RETENTION_WEEKS||protectedMail'),'routine mail must expire after the four-week window');
+need(!decisionCore.includes('st.archive.push({...m,archivedAt:CW()})'),'expired routine mail must be deleted rather than copied into the full-message archive');
 console.log('Inbox week-advance handoff regression passed');

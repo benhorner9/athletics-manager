@@ -128,6 +128,7 @@ export async function run(w){
    assert.ok(processed,`current attribute training did not process every eligible athlete for career week ${beforeCareer}`);
   }
   const ids=read('s.emails.map(m=>m.id)');assert.equal(new Set(ids).size,ids.length,'duplicate mail IDs');
+  const staleMail=read(`(()=>{const now=Number(s.game.careerWeek||s.game.week||1),meta=s.inboxDecisionSystem?.emailMeta||{},active=new Set(Object.values(s.inboxDecisionSystem?.actions||{}).filter(a=>a?.resolution==='awaiting_response').map(a=>String(a.emailId||'')));return (s.emails||[]).filter(m=>{const z=meta[m.id]||{},created=Number(z.createdCareerWeek);if(!Number.isFinite(created))return false;const pinned=m?.pinned===true||m?.keep===true||m?.preserve===true;return now-created>4&&!active.has(String(m.id||''))&&z.resolution!=='awaiting_response'&&!pinned}).map(m=>m.id)})()`);assert.equal(staleMail.length,0,'stale resolved/read email survived the four-week retention window');
   const eventIds=read('s.events.map(e=>e.id)');assert.equal(new Set(eventIds).size,eventIds.length,'duplicate events');
   const s=read('s');assert.ok(Number.isFinite(s.funding));assert.ok(s.athletes.every(a=>Number.isFinite(a.fatigue)));
   const saveSize=JSON.stringify(s).length;maxSaveSize=Math.max(maxSaveSize,saveSize);
