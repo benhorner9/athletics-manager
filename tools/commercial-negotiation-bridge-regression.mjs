@@ -44,7 +44,7 @@ assert.match(economy,/signCommercial\(offer\.id\)/,'regression documents the bas
 assert.match(html,/scripts\/programme-economy-v2\.js/,'Programme Economy runtime must load');
 assert.match(html,/scripts\/commercial-partnership-v1\.js/,'Commercial Partnership runtime must load');
 assert.match(loader,/commercial-negotiation-bridge-v1\.js\?v=20260915-commercialbridge4/,'runtime must load the current sponsor negotiation bridge');
-assert.match(loader,/commercial-contract-lifecycle-v1\.js\?v=20260915-contractlife1/,'runtime must load the negotiated contract lifecycle');
+assert.match(loader,/commercial-contract-lifecycle-v1\.js\?v=20260915-contractlife2/,'runtime must load the negotiated contract lifecycle');
 assert.match(loader,/script\.onload=\(\)=>loadCommercialContractLifecycle\(\)/,'contract lifecycle must load after media planning');
 
 console.log('Commercial negotiation bridge regression passed.');
