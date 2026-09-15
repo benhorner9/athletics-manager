@@ -24,6 +24,8 @@ assert.match(js,/completeMedia\(ev,'missed'/,'advancing past an unresolved appea
 assert.match(js,/bonusMet=mediaMet&&perf/,'performance bonus must also require commercial commitments');
 assert.match(js,/relationship\(deal\.id\)/,'season review must retain sponsor relationship state');
 assert.match(js,/loyalty=clamp\(\(rel-55\)\/500/,'future offers must respond to sponsor relationship history');
+assert.match(js,/d\.requiredMedia=0/,'legacy sponsorships must not receive retroactive media obligations');
+assert.match(js,/d\.mediaLegacy=true/,'legacy sponsorships must be explicitly grandfathered');
 assert.match(js,/data-commercial-media-open/,'calendar/email actions must open media events');
 assert.match(calendar,/AMCommercialPartnership\?\.eventsForWeek/,'Calendar V2 must include commercial events');
 assert.match(calendar,/mediaEvents\(w\)\.length/,'Calendar programme filter must include commercial appearances');
