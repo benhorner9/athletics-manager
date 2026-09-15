@@ -49,7 +49,8 @@ function run(completedSeason=Number(safe(()=>s.game.season,0))-1,options={}){
   news:Array.isArray(s.news)?s.news.length:0,
   events:Array.isArray(s.events)?s.events.length:0,
   plans:Array.isArray(s.plans)?s.plans.length:0,
-  leagues:countObject(s.leagues)
+  leagues:countObject(s.leagues),
+  summitSeries:countObject(s.summitSeries)
  };
  const emailRemoved=Number(options.emailRemoved??safe(()=>basePrune?basePrune():0,0))||0;
  const decision=cleanupDecisionSystem();
@@ -57,6 +58,7 @@ function run(completedSeason=Number(safe(()=>s.game.season,0))-1,options={}){
  const eventsRemoved=Array.isArray(s.events)?s.events.length:0;if(Array.isArray(s.events))s.events=[];
  const plansRemoved=Array.isArray(s.plans)?s.plans.length:0;if(Array.isArray(s.plans))s.plans=[];
  const leaguesRemoved=countObject(s.leagues);if(s.leagues&&typeof s.leagues==='object')s.leagues={};
+ const summitSeriesRemoved=countObject(s.summitSeries);if(s.summitSeries&&typeof s.summitSeries==='object')s.summitSeries={};
  const compact=window.AMPersistencePerformance?.compact?.()||{changed:0};
  const summary={
   completedSeason:season,
@@ -66,6 +68,7 @@ function run(completedSeason=Number(safe(()=>s.game.season,0))-1,options={}){
   eventsRemoved,
   plansRemoved,
   leaguesRemoved,
+  summitSeriesRemoved,
   decision,
   compacted:Number(compact?.changed)||0,
   before
