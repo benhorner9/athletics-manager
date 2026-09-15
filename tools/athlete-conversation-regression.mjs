@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 const js=fs.readFileSync('scripts/athlete-conversation-v1.js','utf8');
 const html=fs.readFileSync('game.html','utf8');
 const immersion=fs.readFileSync('scripts/selection-immersion-v1.js','utf8');
+// Conversation depth is a shipping contract: email -> modal -> reply -> athlete response -> follow-up -> persistent outcome.
 assert.match(html,/styles\/athlete-conversation-v1\.css/,'conversation stylesheet must be loaded');
 assert.match(html,/scripts\/athlete-conversation-v1\.js/,'conversation runtime must be loaded');
 assert.match(js,/selectionConversation=function\(a,context=\{\}\)/,'conversation system must own future athlete selection conversations');
