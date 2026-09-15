@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 
+// Inbox retention is a shipping contract: routine mail must not survive beyond four in-game weeks.
 const game=fs.readFileSync('scripts/game.js','utf8');
 const inbox=fs.readFileSync('scripts/inbox-v3.js','utf8');
 const decisionCore=fs.readFileSync('scripts/inbox-decision-core-v1.js','utf8');
