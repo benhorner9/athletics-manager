@@ -1,9 +1,4 @@
-from pathlib import Path
-import re
-
-root=Path('.')
-
-js=r'''/* Athletics Manager — Athlete Conversation V1 */
+/* Athletics Manager — Athlete Conversation V1 */
 (function(){
 'use strict';
 if(window.__amAthleteConversationV1)return;window.__amAthleteConversationV1=1;
@@ -42,66 +37,3 @@ selectionConversation.__athleteConversationV1=true;selectionConversation.__legac
 document.addEventListener('click',e=>{const b=e.target.closest('[data-athlete-conversation-open]');if(!b)return;e.preventDefault();openFromMail(b.dataset.athleteConversationOpen)});
 window.AMAthleteConversation={open:openFromMail,personality,contextFor};
 })();
-'''
-
-css=r'''/* Athletics Manager — Athlete Conversation V1 */
-.acv1-dialog{width:min(780px,calc(100vw - 28px));max-height:min(760px,calc(100dvh - 28px));padding:0;border:0;border-radius:20px;background:#08131f;color:#edf5ff;box-shadow:0 28px 90px #000b;overflow:hidden}
-.acv1-dialog::backdrop{background:rgba(2,8,15,.76);backdrop-filter:blur(8px)}
-.acv1-shell{display:flex;flex-direction:column;max-height:min(760px,calc(100dvh - 28px));background:linear-gradient(180deg,#0c1b2a 0,#07111c 100%)}
-.acv1-head{display:flex;align-items:center;justify-content:space-between;padding:20px 22px;border-bottom:1px solid rgba(255,255,255,.08)}
-.acv1-person{display:flex;gap:14px;align-items:center;min-width:0}.acv1-face{width:64px;height:64px;border-radius:16px;overflow:hidden;background:#13283c;display:grid;place-items:center;flex:0 0 auto}.acv1-face img{width:100%;height:100%;object-fit:cover}.acv1-person small,.acv1-choices>small,.acv1-outcome small{display:block;font-size:10px;font-weight:800;letter-spacing:.13em;color:#77a6c9}.acv1-person h2{margin:3px 0 2px;font-size:24px}.acv1-person span{font-size:12px;color:#9fb3c5}.acv1-close{width:38px;height:38px;border:1px solid rgba(255,255,255,.1);border-radius:12px;background:#ffffff08;color:#d9e7f4;font-size:24px}
-.acv1-status{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.06)}.acv1-status span{padding:11px 16px;background:#0a1724}.acv1-status small{display:block;font-size:9px;letter-spacing:.11em;color:#6f8799}.acv1-status strong{display:block;margin-top:3px;font-size:12px}
-.acv1-main{overflow:auto;padding:20px 22px 18px}.acv1-thread{display:flex;flex-direction:column;gap:12px}.acv1-bubble{max-width:78%;padding:12px 14px;border-radius:16px;background:#102235;border:1px solid rgba(255,255,255,.07)}.acv1-bubble.manager{align-self:flex-end;background:color-mix(in srgb,var(--accent,#2d8cff) 24%,#0b1c2b);border-color:color-mix(in srgb,var(--accent,#2d8cff) 40%,transparent)}.acv1-bubble small{font-size:9px;font-weight:800;letter-spacing:.12em;color:#78a0bd}.acv1-bubble p{margin:5px 0 0;line-height:1.48;font-size:14px;color:#eef6fd}
-.acv1-choices{margin-top:18px;padding-top:16px;border-top:1px solid rgba(255,255,255,.07);display:grid;gap:8px}.acv1-choices>button{width:100%;display:flex;justify-content:space-between;align-items:center;gap:14px;text-align:left;padding:12px 14px;border:1px solid rgba(255,255,255,.09);border-radius:12px;background:#0d1d2c;color:#eaf3fb}.acv1-choices>button:hover{border-color:color-mix(in srgb,var(--accent,#2d8cff) 55%,transparent);background:#11263a}.acv1-choices span{font-size:13px;line-height:1.4}.acv1-choices b{font-size:20px;color:#85b4d8}
-.acv1-outcome{margin-top:18px;padding:14px 16px;border-radius:14px;background:#0d1d2c;border:1px solid rgba(255,255,255,.08)}.acv1-outcome.good{border-color:rgba(88,210,151,.3)}.acv1-outcome.bad{border-color:rgba(246,119,119,.3)}.acv1-outcome strong{display:block;margin-top:4px}.acv1-outcome p{margin:6px 0 0;color:#9fb3c5;font-size:12px;line-height:1.45}
-.acv1-shell footer{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 22px;border-top:1px solid rgba(255,255,255,.08);background:#07111c}.acv1-shell footer span{font-size:11px;color:#7f95a7;max-width:520px}
-@media(max-width:620px){.acv1-dialog{width:100vw;height:100dvh;max-height:none;border-radius:0}.acv1-shell{height:100dvh;max-height:none}.acv1-head{padding:16px}.acv1-face{width:54px;height:54px}.acv1-person h2{font-size:20px}.acv1-status span{padding:10px}.acv1-main{padding:16px}.acv1-bubble{max-width:88%}.acv1-shell footer{padding:12px 16px}.acv1-shell footer span{display:none}}
-'''
-
-test=r'''import fs from 'node:fs';
-import assert from 'node:assert/strict';
-const js=fs.readFileSync('scripts/athlete-conversation-v1.js','utf8');
-const html=fs.readFileSync('game.html','utf8');
-const immersion=fs.readFileSync('scripts/selection-immersion-v1.js','utf8');
-assert.match(html,/styles\/athlete-conversation-v1\.css/,'conversation stylesheet must be loaded');
-assert.match(html,/scripts\/athlete-conversation-v1\.js/,'conversation runtime must be loaded');
-assert.match(js,/selectionConversation=function\(a,context=\{\}\)/,'conversation system must own future athlete selection conversations');
-assert.match(js,/data-athlete-conversation-open/,'emails must open the conversation overlay');
-assert.match(js,/stage:'opening'/,'conversation must begin with a persisted opening stage');
-assert.match(js,/stage='followup'/,'conversation must include a second manager response');
-assert.match(js,/st\.trust=clamp/,'conversation outcomes must persist relationship trust');
-assert.match(js,/ss\.morale=clamp/,'conversation outcomes must persist selection morale');
-assert.match(js,/leagueCommitted\(a,c\.eventWeek\)/,'conversation context must understand Summit commitments');
-assert.match(js,/changeAthleteTrait\(a,'overlooked',false/,'credible conversations must be able to resolve Feeling Overlooked');
-assert.match(immersion,/selectionConversation\(a,\{type:'selection',eventId:e\.id,eventName:e\.name,eventWeek:e\.week,disc:d,source:'selection-immersion'\}\)/,'Selection Immersion reactions must route into the conversation system');
-console.log('Athlete conversation regression passed.');
-'''
-
-(root/'scripts/athlete-conversation-v1.js').write_text(js,encoding='utf-8')
-(root/'styles/athlete-conversation-v1.css').write_text(css,encoding='utf-8')
-(root/'tools/athlete-conversation-regression.mjs').write_text(test,encoding='utf-8')
-
-html=(root/'game.html').read_text(encoding='utf-8')
-if 'styles/athlete-conversation-v1.css' not in html:
-    html=html.replace('<link rel="stylesheet" href="styles/selection-immersion-v1.css?v=20260910-selection-immersion1">','<link rel="stylesheet" href="styles/selection-immersion-v1.css?v=20260910-selection-immersion1">\n<link rel="stylesheet" href="styles/athlete-conversation-v1.css?v=20260915-conversation1">')
-if 'scripts/athlete-conversation-v1.js' not in html:
-    html=html.replace('<script src="scripts/selection-immersion-v1.js?v=20260915-summitmorale1"></script>','<script src="scripts/selection-immersion-v1.js?v=20260915-summitmorale1"></script>\n<script src="scripts/athlete-conversation-v1.js?v=20260915-conversation1"></script>')
-(root/'game.html').write_text(html,encoding='utf-8')
-
-p=root/'scripts/selection-immersion-v1.js'
-text=p.read_text(encoding='utf-8')
-old="try{newMail(sender('performance'),subject,body,'info')}catch(_){}try{rememberAthlete(a,'Selection reaction',`Raised concerns after ${st.omittedStreak} consecutive omissions, most recently ${e.name}.`)}catch(_){}"
-new="try{selectionConversation(a,{type:'selection',eventId:e.id,eventName:e.name,eventWeek:e.week,disc:d,source:'selection-immersion'})}catch(_){try{newMail(sender('performance'),subject,body,'info')}catch(__){}}try{rememberAthlete(a,'Selection reaction',`Raised concerns after ${st.omittedStreak} consecutive omissions, most recently ${e.name}.`)}catch(_){}"
-if old not in text:
-    raise SystemExit('Selection Immersion reaction hook not found')
-text=text.replace(old,new,1)
-p.write_text(text,encoding='utf-8')
-
-qa=root/'tools/automated-qa.mjs'
-q=qa.read_text(encoding='utf-8')
-anchor="await run('Annual career refresh regression',['tools/annual-career-refresh-regression.mjs']);"
-line="await run('Athlete conversation regression',['tools/athlete-conversation-regression.mjs']);"
-if line not in q:
-    if anchor not in q: raise SystemExit('Automated QA insertion point not found')
-    q=q.replace(anchor,anchor+'\n'+line,1)
-qa.write_text(q,encoding='utf-8')
