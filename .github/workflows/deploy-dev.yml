@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - dev
+  pull_request:
+    branches:
+      - dev
   workflow_dispatch:
 
 permissions:
@@ -14,8 +17,47 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  qa:
+    name: Automated QA before Dev Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out dev build
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install QA dependencies
+        run: npm install --no-save --no-package-lock jsdom@26 playwright@1.55.0
+
+      - name: Install Chromium and WebKit
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Run deterministic tests and 16-week career soak
+        env:
+          AM_AUDIT_WEEKS: '16'
+        run: node tools/automated-qa.mjs soak
+
+      - name: Run real-browser desktop, iPad and iPhone QA
+        run: node tools/browser-qa.mjs
+
+      - name: Upload QA screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: athletics-manager-dev-qa-${{ github.run_id }}
+          path: .qa-artifacts/
+          if-no-files-found: ignore
+          retention-days: 14
+
   deploy:
     name: Deploy Dev via FTPS
+    if: github.event_name != 'pull_request'
+    needs: qa
     runs-on: ubuntu-latest
 
     steps:
@@ -44,23 +86,64 @@ jobs:
             node --check "$file"
           done < <(find scripts -type f -name '*.js' -print0)
 
-      - name: Inject dev build status runtime
+      - name: Inject dev runtime guards and build status
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          import os
+          import os, re
+
           path = Path('game.html')
           html = path.read_text(encoding='utf-8')
+          build = os.environ['GITHUB_SHA'][:8]
+
+          # Dev is tested heavily on Safari/iPad. Give hand-off authority scripts a
+          # build-specific URL so freshly deployed routing fixes cannot be masked by cache.
+          for asset in (
+              'competition-journey-route-guard-v1.js',
+              'ui-cutover-v1.js',
+          ):
+              html = re.sub(
+                  rf'scripts/{re.escape(asset)}\?v=[^"\']+',
+                  f'scripts/{asset}?v={build}',
+                  html,
+              )
+
+          # /dev and live share one browser origin, so plain localStorage keys also
+          # share one namespace. Inject the isolation guard before game.js so every
+          # live career-key access made by the dev client is transparently redirected
+          # to a dev-only key. The live key is never modified by the dev client.
+          storage_marker = '<!-- AM_DEV_STORAGE_ISOLATION -->'
+          storage_tag = f'{storage_marker}\n<script src="scripts/dev/dev-storage-isolation-v1.js?v={build}"></script>'
+          if storage_marker not in html:
+              needle = '<script src="scripts/save-codec.js'
+              if needle not in html:
+                  raise SystemExit('Could not locate save-codec script for dev storage guard injection')
+              html = html.replace(needle, storage_tag + '\n' + needle, 1)
+
           marker = '<!-- AM_DEV_BUILD_STATUS -->'
-          tag = f'{marker}\n<script src="scripts/dev/dev-build-status-v1.js?v={os.environ["GITHUB_SHA"][:8]}"></script>'
+          tag = f'{marker}\n<script src="scripts/dev/dev-build-status-v1.js?v={build}"></script>'
           if marker in html:
               before, _, tail = html.partition(marker)
               tail = tail.split('\n', 2)
               html = before + tag + ('\n' + tail[2] if len(tail) > 2 else '')
           else:
               html = html.replace('</body>', tag + '\n</body>')
+
+          if html.find('dev-storage-isolation-v1.js') > html.find('scripts/game.js'):
+              raise SystemExit('Dev storage isolation must load before game.js')
           path.write_text(html, encoding='utf-8')
+
+          # Keep the lightweight entry-page save marker in the same dev namespace.
+          index_path = Path('index.html')
+          index_html = index_path.read_text(encoding='utf-8')
+          index_html = index_html.replace(
+              "localStorage.getItem('rto_full_game_v1')",
+              "localStorage.getItem('rto_full_game_dev_v1')",
+          )
+          if "localStorage.getItem('rto_full_game_dev_v1')" not in index_html:
+              raise SystemExit('Dev index save-key rewrite did not apply')
+          index_path.write_text(index_html, encoding='utf-8')
           PY
 
       - name: Deploy dev build to hosting
@@ -80,6 +163,7 @@ jobs:
             **/.github/**
             **/README.md
             **/docs/**
+            **/.qa-artifacts/**
 
       - name: Publish live dev build marker
         shell: bash

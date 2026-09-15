@@ -7,7 +7,7 @@ if(window.__amUICutoverV1)return;window.__amUICutoverV1=1;
 
 const $=id=>document.getElementById(id);
 const GENERATION='production';
-const BUILD='2026.09.13-staffmarket2';
+const BUILD='2026.09.14-trainingattention1';
 const ROUTES={
  home:{selector:'.home-v2,[data-am-ui-screen="home-v2"]',delay:650},
  inbox:{selector:'.am-inbox-v3,[data-am-ui-screen="inbox-v3"]',delay:650},
@@ -17,8 +17,8 @@ const ROUTES={
  calendar:{selector:'.calv2,[data-am-ui-screen="calendar-v2"]',delay:650},
  training:{selector:'.tr2-shell,.tr4-shell,[data-am-ui-screen="training-v4"],[data-am-ui-screen="training-v3"]',delay:1800},
  scouting:{selector:'.scouting-v2-active,[data-am-ui-screen="scouting-v2"]',delay:6500},
- staff:{selector:'.pe-shell,[data-am-ui-screen="programme-staff-v2"],.sfv2,[data-am-ui-screen="staff-v2"]',delay:1800},
- finance:{selector:'.pe-shell,[data-am-ui-screen="programme-economy-v2"],.sfv2,[data-am-ui-screen="finance-v2"]',delay:1800},
+ staff:{selector:'.pe-shell,[data-am-ui-screen="programme-staff-v2"]',delay:1800},
+ finance:{selector:'.pe-shell,[data-am-ui-screen="programme-economy-v2"]',delay:1800},
  league:{selector:'.wsv2,[data-am-ui-screen="summit-v2"]',delay:650},
  rankings:{selector:'.wsv2,[data-am-ui-screen="rankings-v2"]',delay:650},
  olympics:{selector:'.wsv2,[data-am-ui-screen="qualification-v3"]',delay:650},
@@ -27,12 +27,18 @@ const ROUTES={
 };
 const COMPONENTS={
  athleteProfile:'squad-athlete-v2',
+ athleteNickname:'athlete-nickname-v1',
+ athleteContractExpiry:'athlete-contract-expiry-gate-v1',
+ trainingCoachRecommendation:'training-coach-recommendation-v1',
+ trainingAttention:'training-attention-v4-authority',
  staffProfile:'programme-economy-v2',
  competitionOverview:'competition-journey-v2',
  inboxReader:'inbox-v3 + inbox-single-render-v1',
  progressionGate:'inbox-decision-core-v1',
  selection:'selection-decision-v3 + competition-journey-v2',
- programmeEconomy:'programme-economy-v2'
+ programmeEconomy:'programme-economy-v2',
+ uxConsistency:'ux-consistency-v1',
+ poolRatingLayout:'national-pool-rating-layout-v3'
 };
 let ticket=0;
 
@@ -40,6 +46,30 @@ let ticket=0;
 function loadProgrammeEconomy(){
  if(!document.querySelector('link[href*="programme-economy-v1.css"]')&&!$('amProgrammeEconomyStyle')){const link=document.createElement('link');link.id='amProgrammeEconomyStyle';link.rel='stylesheet';link.href='styles/programme-economy-v1.css?v=20260913-staffmarket2';document.head.appendChild(link)}
  if(!window.__amProgrammeEconomyV2&&!$('amProgrammeEconomyScript')){const script=document.createElement('script');script.id='amProgrammeEconomyScript';script.src='scripts/programme-economy-v2.js?v=20260913-staffmarket2';script.async=false;document.body.appendChild(script)}
+}
+function loadPoolRatingLayout(){
+ if($('amPoolRatingLayoutV3'))return;
+ const link=document.createElement('link');link.id='amPoolRatingLayoutV3';link.rel='stylesheet';link.href='styles/national-pool-rating-layout-v3.css?v=20260914-pool3';document.head.appendChild(link);
+}
+function loadUXConsistency(){
+ if(window.__amUXConsistencyV1||$('amUXConsistencyScript'))return;
+ const script=document.createElement('script');script.id='amUXConsistencyScript';script.src='scripts/ux-consistency-v1.js?v=20260914-ux2';script.async=false;document.body.appendChild(script);
+}
+function loadAthleteNickname(){
+ if(window.__amAthleteNicknameV1||$('amAthleteNicknameScript'))return;
+ const script=document.createElement('script');script.id='amAthleteNicknameScript';script.src='scripts/athlete-nickname-v1.js?v=20260914-nickname1';script.async=false;document.body.appendChild(script);
+}
+function loadAthleteContractExpiry(){
+ if(window.__amAthleteContractExpiryGateV1||$('amAthleteContractExpiryGateScript'))return;
+ const script=document.createElement('script');script.id='amAthleteContractExpiryGateScript';script.src='scripts/athlete-contract-expiry-gate-v1.js?v=20260914-contractgate1';script.async=false;document.body.appendChild(script);
+}
+function loadTrainingCoachRecommendation(){
+ if(window.__amTrainingCoachRecommendationV1||$('amTrainingCoachRecommendationScript'))return;
+ const script=document.createElement('script');script.id='amTrainingCoachRecommendationScript';script.src='scripts/training-coach-recommendation-v1.js?v=20260914-coachtrain1';script.async=false;document.body.appendChild(script);
+}
+function loadTrainingAttentionAuthority(){
+ if(window.__amTrainingAttentionV4Authority||$('amTrainingAttentionV4AuthorityScript'))return;
+ const script=document.createElement('script');script.id='amTrainingAttentionV4AuthorityScript';script.src='scripts/training-attention-v4-authority.js?v=20260914-attention1';script.async=false;document.body.appendChild(script);
 }
 function ensureStyles(){
  if($('amUICutoverStyles'))return;const style=document.createElement('style');style.id='amUICutoverStyles';style.textContent=`
@@ -80,12 +110,29 @@ function verify(route=currentRoute()){
  if(!def||!root||startupOpen())return {route,managed:!!def,present:def?candidate(route):null,recovered:false};
  const ok=candidate(route);return {route,managed:true,present:ok,recovered:root.querySelector('.am-cutover-error')!==null};
 }
+function silentCompetitionRecovery(route,my){
+ if(route!=='competition')return false;
+ try{
+  if(typeof renderView==='function')renderView(route);
+  else if(typeof drawCompetition==='function')drawCompetition();
+  else if(typeof view==='function')view(route);
+ }catch(err){console.warn('[Athletics Manager] Silent Competition recovery render failed',err)}
+ try{window.__athleticsCompetitionJourneyRouteGuard?.scheduleRecovery?.()}catch(err){console.warn('[Athletics Manager] Competition route recovery scheduling failed',err)}
+ setTimeout(()=>{
+  if(my!==ticket||startupOpen()||currentRoute()!==route)return;
+  const root=$(route);if(!root||candidate(route)||root.querySelector('.am-cutover-error'))return;
+  console.error('[Athletics Manager] Production UI missing after silent Competition recovery',route);
+  errorBoundary(route);
+ },700);
+ return true;
+}
 function schedule(route=currentRoute()){
  const def=ROUTES[route];if(!def||startupOpen())return;
  const my=++ticket;
  setTimeout(()=>{
   if(my!==ticket||startupOpen()||currentRoute()!==route)return;
   const root=$(route);if(!root||candidate(route)||root.querySelector('.am-cutover-error'))return;
+  if(silentCompetitionRecovery(route,my))return;
   console.error('[Athletics Manager] Production UI missing; legacy presentation suppressed',route);
   errorBoundary(route);
  },def.delay);
@@ -93,7 +140,13 @@ function schedule(route=currentRoute()){
 function active(){return Object.keys(ROUTES).reduce((out,r)=>(out[r]=candidate(r),out),{})}
 
 loadProgrammeEconomy();
+loadPoolRatingLayout();
 markProduction();
+loadUXConsistency();
+loadAthleteNickname();
+loadAthleteContractExpiry();
+loadTrainingCoachRecommendation();
+loadTrainingAttentionAuthority();
 const originalView=typeof view==='function'?view:null;
 if(originalView){
  view=function(route,...args){const out=originalView.call(this,route,...args);schedule(currentRoute());return out};
@@ -101,9 +154,9 @@ if(originalView){
 const observer=new MutationObserver(()=>schedule());
 observer.observe(document.documentElement,{attributes:true,attributeFilter:['data-am-route']});
 const content=document.querySelector('.content');if(content)observer.observe(content,{childList:true,subtree:false});
-window.addEventListener('pageshow',()=>{loadProgrammeEconomy();markProduction();schedule()});
+window.addEventListener('pageshow',()=>{loadProgrammeEconomy();loadPoolRatingLayout();markProduction();loadUXConsistency();loadAthleteNickname();loadAthleteContractExpiry();loadTrainingCoachRecommendation();loadTrainingAttentionAuthority();schedule()});
 window.addEventListener('orientationchange',()=>setTimeout(()=>schedule(),120));
 
-window.__athleticsUICutover={version:1,generation:GENERATION,build:BUILD,verify,active,errorBoundary,schedule};
+window.__athleticsUICutover={version:1,generation:GENERATION,build:BUILD,verify,active,errorBoundary,schedule,silentCompetitionRecovery,loadUXConsistency,loadPoolRatingLayout,loadAthleteNickname,loadAthleteContractExpiry,loadTrainingCoachRecommendation,loadTrainingAttentionAuthority};
 schedule();
 })();

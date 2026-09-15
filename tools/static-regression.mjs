@@ -147,6 +147,13 @@ if(!html.includes('scripts/relay-v1.js?v=20260913-relay6'))fail('Relay rankings/
 const worldSeasonRankings=read('scripts/world-season-v2.js');
 for(const token of ['function rankingDisciplines()','function isRelayRankingEvent(d)','function relayTeamRows(d)','Ranked Teams','No ranked relay teams','const ds=rankingDisciplines()'])if(!worldSeasonRankings.includes(token))fail(`Active Rankings V2 relay contract missing: ${token}`);
 if(!html.includes('scripts/world-season-v2.js?v=20260913-relayrank1'))fail('Active Rankings V2 relay cache-bust is missing from game.html.');
+const competitionExitJourney=read('scripts/competition-journey-v2.js');
+for(const token of ['function eventCompleted(e)','function showCompletedMeeting(e)','function returnHomeFromEvent(e)',"window.returnFromCompletedEvent=e=>showCompletedMeeting",'RETURN HOME'])if(!competitionExitJourney.includes(token))fail(`Competition completion navigation contract missing: ${token}`);
+const competitionExitBroadcast=read('scripts/live-event-broadcast-v4.js');
+for(const token of ['function meetingCompleted(e)',"function routeCompletedMeeting(e,mode='summary')","if(meetingCompleted(c.e))return routeCompletedMeeting(c.e,'summary')","if(c&&live===c)return finish(c)"])if(!competitionExitBroadcast.includes(token))fail(`Broadcast completion navigation contract missing: ${token}`);
+const summitExitAuthority=read('scripts/summit-event-unified.js');
+if(!summitExitAuthority.includes("b.textContent='RETURN HOME';"))fail('Summit completion must use the canonical RETURN HOME label.');
+for(const token of ['scripts/summit-event-unified.js?v=20260914-exit1','scripts/live-event-broadcast-v4.js?v=20260914-exit1','scripts/competition-journey-v2.js?v=20260914-exit1'])if(!html.includes(token))fail(`Competition completion cache-bust missing: ${token}`);
 const selectionAuthority=read('scripts/selection-decision-v3.js');
 if(!selectionAuthority.includes('relaySelectionSnapshot'))fail('Selection V3 must preserve the submitted relay lineup for withdrawal recovery.');
 const economyAuthority=read('scripts/programme-economy-v2.js');
@@ -360,3 +367,7 @@ if(failures.length){
 }
 console.log('\nATHLETICS MANAGER STATIC REGRESSION: PASSED\n');
 notes.forEach(x=>console.log(`✓ ${x}`));
+
+const shellBrand=read('styles/ui-unification-v1.css');
+for(const token of ['Sidebar brand — one game mark only','background:#edf5f8!important','rail-brand-mark::after{content:none!important;display:none!important}'])if(!shellBrand.includes(token))fail(`Sidebar single-logo contract missing: ${token}`);
+if(!html.includes('styles/ui-unification-v1.css?v=20260914-sidebarbrand1'))fail('Sidebar single-logo cache-bust is missing from game.html.');

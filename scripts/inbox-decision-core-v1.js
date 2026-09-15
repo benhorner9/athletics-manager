@@ -4,9 +4,23 @@
 if(window.__amInboxDecisionCoreV1)return;window.__amInboxDecisionCoreV1=1;
 const $=id=>document.getElementById(id),W=()=>Number(s?.game?.week||1),CW=()=>Number(s?.game?.careerWeek||W());
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const EMAIL_RETENTION_WEEKS=4;
 function S(){if(!s)return null;const x=s.inboxDecisionSystem??={};x.version=1;x.emailMeta??={};x.actions??={};x.archive??=[];x.log??=[];return x}
 function note(kind,data={}){const x=S();x.log.push({kind,at:Date.now(),careerWeek:CW(),...data});if(x.log.length>120)x.log.splice(0,x.log.length-120)}
-function M(m){const x=S(),z=x.emailMeta[m.id]??={emailId:m.id};z.read=m.unread?'unread':'read';z.type??=m.type==='selection'||m.id==='appointment-contract'?'decision_required':'information';z.priority??=m.type==='selection'?'important':'normal';z.resolution??=z.type==='decision_required'?'awaiting_response':'no_response_required';return z}
+function M(m){
+ const x=S(),z=x.emailMeta[m.id]??={emailId:m.id};
+ z.read=m.unread?'unread':'read';
+ z.type??=m.type==='selection'||m.id==='appointment-contract'?'decision_required':'information';
+ z.priority??=m.type==='selection'?'important':'normal';
+ z.resolution??=z.type==='decision_required'?'awaiting_response':'no_response_required';
+ if(!Number.isFinite(Number(z.createdCareerWeek))){
+  const current=((Number(s?.game?.cycleYear)||1)-1)*52+W();
+  const stamped=((Number(m?.year)||Number(s?.game?.cycleYear)||1)-1)*52+(Number(m?.week)||W());
+  let age=current-stamped;if(age<0)age+=208;
+  z.createdCareerWeek=Math.max(1,CW()-Math.max(0,age));
+ }
+ return z
+}
 function normalDone(m,e){return !!(e?.completed||(e?.decision===false?false:e?.decision||e?.selectionCentreV2?.locked||m?.selectionSubmitted))}
 function summit(){try{return typeof summitSeasonState==='function'?summitSeasonState():null}catch(_){return null}}
 function summitDone(m){const q=summit();return !!(q?.registrationLocked||q?.selectionCentreV2?.locked||m?.selectionSubmitted)}
@@ -36,12 +50,28 @@ function enhanceInbox(){if(currentView!=='inbox')return;styles();const root=$('i
 function dialog(){let d=$('amProgressionGate');if(d)return d;d=document.createElement('dialog');d.id='amProgressionGate';d.className='am-gate';document.body.appendChild(d);return d}
 function openAction(a){if(a.emailId&&(s.emails||[]).some(m=>String(m.id)===String(a.emailId))){openMail=a.emailId;view('inbox');return}if(a.destination==='finance'&&window.AMProgrammeEconomy?.openFinanceView){window.AMProgrammeEconomy.openFinanceView(a.tab||'overview');return}if(a.destination==='competition'&&window.openCompetitionSelectionCentre){window.openCompetitionSelectionCentre(a.entityId);return}if(a.destination==='summit'&&window.openSummitSelectionCentre){window.openSummitSelectionCentre();return}view('inbox')}
 function showGate(g=blockers()){styles();const d=dialog();d.innerHTML=`<div class="am-gate-box"><small>BEFORE YOU CONTINUE</small><h2>${g.length} Decision${g.length===1?'':'s'} Require Your Attention</h2><p>The week cannot advance until these decisions are completed. Opening an email alone does not resolve it.</p>${g.map((a,i)=>`<div class="am-gate-row"><div><strong>${esc(a.title)}</strong><span>${esc(a.reason)} · ${due(a)}</span></div><button class="btn ${i?'secondary':'primary'}" data-action="${esc(a.actionId)}">${i?'REVIEW':'REVIEW FIRST DECISION'}</button></div>`).join('')}<button class="btn ghost" style="margin-top:10px" data-close>CLOSE</button></div>`;d.querySelector('[data-close]').onclick=()=>d.close();d.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>{const a=actions().find(x=>x.actionId===b.dataset.action);if(a){d.close();openAction(a)}});if(!d.open)d.showModal();note('progression_blocked',{actions:g.map(x=>x.actionId)})}
-function safePrune(){if(!s?.emails)return 0;const st=S(),active=new Set(actions().map(a=>a.emailId).filter(Boolean)),now=((Number(s.game.cycleYear)||1)-1)*52+W(),keep=[],old=[];for(const m of s.emails){const age=now-(((Number(m.year)||1)-1)*52+(Number(m.week)||1)),z=M(m);(age<=4||active.has(m.id)||z.resolution==='awaiting_response'?keep:old).push(m)}if(!old.length)return 0;const ids=new Set(st.archive.map(x=>x.id));old.forEach(m=>{if(!ids.has(m.id))st.archive.push({...m,archivedAt:CW()})});s.emails=keep;return old.length}
+function safePrune(){
+ if(!s?.emails)return 0;
+ const st=S(),active=new Set(actions().map(a=>String(a.emailId||'')).filter(Boolean)),keep=[];let removed=0;
+ for(const m of s.emails){
+  const z=M(m),created=Number(z.createdCareerWeek),age=Number.isFinite(created)?Math.max(0,CW()-created):0;
+  const pinned=m?.pinned===true||m?.keep===true||m?.preserve===true;
+  const protectedMail=active.has(String(m?.id||''))||z.resolution==='awaiting_response'||pinned;
+  if(age<=EMAIL_RETENTION_WEEKS||protectedMail){keep.push(m);continue}
+  if(st.emailMeta&&m?.id!=null)delete st.emailMeta[m.id];
+  removed++;
+ }
+ if(!removed)return 0;
+ s.emails=keep;
+ try{if(typeof openMail!=='undefined'&&openMail&&!keep.some(m=>String(m.id)===String(openMail)))openMail=keep[keep.length-1]?.id||null}catch(_){}
+ try{if(typeof syncMailBadge==='function')syncMailBadge()}catch(_){}
+ return removed
+}
 const oldPrune=typeof pruneOldEmails==='function'?pruneOldEmails:null;if(oldPrune)pruneOldEmails=safePrune;
 const oldInbox=typeof drawInbox==='function'?drawInbox:null;if(oldInbox)drawInbox=function(){const r=oldInbox.apply(this,arguments);requestAnimationFrame(enhanceInbox);return r};
 const oldRender=typeof render==='function'?render:null;if(oldRender)render=function(){const r=oldRender.apply(this,arguments),a=actions();syncNav(a);syncAdvance(a);if(currentView==='inbox')requestAnimationFrame(enhanceInbox);return r};
 const oldAdvance=typeof advanceWeek==='function'?advanceWeek:null;if(oldAdvance)advanceWeek=function(){const g=blockers();if(g.length){showGate(g);syncAdvance(g);return false}return oldAdvance.apply(this,arguments)};if($('advanceTop'))$('advanceTop').onclick=()=>advanceWeek();
 document.addEventListener('click',e=>{if(e.target?.closest?.('#scv2Submit,#signContractBtn,[data-career-job],.reader-actions'))setTimeout(()=>{const a=actions();syncNav(a);syncAdvance(a);if(currentView==='inbox')enhanceInbox();try{save()}catch(_){}},40)},true);
 styles();(s.emails||[]).forEach(M);syncNav();syncAdvance();try{save()}catch(_){}
-window.__athleticsInboxDecisionCore={version:1,getUnresolvedActions:actions,getProgressionBlockers:blockers,openAction,showGate,debug:()=>({actions:actions(),blockers:blockers(),meta:S().emailMeta,archive:S().archive.length,log:S().log.slice(-30)})};
+window.__athleticsInboxDecisionCore={version:1,retentionWeeks:EMAIL_RETENTION_WEEKS,getUnresolvedActions:actions,getProgressionBlockers:blockers,pruneOldEmails:safePrune,openAction,showGate,debug:()=>({actions:actions(),blockers:blockers(),meta:S().emailMeta,archive:S().archive.length,log:S().log.slice(-30)})};
 })();
