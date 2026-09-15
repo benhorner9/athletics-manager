@@ -25,7 +25,7 @@ try{
  page=await context.newPage();
  const pageErrors=[];page.on('pageerror',err=>pageErrors.push(String(err?.stack||err)));
  await page.goto(`http://127.0.0.1:${port}/game.html`,{waitUntil:'load',timeout:30000});
- await page.waitForFunction(()=>window.AMMarathonRoad&&window.AMSeasonEventIntegrity&&typeof window.fresh==='function',{timeout:20000});
+ await page.waitForFunction(()=>window.AMMarathonRoad&&window.AMSeasonEventIntegrity,{timeout:20000});
  const outcome=await page.evaluate(()=>{
   try{return window.eval(`
    s=fresh('GREAT BRITAIN');ensureState();
