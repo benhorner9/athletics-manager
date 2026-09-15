@@ -5,7 +5,8 @@ import assert from 'node:assert/strict';
 export async function run(w){
  const read=code=>w.eval(code);
  if(process.env.AM_AUDIT_RESUME!=='1')read(`s=fresh('GREAT BRITAIN');ensureState();s.appointment.contractSigned=true;s.appointment.completed=true;s.appointment.introSeeded=true;s.induction.completed=true;s.managerName='Dev QA';save();`);
- const selected=[];
+ const auditWeeks=Number(process.env.AM_AUDIT_WEEKS||16),selected=[];
+ let expiryDecisions=0,staffDecisions=0,maxSaveSize=read('JSON.stringify(s).length');
  function select(event){
   w.__athleticsExplicitSelectionV3.openEvent(event);
   const dialog=w.document.getElementById('selectionDecisionV3');
@@ -21,12 +22,68 @@ export async function run(w){
   assert.ok(!w.__athleticsInboxDecisionCore.getUnresolvedActions().some(a=>a.entityId===event.id),'completed selection still actionable');
   selected.push(event.id);dialog.close();
  }
+ function renewExpiryDecision(action){
+  const id=String(action.entityId||'');
+  const renewed=read(`(()=>{const id=${JSON.stringify(id)},p=window.AMProgrammeEconomy?.state?.(),c=p?.athleteContracts?.[id],a=s.athletes.find(x=>String(x.id)===id);if(!c)return false;const now=Number(s.game.careerWeek||s.game.week||1);c.endCareerWeek=Math.max(Number(c.endCareerWeek||0),now+52);c.warned=false;c.urgentWarned=false;delete c.expiryDecision;if(a)a.squadCommitUntil=c.endCareerWeek;save();return true})()`);
+  assert.ok(renewed,`contract expiry decision could not be renewed for ${id}`);
+  expiryDecisions++;
+ }
+ function resolveStaffDecision(action){
+  const role=String(action.entityId||'');
+  const resolved=w.__athleticsDecisionFinalizer?.resolveStaff?.(role,'release_at_expiry');
+  assert.ok(resolved,`staff contract decision could not be resolved for ${role}`);
+  staffDecisions++;
+ }
+ function objectBreakdown(node,limit=12){
+  if(!node||typeof node!=='object')return [];
+  return Object.entries(node).map(([key,value])=>{
+   const size=JSON.stringify(value)?.length||0;
+   const shape=Array.isArray(value)?`array(${value.length})`:value&&typeof value==='object'?`object(${Object.keys(value).length})`:typeof value;
+   let children=[];
+   if(value&&typeof value==='object')children=Object.entries(value).map(([child,entry])=>[child,JSON.stringify(entry)?.length||0]).sort((a,b)=>b[1]-a[1]).slice(0,6);
+   return {key,size,shape,children};
+  }).sort((a,b)=>b.size-a.size).slice(0,limit);
+ }
+ function stateBreakdown(state){
+  const athleteKeys={};
+  for(const athlete of state.athletes||[]){
+   for(const [key,value] of Object.entries(athlete||{}))athleteKeys[key]=(athleteKeys[key]||0)+(JSON.stringify(value)?.length||0);
+  }
+  const emailTypes={},emailSubjects={};
+  for(const mail of state.emails||[]){
+   const type=String(mail.type||'info'),subject=String(mail.subject||'');
+   emailTypes[type]=(emailTypes[type]||0)+1;
+   emailSubjects[subject]=(emailSubjects[subject]||0)+1;
+  }
+  const scoutingKeys=Object.entries(state.scoutingV2||{}).map(([key,value])=>[key,JSON.stringify(value)?.length||0]).sort((a,b)=>b[1]-a[1]).slice(0,16);
+  const scoutingNations=Object.entries(state.scoutingV2?.nations||{}).map(([nation,value])=>[nation,JSON.stringify(value)?.length||0]).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  return{
+   athleteKeys:Object.entries(athleteKeys).sort((a,b)=>b[1]-a[1]).slice(0,12),
+   emailTypes:Object.entries(emailTypes).sort((a,b)=>b[1]-a[1]).slice(0,12),
+   emailSubjects:Object.entries(emailSubjects).sort((a,b)=>b[1]-a[1]).slice(0,12),
+   scoutingKeys,
+   scoutingNations
+  };
+ }
+ function logScoutingNationDetails(state){
+  const nations=Object.entries(state.scoutingV2?.nations||{}).map(([nation,value])=>[nation,JSON.stringify(value)?.length||0]).sort((a,b)=>b[1]-a[1]).slice(0,4);
+  for(const [nation,size] of nations){
+   const rows=objectBreakdown(state.scoutingV2.nations[nation],14).map(row=>{
+    const children=row.children.length?` [${row.children.map(([key,bytes])=>`${key}:${bytes}`).join(', ')}]`:'';
+    return `${row.key}:${row.size}:${row.shape}${children}`;
+   });
+   console.log(`[audit-soak] scouting nation detail ${nation}:${size} ${rows.join(' | ')}`);
+  }
+ }
  let completed=0;
  const weeks=[];
- for(let i=0;i<Number(process.env.AM_AUDIT_WEEKS||16);i++){
+ for(let i=0;i<auditWeeks;i++){
   const before=read('s.game.week'),beforeSeason=read('s.game.season'),beforeCareer=read('s.game.careerWeek');
   const legacyHistory=read('s.athletes.reduce((n,a)=>n+(a.trainingV2?.history||[]).filter(h=>h.type==="training").length,0)');
+  w.AMPersistencePerformance?.resetMetrics?.();
   const decisions=w.__athleticsInboxDecisionCore.getUnresolvedActions();
+  const decisionMetrics=w.AMPersistencePerformance?.metrics?.();
+  if(decisions.some(a=>String(a.actionId||'').startsWith('economy:athlete-expiry:'))&&decisionMetrics)assert.ok(decisionMetrics.physicalSaves<=1,`contract decision discovery used ${decisionMetrics.physicalSaves} physical saves`);
   for(const a of decisions){
    if(a.source==='competition')select(read(`s.events.find(e=>e.id===${JSON.stringify(a.entityId)})`));
    else if(a.source==='summit'){
@@ -34,12 +91,18 @@ export async function run(w){
     const dialog=w.document.getElementById('selectionDecisionV3');
     dialog.querySelector('[data-coach-all]').click();dialog.querySelector('[data-review]').click();dialog.querySelector('[data-submit]').click();
     assert.ok(read('summitSeasonState().registrationLocked'));dialog.close();
-   }else if(a.blocks)throw new Error('Unhandled blocking decision in soak: '+a.source);
+   }else if(String(a.actionId||'').startsWith('economy:athlete-expiry:'))renewExpiryDecision(a);
+   else if(a.source==='staff')resolveStaffDecision(a);
+   else if(a.blocks)throw new Error('Unhandled blocking decision in soak: '+a.source+' '+a.actionId);
   }
+  assert.equal(w.__athleticsInboxDecisionCore.getProgressionBlockers().length,0,'blocking decision remained after QA resolution');
   const e=read('currentBlocking()');
   if(e){
+   w.AMPersistencePerformance?.resetMetrics?.();
    if(e.kind==='summit'){w.simulateSummitMeeting(e);}
-   else{if(!e.decision)select(e);w.simulateWholeEvent(e);}
+   else{if(!e.decision)select(e);w.AMPersistencePerformance?.resetMetrics?.();w.simulateWholeEvent(e);}
+   const eventMetrics=w.AMPersistencePerformance?.metrics?.();
+   if(eventMetrics)assert.ok(eventMetrics.physicalSaves<=1,`${e.kind||'event'} simulation used ${eventMetrics.physicalSaves} physical saves`);
    assert.ok(e.completed,'simulation did not finish meeting');
    for(const [d,rows] of Object.entries(e.results||{})){
     assert.ok(Array.isArray(rows),'results must be arrays');
@@ -52,17 +115,41 @@ export async function run(w){
    }
    completed++;
   }
-  w.view('inbox');w.advanceWeek();
+  const trainingEligible=read('managedTeam().filter(a=>!a.retired&&!a.camp&&Number(a.injury||0)<=0).map(a=>String(a.id))');
+  w.view('inbox');
+  w.AMPersistencePerformance?.resetMetrics?.();
+  w.advanceWeek();
+  const advanceMetrics=w.AMPersistencePerformance?.metrics?.();
+  if(advanceMetrics)assert.ok(advanceMetrics.physicalSaves<=1,`week advance used ${advanceMetrics.physicalSaves} physical saves`);
   const after=read('s.game.week');assert.equal(after,before===52?1:before+1,`season ${beforeSeason} week ${before} failed to advance`);assert.equal(read('s.game.careerWeek'),beforeCareer+1);assert.equal(read('s.game.season'),beforeSeason+(before===52?1:0));weeks.push(read('s.game.season')+':'+after);if(read('careerState().pendingReview')){read('acceptCareerJob(managedNation())');assert.equal(read('careerState().pendingReview'),null)}
   if(before!==52)assert.equal(read('s.athletes.reduce((n,a)=>n+(a.trainingV2?.history||[]).filter(h=>h.type==="training").length,0)'),legacyHistory,'retired training engine still processes weeks');
-  assert.ok(read('managedTeam().some(a=>a.attributeDevelopment?.lastWeek>0)'),'current attribute training did not process the squad');
+  if(trainingEligible.length){
+   const processed=read(`(()=>{const ids=${JSON.stringify(trainingEligible)},week=${beforeCareer};return ids.every(id=>{const a=s.athletes.find(x=>String(x.id)===id);return !a||a.retired||Number(a.attributeDevelopment?.lastWeek||0)===week})})()`);
+   assert.ok(processed,`current attribute training did not process every eligible athlete for career week ${beforeCareer}`);
+  }
   const ids=read('s.emails.map(m=>m.id)');assert.equal(new Set(ids).size,ids.length,'duplicate mail IDs');
+  const staleMail=read(`(()=>{const now=Number(s.game.careerWeek||s.game.week||1),meta=s.inboxDecisionSystem?.emailMeta||{},active=new Set(Object.values(s.inboxDecisionSystem?.actions||{}).filter(a=>a?.resolution==='awaiting_response').map(a=>String(a.emailId||'')));return (s.emails||[]).filter(m=>{const z=meta[m.id]||{},created=Number(z.createdCareerWeek);if(!Number.isFinite(created))return false;const pinned=m?.pinned===true||m?.keep===true||m?.preserve===true;return now-created>4&&!active.has(String(m.id||''))&&z.resolution!=='awaiting_response'&&!pinned}).map(m=>m.id)})()`);assert.equal(staleMail.length,0,'stale resolved/read email survived the four-week retention window');
   const eventIds=read('s.events.map(e=>e.id)');assert.equal(new Set(eventIds).size,eventIds.length,'duplicate events');
   const s=read('s');assert.ok(Number.isFinite(s.funding));assert.ok(s.athletes.every(a=>Number.isFinite(a.fatigue)));
-  console.log(`[audit-soak] week ${after}: ${ids.length} emails, ${completed} meetings completed; save ${JSON.stringify(s).length} characters; largest ${Object.entries(s).map(([k,v])=>[k,JSON.stringify(v)?.length||0]).sort((a,b)=>b[1]-a[1]).slice(0,5).map(x=>x.join(':')).join(', ')}`);
+  const saveSize=JSON.stringify(s).length;maxSaveSize=Math.max(maxSaveSize,saveSize);
+  if(auditWeeks>=52)assert.ok(saveSize<12_000_000,`career save exceeded 12 MB long-save budget at ${s.game.season} W${after}: ${saveSize}`);
+  console.log(`[audit-soak] week ${after}: ${ids.length} emails, ${completed} meetings completed; save ${saveSize} characters; physical saves ${advanceMetrics?.physicalSaves??'n/a'}; largest ${Object.entries(s).map(([k,v])=>[k,JSON.stringify(v)?.length||0]).sort((a,b)=>b[1]-a[1]).slice(0,5).map(x=>x.join(':')).join(', ')}`);
+  if(ids.length>100||saveSize>8_000_000){
+   const breakdown=stateBreakdown(s);
+   console.log(`[audit-soak] detail athlete keys ${breakdown.athleteKeys.map(x=>x.join(':')).join(', ')}; email types ${breakdown.emailTypes.map(x=>x.join(':')).join(', ')}; top subjects ${breakdown.emailSubjects.map(([subject,count])=>`${count}× ${subject}`).join(' | ')}`);
+   console.log(`[audit-soak] scoutingV2 keys ${breakdown.scoutingKeys.map(x=>x.join(':')).join(', ')}; largest nations ${breakdown.scoutingNations.map(x=>x.join(':')).join(', ')}`);
+  }
   await new Promise(resolve=>setTimeout(resolve,25));
  }
- w.save();const snapshot=read('JSON.stringify({week:s.game.week,events:s.events.map(e=>({id:e.id,entries:e.entries,completed:e.completed,results:e.results})),emails:s.emails.map(m=>({id:m.id,unread:m.unread,selectionSubmitted:m.selectionSubmitted}))})');
- w.load();assert.equal(read('JSON.stringify({week:s.game.week,events:s.events.map(e=>({id:e.id,entries:e.entries,completed:e.completed,results:e.results})),emails:s.emails.map(m=>({id:m.id,unread:m.unread,selectionSubmitted:m.selectionSubmitted}))})'),snapshot,'save/load changed decisions or results');
- console.log(`[audit-soak] PASS weeks ${weeks.join(',')}; ${selected.length} selections; ${completed} meetings; save/load`);
+ const finalState=read('s');
+ logScoutingNationDetails(finalState);
+ if(auditWeeks>=52)assert.ok(expiryDecisions>0,'long soak crossed the expiry window without exercising an athlete contract decision');
+ if(auditWeeks>=52)assert.ok(staffDecisions>0,'long soak crossed the staff expiry window without exercising a staff contract decision');
+ w.save();
+ const snapshot=read('JSON.stringify({week:s.game.week,events:s.events.map(e=>({id:e.id,entries:e.entries,completed:e.completed,results:e.results})),emails:s.emails.map(m=>({id:m.id,unread:m.unread,selectionSubmitted:m.selectionSubmitted}))})');
+ const continuity=read('JSON.stringify({moments:s.livingWorld?.moments?.length||0,heat:Object.fromEntries(Object.entries(s.livingWorld?.athletes||{}).map(([id,x])=>[id,Number(x?.heat||0)]))})');
+ w.load();
+ assert.equal(read('JSON.stringify({week:s.game.week,events:s.events.map(e=>({id:e.id,entries:e.entries,completed:e.completed,results:e.results})),emails:s.emails.map(m=>({id:m.id,unread:m.unread,selectionSubmitted:m.selectionSubmitted}))})'),snapshot,'save/load changed decisions or results');
+ assert.equal(read('JSON.stringify({moments:s.livingWorld?.moments?.length||0,heat:Object.fromEntries(Object.entries(s.livingWorld?.athletes||{}).map(([id,x])=>[id,Number(x?.heat||0)]))})'),continuity,'save/load replayed living-world moments or changed athlete story heat');
+ console.log(`[audit-soak] PASS weeks ${weeks.join(',')}; ${selected.length} selections; ${completed} meetings; ${expiryDecisions} athlete expiry decisions; ${staffDecisions} staff decisions; max save ${maxSaveSize}; save/load + living-world continuity`);
 }
