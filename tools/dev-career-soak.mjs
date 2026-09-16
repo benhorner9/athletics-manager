@@ -7,6 +7,7 @@ export async function run(w){
  if(process.env.AM_AUDIT_RESUME!=='1')read(`s=fresh('GREAT BRITAIN');ensureState();s.appointment.contractSigned=true;s.appointment.completed=true;s.appointment.introSeeded=true;s.induction.completed=true;s.managerName='Dev QA';save();`);
  const auditWeeks=Number(process.env.AM_AUDIT_WEEKS||16),selected=[];
  let expiryDecisions=0,staffDecisions=0,maxSaveSize=read('JSON.stringify(s).length');
+ const perfWeeks=[];
  function select(event){
   w.__athleticsExplicitSelectionV3.openEvent(event);
   const dialog=w.document.getElementById('selectionDecisionV3');
@@ -75,9 +76,16 @@ export async function run(w){
    console.log(`[audit-soak] scouting nation detail ${nation}:${size} ${rows.join(' | ')}`);
   }
  }
+ function average(rows,key){return rows.length?rows.reduce((n,row)=>n+Number(row[key]||0),0)/rows.length:0}
+ function yearRows(year){return perfWeeks.slice((year-1)*52,year*52)}
+ function checkpoint(year,state,after){
+  const rows=yearRows(year),advanceAvg=average(rows,'advanceMs'),weekAvg=average(rows,'weekMs'),serialiseAvg=average(rows,'serialiseMs'),peakAdvance=Math.max(0,...rows.map(x=>x.advanceMs)),peakWeek=Math.max(0,...rows.map(x=>x.weekMs));
+  console.log(`[olympic-cycle-performance] YEAR ${year} checkpoint · season ${state.game.season} W${after} · avg advance ${advanceAvg.toFixed(1)}ms · peak advance ${peakAdvance}ms · avg full week ${weekAvg.toFixed(1)}ms · peak full week ${peakWeek}ms · avg serialise ${serialiseAvg.toFixed(1)}ms · save ${JSON.stringify(state).length} chars · athletes ${(state.athletes||[]).length} · events ${(state.events||[]).length} · emails ${(state.emails||[]).length} · career history ${state.careerIdentityV2?.events?.length||0}`);
+ }
  let completed=0;
  const weeks=[];
  for(let i=0;i<auditWeeks;i++){
+  const weekStarted=Date.now();
   const before=read('s.game.week'),beforeSeason=read('s.game.season'),beforeCareer=read('s.game.careerWeek');
   const legacyHistory=read('s.athletes.reduce((n,a)=>n+(a.trainingV2?.history||[]).filter(h=>h.type==="training").length,0)');
   w.AMPersistencePerformance?.resetMetrics?.();
@@ -118,7 +126,9 @@ export async function run(w){
   const trainingEligible=read('managedTeam().filter(a=>!a.retired&&!a.camp&&Number(a.injury||0)<=0).map(a=>String(a.id))');
   w.view('inbox');
   w.AMPersistencePerformance?.resetMetrics?.();
+  const advanceStarted=Date.now();
   w.advanceWeek();
+  const advanceMs=Date.now()-advanceStarted;
   const advanceMetrics=w.AMPersistencePerformance?.metrics?.();
   if(advanceMetrics)assert.ok(advanceMetrics.physicalSaves<=1,`week advance used ${advanceMetrics.physicalSaves} physical saves`);
   const after=read('s.game.week');assert.equal(after,before===52?1:before+1,`season ${beforeSeason} week ${before} failed to advance`);assert.equal(read('s.game.careerWeek'),beforeCareer+1);assert.equal(read('s.game.season'),beforeSeason+(before===52?1:0));weeks.push(read('s.game.season')+':'+after);if(read('careerState().pendingReview')){read('acceptCareerJob(managedNation())');assert.equal(read('careerState().pendingReview'),null)}
@@ -131,25 +141,48 @@ export async function run(w){
   const staleMail=read(`(()=>{const now=Number(s.game.careerWeek||s.game.week||1),meta=s.inboxDecisionSystem?.emailMeta||{},active=new Set(Object.values(s.inboxDecisionSystem?.actions||{}).filter(a=>a?.resolution==='awaiting_response').map(a=>String(a.emailId||'')));return (s.emails||[]).filter(m=>{const z=meta[m.id]||{},created=Number(z.createdCareerWeek);if(!Number.isFinite(created))return false;const pinned=m?.pinned===true||m?.keep===true||m?.preserve===true;return now-created>4&&!active.has(String(m.id||''))&&z.resolution!=='awaiting_response'&&!pinned}).map(m=>m.id)})()`);assert.equal(staleMail.length,0,'stale resolved/read email survived the four-week retention window');
   const eventIds=read('s.events.map(e=>e.id)');assert.equal(new Set(eventIds).size,eventIds.length,'duplicate events');
   const s=read('s');assert.ok(Number.isFinite(s.funding));assert.ok(s.athletes.every(a=>Number.isFinite(a.fatigue)));
-  const saveSize=JSON.stringify(s).length;maxSaveSize=Math.max(maxSaveSize,saveSize);
+  const serialiseStarted=Date.now(),serialised=JSON.stringify(s),serialiseMs=Date.now()-serialiseStarted,saveSize=serialised.length;maxSaveSize=Math.max(maxSaveSize,saveSize);
   if(auditWeeks>=52)assert.ok(saveSize<12_000_000,`career save exceeded 12 MB long-save budget at ${s.game.season} W${after}: ${saveSize}`);
-  console.log(`[audit-soak] week ${after}: ${ids.length} emails, ${completed} meetings completed; save ${saveSize} characters; physical saves ${advanceMetrics?.physicalSaves??'n/a'}; largest ${Object.entries(s).map(([k,v])=>[k,JSON.stringify(v)?.length||0]).sort((a,b)=>b[1]-a[1]).slice(0,5).map(x=>x.join(':')).join(', ')}`);
+  const weekMs=Date.now()-weekStarted;
+  perfWeeks.push({careerWeek:beforeCareer+1,season:s.game.season,week:after,advanceMs,weekMs,serialiseMs,saveSize});
+  console.log(`[audit-soak] week ${after}: ${ids.length} emails, ${completed} meetings completed; save ${saveSize} characters; advance ${advanceMs}ms; full week ${weekMs}ms; serialise ${serialiseMs}ms; physical saves ${advanceMetrics?.physicalSaves??'n/a'}; largest ${Object.entries(s).map(([k,v])=>[k,JSON.stringify(v)?.length||0]).sort((a,b)=>b[1]-a[1]).slice(0,5).map(x=>x.join(':')).join(', ')}`);
   if(ids.length>100||saveSize>8_000_000){
    const breakdown=stateBreakdown(s);
    console.log(`[audit-soak] detail athlete keys ${breakdown.athleteKeys.map(x=>x.join(':')).join(', ')}; email types ${breakdown.emailTypes.map(x=>x.join(':')).join(', ')}; top subjects ${breakdown.emailSubjects.map(([subject,count])=>`${count}× ${subject}`).join(' | ')}`);
    console.log(`[audit-soak] scoutingV2 keys ${breakdown.scoutingKeys.map(x=>x.join(':')).join(', ')}; largest nations ${breakdown.scoutingNations.map(x=>x.join(':')).join(', ')}`);
   }
+  if((i+1)%52===0)checkpoint((i+1)/52,s,after);
   await new Promise(resolve=>setTimeout(resolve,25));
  }
  const finalState=read('s');
  logScoutingNationDetails(finalState);
  if(auditWeeks>=52)assert.ok(expiryDecisions>0,'long soak crossed the expiry window without exercising an athlete contract decision');
  if(auditWeeks>=52)assert.ok(staffDecisions>0,'long soak crossed the staff expiry window without exercising a staff contract decision');
+ if(auditWeeks>=208){
+  const first=yearRows(1),last=yearRows(4),firstAdvance=average(first,'advanceMs'),lastAdvance=average(last,'advanceMs'),firstWeek=average(first,'weekMs'),lastWeek=average(last,'weekMs');
+  const allowedAdvance=Math.max(firstAdvance*4,firstAdvance+250),allowedWeek=Math.max(firstWeek*4,firstWeek+500);
+  assert.ok(lastAdvance<=allowedAdvance,`late-career week advance degraded too far across the Olympic cycle: year 1 ${firstAdvance.toFixed(1)}ms vs year 4 ${lastAdvance.toFixed(1)}ms`);
+  assert.ok(lastWeek<=allowedWeek,`late-career full-week processing degraded too far across the Olympic cycle: year 1 ${firstWeek.toFixed(1)}ms vs year 4 ${lastWeek.toFixed(1)}ms`);
+ }
+ const saveStarted=Date.now();
  w.save();
+ const finalSaveMs=Date.now()-saveStarted;
  const snapshot=read('JSON.stringify({week:s.game.week,events:s.events.map(e=>({id:e.id,entries:e.entries,completed:e.completed,results:e.results})),emails:s.emails.map(m=>({id:m.id,unread:m.unread,selectionSubmitted:m.selectionSubmitted}))})');
  const continuity=read('JSON.stringify({moments:s.livingWorld?.moments?.length||0,heat:Object.fromEntries(Object.entries(s.livingWorld?.athletes||{}).map(([id,x])=>[id,Number(x?.heat||0)]))})');
+ const loadStarted=Date.now();
  w.load();
+ const finalLoadMs=Date.now()-loadStarted;
  assert.equal(read('JSON.stringify({week:s.game.week,events:s.events.map(e=>({id:e.id,entries:e.entries,completed:e.completed,results:e.results})),emails:s.emails.map(m=>({id:m.id,unread:m.unread,selectionSubmitted:m.selectionSubmitted}))})'),snapshot,'save/load changed decisions or results');
  assert.equal(read('JSON.stringify({moments:s.livingWorld?.moments?.length||0,heat:Object.fromEntries(Object.entries(s.livingWorld?.athletes||{}).map(([id,x])=>[id,Number(x?.heat||0)]))})'),continuity,'save/load replayed living-world moments or changed athlete story heat');
- console.log(`[audit-soak] PASS weeks ${weeks.join(',')}; ${selected.length} selections; ${completed} meetings; ${expiryDecisions} athlete expiry decisions; ${staffDecisions} staff decisions; max save ${maxSaveSize}; save/load + living-world continuity`);
+ if(auditWeeks>=208){
+  assert.ok(finalSaveMs<5000,`late-career save took ${finalSaveMs}ms after a full Olympic cycle`);
+  assert.ok(finalLoadMs<5000,`late-career load took ${finalLoadMs}ms after a full Olympic cycle`);
+  const routeTimes={};
+  for(const target of ['home','inbox','squad','pool','calendar','training','scouting','league','rankings','olympics','staff','finance','news']){
+   const started=Date.now();w.view(target);await new Promise(resolve=>setTimeout(resolve,20));routeTimes[target]=Date.now()-started;
+   assert.ok(routeTimes[target]<3000,`late-career route ${target} took ${routeTimes[target]}ms to render after a full Olympic cycle`);
+  }
+  console.log(`[olympic-cycle-performance] FINAL reload · save ${finalSaveMs}ms · load ${finalLoadMs}ms · routes ${Object.entries(routeTimes).map(([k,v])=>`${k}:${v}ms`).join(', ')}`);
+ }
+ console.log(`[audit-soak] PASS weeks ${weeks.join(',')}; ${selected.length} selections; ${completed} meetings; ${expiryDecisions} athlete expiry decisions; ${staffDecisions} staff decisions; max save ${maxSaveSize}; final save ${finalSaveMs}ms; final load ${finalLoadMs}ms; save/load + living-world continuity`);
 }
