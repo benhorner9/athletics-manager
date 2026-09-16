@@ -39,7 +39,12 @@ try{
    if(!road)throw new Error('Expected marathon road event was not generated');
    const keep=s.events.find(e=>String(e.id)===String(normal[0].id));
    const keepRoad=s.events.find(e=>String(e.id)===String(road.id));
-   if(!keep||!keepRoad)throw new Error('Fresh season did not contain baseline event graph');
+   if(!keep||!keepRoad){
+    const currentIds=(s.events||[]).map(e=>String(e.id));
+    const expectedIds=expected.map(e=>String(e.id));
+    const missing=expectedIds.filter(id=>!currentIds.includes(id));
+    throw new Error('Fresh season did not contain baseline event graph | normal='+String(normal[0]?.id)+' road='+String(road?.id)+' missing='+missing.join(',')+' current='+currentIds.join(',')+' expected='+expectedIds.join(',')+' integrityBuild='+String(AMSeasonEventIntegrity?.build||'none')+' freshGuard='+String(!!fresh.__amSeasonEventIntegrityV1Build3));
+   }
    keep.completed=true;keep.decision=true;keep.qaSentinel='preserve-me';keep.results={QA:[{id:'qa',place:1}]};
    s.game.week=20;s.game.careerWeek=20;
    s.events=[keep,keepRoad];
