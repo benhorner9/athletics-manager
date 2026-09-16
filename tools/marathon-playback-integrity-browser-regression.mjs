@@ -25,7 +25,7 @@ try{
  page=await context.newPage();
  const pageErrors=[];page.on('pageerror',err=>pageErrors.push(String(err?.stack||err)));
  await page.goto(`http://127.0.0.1:${port}/game.html`,{waitUntil:'load',timeout:30000});
- await page.waitForFunction(()=>window.__amMarathonRoadBroadcastV3===1&&window.__amMarathonRoadMotionV4===1&&window.__amMarathonPlaybackIntegrityV1===1&&window.AMMarathonRoadBroadcastV3&&window.AMMarathonPlaybackIntegrityV1,{timeout:20000});
+ await page.waitForFunction(()=>window.__amMarathonRoadBroadcastV3===1&&window.__amMarathonRoadMotionV4===1&&window.__amMarathonPlaybackIntegrityV2===1&&window.AMMarathonRoadBroadcastV3&&window.AMMarathonPlaybackIntegrityV2,{timeout:20000});
 
  const setup=await page.evaluate(()=>{
   try{return window.eval(`
@@ -59,7 +59,7 @@ try{
    farAnimation:far?getComputedStyle(far).animationName:'missing',
    nearAnimation:near?getComputedStyle(near).animationName:'missing',
    topButton:document.getElementById('startDisciplineTop')?.textContent||'',
-   guard:window.AMMarathonPlaybackIntegrityV1?.debug?.()
+   guard:window.AMMarathonPlaybackIntegrityV2?.debug?.()
   };
  });
  assert.equal(liveState.resultsCommitted,false,'official marathon result was committed before the highlight package finished');
