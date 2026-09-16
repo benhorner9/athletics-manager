@@ -1,0 +1,45 @@
+name: Apply Track Geometry Fix
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'tools/apply-track-geometry-fix.mjs'
+      - '.github/workflows/apply-track-geometry-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Checkout dev
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+          fetch-depth: 1
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Apply geometry migration
+        run: |
+          node --check tools/apply-track-geometry-fix.mjs
+          node tools/apply-track-geometry-fix.mjs
+          node --check scripts/live-event-broadcast-v4.js
+          node --check tools/live-event-shell-v5-regression.mjs
+      - name: Commit geometry fix
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- scripts/live-event-broadcast-v4.js tools/live-event-shell-v5-regression.mjs; then
+            echo 'No migration changes required.'
+            exit 0
+          fi
+          git config user.name 'athletics-manager-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add scripts/live-event-broadcast-v4.js tools/live-event-shell-v5-regression.mjs
+          git commit -m 'fix: correct track race start and finish geometry'
+          git push origin HEAD:dev
