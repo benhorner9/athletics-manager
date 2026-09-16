@@ -88,14 +88,6 @@ drawCompetition=function(){
  if(competitionActive()&&!hasCanonicalSurface())scheduleRecovery();
  return out;
 };
-function loadMarathonPlaybackAuthority(){
- if(typeof document==='undefined'||window.__amMarathonPlaybackIntegrityV2||document.querySelector('script[data-am-marathon-playback-integrity-v2]'))return;
- const script=document.createElement('script');
- script.src='scripts/marathon-playback-integrity-v2.js?v=20260916-marathon10';
- script.dataset.amMarathonPlaybackIntegrityV2='1';
- script.onerror=()=>console.warn('[Athletics Manager] Marathon playback authority failed to load');
- document.body.appendChild(script);
-}
 window.__athleticsCompetitionJourneyRouteGuard={
  version:3,
  isHistorical,
@@ -105,5 +97,4 @@ window.__athleticsCompetitionJourneyRouteGuard={
  explicitSummitMeeting,
  debugRoute:()=>({explicitSummit:explicitSummitMeeting()?.number||null,normalEvent:normalCurrentEvent()?.id||null,summitThisWeek:summitExistsThisWeek()?.number||null,canonical:hasCanonicalSurface()})
 };
-loadMarathonPlaybackAuthority();
 })();
