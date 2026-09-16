@@ -119,6 +119,45 @@ async function inspectRoute(page,scenario,route,selector){
  }
 }
 
+
+async function inspectCareerIdentity(page,scenario){
+ console.log(`[browser-qa] ${scenario.name} → career identity`);
+ const seeded=await page.evaluate(()=>{
+  const athlete=(typeof managedTeam==='function'?managedTeam():[])[0]||s.athletes.find(a=>!a.retired&&a.nation===managedNation());
+  if(!athlete||!window.AMCareerIdentityV2)return null;
+  window.AMCareerIdentityV2.remember({id:`browser-qa:${athlete.id}`,athleteId:athlete.id,type:'call_up',tier:2,season:s.game.season,week:s.game.week,title:`${athlete.name} called into the senior programme`,detail:'Browser QA seed.'});
+  return athlete.id;
+ });
+ if(!seeded){fail(scenario.name,'Career Identity V2 API or a managed athlete was unavailable');return}
+ await page.evaluate(()=>window.openManagerProfile());
+ await page.waitForSelector('#managementProfile[open] [data-civ2-manager-tab="athletes"]',{timeout:5000});
+ await page.click('#managementProfile [data-civ2-manager-tab="athletes"]');
+ await page.waitForSelector('#managementProfile .civ2-page .civ2-athlete-card',{timeout:5000});
+ for(const id of ['programme','legacy']){
+  await page.click(`#managementProfile [data-civ2-manager-tab="${id}"]`);
+  await page.waitForSelector('#managementProfile .civ2-page',{timeout:3000});
+ }
+ await page.click('#managementProfile [data-civ2-manager-tab="athletes"]');
+ await page.click('#managementProfile .civ2-athlete-card');
+ await page.waitForSelector('#athleteProfile[open] [data-civ2-athlete-tab="history"]',{timeout:5000});
+ await page.click('#athleteProfile [data-civ2-athlete-tab="history"]');
+ await page.waitForSelector('#athleteProfile .civ2-athlete-history',{timeout:3000});
+ const historyState=await page.evaluate(()=>({
+  hasTimeline:!!document.querySelector('#athleteProfile .civ2-timeline'),
+  hasRawRelationshipNumber:/Relationship\s*:\s*\d+/i.test(document.querySelector('#athleteProfile')?.textContent||''),
+  docOverflow:Math.max(0,document.documentElement.scrollWidth-document.documentElement.clientWidth)
+ }));
+ if(!historyState.hasTimeline)fail(scenario.name,'Athlete Your History tab did not render a timeline');
+ if(historyState.hasRawRelationshipNumber)fail(scenario.name,'Athlete history exposes a raw numeric relationship score');
+ if(historyState.docOverflow>2)fail(scenario.name,`Career Identity UI creates ${historyState.docOverlow}px of page-level horizontal overflow`);
+ await page.evaluate(()=>document.getElementById('athleteProfile')?.close());
+ await page.waitForSelector('#managementProfile[open] [data-civ2-manager-tab="athletes"].on',{timeout:5000});
+ const restored=await page.evaluate(()=>!!document.querySelector('#managementProfile [data-civ2-manager-tab="athletes"].on'));
+ if(!restored)fail(scenario.name,'Returning from athlete history did not restore the manager Athletes tab');
+ await page.evaluate(()=>document.getElementById('managementProfile')?.close());
+ notes.push(`${scenario.name} · career identity · manager/athlete history navigation passed`);
+}
+
 for(const scenario of scenarios){
  console.log(`\n══ Browser QA: ${scenario.name} ══`);
  let browser,context,page;
@@ -133,6 +172,7 @@ for(const scenario of scenarios){
    console.log(`[browser-qa] ${scenario.name} → ${route}`);
    await inspectRoute(page,scenario,route,selector);
   }
+  await inspectCareerIdentity(page,scenario);
   if(pageErrors.length)for(const err of pageErrors)fail(scenario.name,`uncaught page error: ${err}`);
  }catch(err){
   fail(scenario.name,err?.stack||String(err));
@@ -162,3 +202,4 @@ console.log('✓ no page-level horizontal overflow appeared');
 console.log('✓ Training Overview exposed coach recommendations');
 console.log('✓ Training V5 attention authority and Needs Attention tab loaded across all browser scenarios');
 console.log('✓ National Pool rating elements remained inside their cells');
+console.log('✓ Career Identity manager tabs, athlete history and return navigation passed across browser scenarios');
