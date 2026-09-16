@@ -1,0 +1,29 @@
+name: Career Identity V2 Regression
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - 'scripts/career-identity-v2.js'
+      - 'styles/career-identity-v2.css'
+      - 'scripts/manager-profile-sidebar-v1.js'
+      - 'tools/career-identity-v2-regression.mjs'
+      - '.github/workflows/career-identity-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check Career Identity V2 syntax
+        run: node --check scripts/career-identity-v2.js
+      - name: Run Career Identity long-save regression
+        run: node tools/career-identity-v2-regression.mjs
