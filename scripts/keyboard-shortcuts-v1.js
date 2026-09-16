@@ -73,7 +73,7 @@ function loadMarathonRoad(){
 }
 function loadContractDecisionRouting(){
  if(typeof document==='undefined'||window.__amContractDecisionRoutingV1||document.querySelector('script[data-am-contract-decision-routing]'))return;
- const script=document.createElement('script');script.src='scripts/contract-decision-routing-v1.js?v=20260915-contractrouting1';script.dataset.amContractDecisionRouting='1';script.onerror=()=>console.warn('Contract decision routing guard failed to load');document.body.appendChild(script);
+ const script=document.createElement('script');script.src='scripts/contract-decision-routing-v1.js?v=20260916-contractrouting3';script.dataset.amContractDecisionRouting='1';script.onerror=()=>console.warn('Contract decision routing guard failed to load');document.body.appendChild(script);
 }
 function loadSeasonEventIntegrity(){
  if(typeof document==='undefined')return;
