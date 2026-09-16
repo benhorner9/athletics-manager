@@ -1,6 +1,6 @@
 name: UI Regression Gate
 
-# Production UI, Live Event Broadcast V4.6, Universal Live Event Shell V5, Manager Career / My Profile V1, Scouting V2 route-root detection, FTUE Scouting V2 assignment routing, FTUE V2.0.2 active-assignment reconciliation safeguards, and repository hygiene are validated by this gate.
+# Production UI, Live Event Broadcast V4.6 (including standards-based track geometry), Universal Live Event Shell V5, Manager Career / My Profile V1, Scouting V2 route-root detection, FTUE Scouting V2 assignment routing, FTUE V2.0.2 active-assignment reconciliation safeguards, and repository hygiene are validated by this gate.
 on:
   push:
     branches: [main, dev]
@@ -49,6 +49,12 @@ jobs:
           grep -q 'function distanceCameraTarget(c,state)' scripts/live-event-broadcast-v4.js
           grep -q 'function distanceMoment(c)' scripts/live-event-broadcast-v4.js
           grep -q 'function distanceLeadComment(c,state)' scripts/live-event-broadcast-v4.js
+          grep -q 'function straightTrack(d)' scripts/live-event-broadcast-v4.js
+          grep -q 'function raceStartOffset(d)' scripts/live-event-broadcast-v4.js
+          grep -q 'function laneStaggerMeters(d,lane)' scripts/live-event-broadcast-v4.js
+          grep -q 'function geometrySnapshot(d,lane=1)' scripts/live-event-broadcast-v4.js
+          grep -q 'TRACK_STRAIGHT_M=84.39' scripts/live-event-broadcast-v4.js
+          grep -q "trackGeometryVersion:'2026.09'" scripts/live-event-broadcast-v4.js
           grep -q 'function fieldRoundInfo(c,q=c.seq\[c.i\]' scripts/live-event-broadcast-v4.js
           grep -q 'function fieldPreAttemptSpeech(c,q)' scripts/live-event-broadcast-v4.js
           grep -q 'function fieldBestMarkers(c,family)' scripts/live-event-broadcast-v4.js
