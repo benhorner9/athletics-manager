@@ -76,13 +76,20 @@ export async function run(w){
   const savedFns={render:w.render,view:w.view,save:w.save,toast:w.toast};
   w.render=()=>{};w.view=()=>{};w.save=()=>{};w.toast=()=>{};
   let seasons=0;
+  const rolloverStarted=Date.now();
   while(!read(`careerState().finished`)&&seasons<42){
+   const before=read(`({careerYear:careerState().careerYear,cycleYear:s.game.cycleYear,cycleNumber:careerState().cycleNumber,season:s.game.season,athletes:s.athletes.length,active:s.athletes.filter(a=>!a.retired).length})`);
+   const seasonStarted=Date.now();
+   console.log(`[release] 40-year season ${seasons+1} begin ${JSON.stringify(before)}`);
    read(`s.events.forEach(e=>e.completed=true);s.nationPoints[managedNation()]=1000;endSeason()`);
    seasons++;
    if(read(`!!careerState().pendingReview`))read(`acceptCareerJob(managedNation())`);
+   const after=read(`({careerYear:careerState().careerYear,cycleYear:s.game.cycleYear,cycleNumber:careerState().cycleNumber,season:s.game.season,athletes:s.athletes.length,active:s.athletes.filter(a=>!a.retired).length,finished:careerState().finished})`);
+   console.log(`[release] 40-year season ${seasons} end ${Date.now()-seasonStarted}ms ${JSON.stringify(after)}`);
    assert.ok(Number.isFinite(read(`Number(s.funding)`)),`non-finite funding after career season ${seasons}`);
    assert.ok(read(`s.athletes.length`)<5000,`athlete population runaway after career season ${seasons}`);
   }
+  console.log(`[release] 40-year rollover completed ${seasons} seasons in ${Date.now()-rolloverStarted}ms`);
   w.render=savedFns.render;w.view=savedFns.view;w.save=savedFns.save;w.toast=savedFns.toast;
   assert.equal(seasons,40,'career did not finish after 40 seasons');
   assert.equal(read(`careerState().careerYear`),40,'career year did not finish at 40');
