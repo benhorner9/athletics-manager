@@ -55,6 +55,7 @@ async function syntaxCheck(){
 }
 
 await run('Repository hygiene',['tools/repository-hygiene.mjs']);
+await run('Repository structure audit',['tools/repository-structure-audit.mjs']);
 await run('Static UI / asset regression',['tools/static-regression.mjs']);
 await run('Retired feature regression',['tools/retired-feature-regression.mjs']);
 await syntaxCheck();
