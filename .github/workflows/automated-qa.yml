@@ -1,6 +1,10 @@
 name: Automated QA Gate
 
 on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/automated-qa.yml'
   pull_request:
     branches: [dev]
     paths:
