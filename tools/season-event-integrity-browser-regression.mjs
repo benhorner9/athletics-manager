@@ -25,7 +25,7 @@ try{
  page=await context.newPage();
  const pageErrors=[];page.on('pageerror',err=>pageErrors.push(String(err?.stack||err)));
  await page.goto(`http://127.0.0.1:${port}/game.html`,{waitUntil:'load',timeout:30000});
- await page.waitForFunction(()=>window.AMMarathonRoad&&window.AMSeasonEventIntegrity?.build===4&&window.AMSeasonEventIntegrity?.debug?.().freshGuard&&window.AMSeasonEventIntegrity?.debug?.().stateGuard,{timeout:20000});
+ await page.waitForFunction(()=>window.AMMarathonRoad&&window.AMSeasonEventIntegrity?.build===5&&window.AMSeasonEventIntegrity?.debug?.().freshGuard&&window.AMSeasonEventIntegrity?.debug?.().stateGuard,{timeout:20000});
  const outcome=await page.evaluate(()=>{
   try{return window.eval(`
    s=fresh('GREAT BRITAIN');ensureState();
@@ -77,6 +77,7 @@ try{
  assert.ok(data.roadCount>=1,'Marathon/Road meetings disappeared during recovery');
  assert.equal(data.debug.freshGuard,true,'Final fresh() owner lost the season integrity wrapper');
  assert.equal(data.debug.stateGuard,true,'Final ensureState() owner lost the season integrity wrapper');
+ assert.equal(data.debug.calendarWrapped,false,'Season integrity must not wrap drawCalendar');
  assert.ok(data.futureName&&data.calendarText.includes(data.futureName),'Restored normal event did not appear on Calendar');
  assert.deepEqual(pageErrors,[],'WebKit reported an uncaught page error during event recovery');
  console.log('Season event integrity WebKit regression passed.');
