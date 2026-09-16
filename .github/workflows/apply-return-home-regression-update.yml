@@ -1,0 +1,67 @@
+name: Apply Return Home Regression Contract Update
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/apply-return-home-regression-update.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev
+      - name: Update stale competition exit regression
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('tools/dev-stability-regression.mjs')
+          s=p.read_text(encoding='utf-8')
+          old="""  const e={id:'meet',week:5,results:{W100:[]},completed:false};
+  f.w.decorateLive(e,'W100');
+  assert.equal(f.w.document.getElementById('v3day').textContent,'COMPETITION OVERVIEW');
+  f.w.document.getElementById('v3day').click();
+  assert.equal(JSON.stringify(f.w.opened),'[[\"meet\",\"programme\"]]');
+  assert.equal(f.w.document.getElementById('v3back').textContent,'‹');
+  e.completed=true;f.w.decorateLive(e,'W100');
+  assert.equal(f.w.document.getElementById('v3back').textContent,'‹ RESULTS');
+  assert.equal(f.w.document.getElementById('v3day').textContent,'RETURN HOME');
+  f.w.document.getElementById('v3back').click();
+  assert.equal(JSON.stringify(f.w.opened[1]),'[\"meet\",\"results\"]');
+  f.w.document.getElementById('v3day').click();
+  assert.equal(JSON.stringify(f.w.opened[2]),'[\"meet\",\"home\"]');"""
+          new="""  const e={id:'meet',week:5,results:{},completed:false};
+  f.w.decorateLive(e,'W100');
+  assert.equal(f.w.document.getElementById('v3day').textContent,'COMPETITION OVERVIEW');
+  f.w.document.getElementById('v3day').click();
+  assert.equal(JSON.stringify(f.w.opened),'[[\"meet\",\"programme\"]]');
+  assert.equal(f.w.document.getElementById('v3back').textContent,'‹');
+  e.results.W100=[];f.w.decorateLive(e,'W100');
+  assert.equal(f.w.document.getElementById('v3day').textContent,'RETURN HOME');
+  f.w.document.getElementById('v3day').click();
+  assert.equal(JSON.stringify(f.w.opened[1]),'[\"meet\",\"home\"]');
+  assert.equal(e.completed,false,'returning home after one result must not complete the whole meeting');
+  e.completed=true;f.w.decorateLive(e,'W100');
+  assert.equal(f.w.document.getElementById('v3back').textContent,'‹ RESULTS');
+  assert.equal(f.w.document.getElementById('v3day').textContent,'RETURN HOME');
+  f.w.document.getElementById('v3back').click();
+  assert.equal(JSON.stringify(f.w.opened[2]),'[\"meet\",\"results\"]');
+  f.w.document.getElementById('v3day').click();
+  assert.equal(JSON.stringify(f.w.opened[3]),'[\"meet\",\"home\"]');"""
+          if old not in s:
+              raise SystemExit('stale return-home regression block not found')
+          p.write_text(s.replace(old,new,1),encoding='utf-8')
+          PY
+          node tools/dev-stability-regression.mjs
+      - name: Commit regression contract update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tools/dev-stability-regression.mjs
+          git commit -m "test: align event exit stability contract"
+          git push origin HEAD:dev
