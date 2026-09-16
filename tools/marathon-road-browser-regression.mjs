@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import {webkit} from 'playwright';
 
 const root=process.cwd();
-const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.b64':'text/plain; charset=utf-8'};
+const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.b64':'text/plain; charset=utf-8'};
 const server=http.createServer((req,res)=>{
  try{
   const url=new URL(req.url,'http://127.0.0.1');
@@ -48,23 +48,29 @@ try{
    if(roadMeta.checkpoints?.at(-1)?.metres!==42195)throw new Error('finish checkpoint missing');
    if(!roadMeta.checkpoints.some(x=>x.metres===35000))throw new Error('35km wall checkpoint missing');
    const ownResults=results.filter(x=>e.entries.MMarathon.includes(x.id));if(ownResults.length!==men.length)throw new Error('not all open GB entries reached race field');
-   const plan=AMMarathonRoadBroadcastV3.direct(e,'MMarathon',results);
+   const plan=AMMarathonRoadBroadcastV3.direct(e,'MMarathon',results),windows=AMMarathonHighlightDirector.highlightWindows;
    const presentationMs=plan.presentationMs;
-   if(presentationMs<180000||presentationMs>360000)throw new Error('marathon V3 duration outside 3–6 minute target: '+presentationMs);
-   if(plan.highlights[0]?.metres!==0||plan.highlights[0]?.toMetres!==2000)throw new Error('opening broadcast does not animate the opening 2,000m');
-   const hs=plan.highlights.map(h=>h.metres);
-   for(const required of [0,2000,5000,10000,21097.5,30000,35000,38000,40000,41195,41695,42195])if(!hs.some(m=>Math.abs(m-required)<5))throw new Error('missing broadcast anchor '+required);
-   const late=hs.filter(m=>m>=35000);if(late.length<6)throw new Error('late race coverage is not dense enough');
-   if(!plan.events.every(x=>['START','ATTACK','LEAD_CHANGE','PACK_SPLIT','ATHLETE_DROPPED','CHASE_STARTED','GAP_CLOSED','INJURY','MAJOR_FADE','CHECKPOINT','FINAL_KM','FINISH'].includes(x.type)))throw new Error('unknown race event type');
+   if(presentationMs<65000||presentationMs>100000)throw new Error('marathon highlight package outside 65–100 second target: '+presentationMs);
+   if(plan.highlights.length!==6)throw new Error('marathon must contain start + four key moments + finish, got '+plan.highlights.length);
+   if(plan.highlights[0]?.type!=='START'||plan.highlights[0]?.metres!==0||plan.highlights[0]?.toMetres!==1400)throw new Error('opening highlight is not the dedicated race start');
+   if(plan.highlights.at(-1)?.type!=='FINISH'||plan.highlights.at(-1)?.metres!==42195||plan.highlights.at(-1)?.fromMetres!==41700)throw new Error('final highlight is not the winning finish approach');
+   if(!Array.isArray(windows)||windows.length!==4)throw new Error('four marathon story windows are not exposed');
+   const middle=plan.highlights.slice(1,-1);
+   for(let i=0;i<windows.length;i++){const h=middle[i],w=windows[i];if(!h||h.metres<w.from||h.metres>w.to)throw new Error('highlight '+(i+1)+' escaped story window '+w.label)}
+   if(!plan.events.every(x=>['START','ATTACK','LEAD_CHANGE','OVERTAKE','PACK_SPLIT','ATHLETE_DROPPED','CHASE_STARTED','GAP_CLOSED','INJURY','MAJOR_FADE','CHECKPOINT','FINAL_KM','FINISH'].includes(x.type)))throw new Error('unknown race event type');
+   const finishHtml=AMMarathonRoadBroadcastV3.stageHTML(e,'MMarathon',results,plan.highlights.at(-1)),finishMarkers=(finishHtml.match(/data-road-v3-runner/g)||[]).length;
+   if(finishMarkers>6)throw new Error('finish camera is still showing a large pack: '+finishMarkers);
+   if(!finishHtml.includes('road-v3-finish'))throw new Error('finish gantry missing from final highlight');
    e.majorChampionship=true;const major=AMMarathonRoadBroadcastV3.direct(e,'MMarathon',results);e.majorChampionship=false;
-   if(major.presentationMs<300000||major.presentationMs>360000)throw new Error('major championship coverage is not 5–6 minutes');
-   if(major.highlights.length<=plan.highlights.length)throw new Error('major championship did not receive richer coverage');
+   if(major.highlights.length!==6)throw new Error('major marathon must retain the same six-scene story structure');
+   if(major.presentationMs<presentationMs||major.presentationMs>100000)throw new Error('major marathon highlight package has invalid duration');
    const startup=document.getElementById('startup');if(startup)startup.classList.add('hidden');
    document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));document.getElementById('competition')?.classList.add('on');currentView='competition';competitionMode='discipline';activeEventDisc='MMarathon';
    disciplineRunning=false;liveEventView=null;drawCompetition();AMMarathonRoadBroadcastV3.start(e,'MMarathon');
    const stage=document.querySelector('.road-v3-stage');if(!stage)throw new Error('Broadcast V3 stage missing');
-   const runnerNodes=[...stage.querySelectorAll('[data-road-v3-runner]')];if(runnerNodes.length<8)throw new Error('not enough road markers rendered');
+   const runnerNodes=[...stage.querySelectorAll('[data-road-v3-runner]')];if(runnerNodes.length<8||runnerNodes.length>18)throw new Error('start field marker count is outside highlight framing: '+runnerNodes.length);
    if(stage.querySelector('.road-v3-body'))throw new Error('V3 leaked human-sprite runner body instead of dot markers');
+   if(!stage.textContent.includes('MARATHON HIGHLIGHTS'))throw new Error('highlight presentation label missing');
    const geometry=runnerNodes.map(node=>{const x=Number(node.dataset.x),lane=Number(node.dataset.lane),bounds=AMMarathonRoadBroadcastV2.roadBoundsAt(x);return{x,lane,halfWidth:bounds.halfWidth,transform:node.getAttribute('transform')}});
    if(geometry.some(g=>Math.abs(g.lane)>g.halfWidth*.62+.01))throw new Error('runner generated outside road corridor');
    const ownMarkers=stage.querySelectorAll('.road-v3-marker.own').length;
@@ -73,23 +79,26 @@ try{
    const boardLeader=document.querySelector('#roadLiveBoard .road-v3-board-row span')?.textContent||'';
    const snap=AMMarathonRoadBroadcastV3.snapshotAt(e,'MMarathon',results,0);
    if(snap.entries[0]&&!boardLeader.includes(snap.entries[0].row.name))throw new Error('leaderboard is not synced to visual snapshot');
-   ({events:road.map(x=>x.week),men:men.length,women:women.length,field:field.length,checkpoints:roadMeta.checkpoints.length,presentationMs,majorMs:major.presentationMs,highlightCount:plan.highlights.length,eventTypes:[...new Set(plan.events.map(x=>x.type))],themes:[...new Set(plan.highlights.map(x=>x.theme))],geometry,ownMarkers,ownBoard,html:document.getElementById('competition')?.innerHTML||''});
+   ({events:road.map(x=>x.week),men:men.length,women:women.length,field:field.length,checkpoints:roadMeta.checkpoints.length,presentationMs,majorMs:major.presentationMs,highlightCount:plan.highlights.length,middleTypes:middle.map(h=>h.type),middleMetres:middle.map(h=>h.metres),eventTypes:[...new Set(plan.events.map(x=>x.type))],themes:[...new Set(plan.highlights.map(x=>x.theme))],finishMarkers,geometry,ownMarkers,ownBoard,html:document.getElementById('competition')?.innerHTML||''});
   `)}catch(err){return {error:String(err?.stack||err)}}
  });
  assert.ok(!seeded.error,seeded.error);
  assert.deepEqual(seeded.events,[10,21,32,43],'road race calendar changed');
  assert.ok(seeded.field>=36,'road field must remain large');
  assert.ok(seeded.checkpoints>=10,'road race needs full checkpoint coverage');
- assert.ok(seeded.presentationMs>=180000&&seeded.presentationMs<=360000,'routine broadcast must target 3–6 minutes');
- assert.ok(seeded.majorMs>=300000&&seeded.majorMs<=360000,'major marathon must target 5–6 minutes');
- assert.ok(seeded.highlightCount>=12,'highlight director returned too few broadcast moments');
+ assert.ok(seeded.presentationMs>=65000&&seeded.presentationMs<=100000,'routine marathon must play as a concise highlight package');
+ assert.ok(seeded.majorMs>=seeded.presentationMs&&seeded.majorMs<=100000,'major marathon must remain concise while allowing slightly richer clip timing');
+ assert.equal(seeded.highlightCount,6,'highlight director must return exactly six scenes');
+ assert.equal(seeded.middleTypes.length,4,'marathon must contain exactly four race-defining middle highlights');
+ assert.ok(seeded.finishMarkers<=6,'finish camera must focus on the winner and nearby finishers');
  assert.match(seeded.html,/road-live-layout/,'marathon stopped using the existing road/live-event shell');
  assert.match(seeded.html,/road-v3-stage/,'Broadcast V3 stage did not replace the V2 snapshot');
  assert.match(seeded.html,/road-v3-dot/,'marathon did not use the 2D dot marker language');
  assert.match(seeded.html,/road-v3-progress/,'course progress indicator is missing');
  assert.match(seeded.html,/road-v3-board-row/,'synchronised V3 leaderboard is missing');
+ assert.match(seeded.html,/MARATHON HIGHLIGHTS/,'edited highlight presentation label is missing');
  assert.doesNotMatch(seeded.html,/oval-track|track-svg|athletics-track/i,'marathon leaked into a stadium oval presentation');
- assert.ok(seeded.themes.length>=3,'road route does not vary its environment enough');
+ assert.ok(seeded.themes.length>=2,'road highlight package no longer varies its environment');
  assert.ok(seeded.themes.includes('finish'),'finish environment is missing');
 
  await page.waitForTimeout(700);
