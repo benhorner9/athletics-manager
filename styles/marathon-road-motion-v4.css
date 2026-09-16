@@ -1,7 +1,0 @@
-/* Athletics Manager — Marathon Road Motion V4 */
-.road-broadcast-v3.road-motion-v4 .road-v3-road-mark,
-.road-broadcast-v3.road-motion-v4 .road-v3-scroll-far,
-.road-broadcast-v3.road-motion-v4 .road-v3-scroll-near{animation:none!important;transform:none!important}
-.road-broadcast-v3.road-motion-v4 .road-v3-marker{will-change:transform;transform-box:fill-box;transform-origin:center}
-.road-broadcast-v3.road-motion-v4 .road-v3-camera svg{isolation:isolate}
-@media (prefers-reduced-motion:reduce){.road-broadcast-v3.road-motion-v4 .road-v3-marker{transition:none!important}}
