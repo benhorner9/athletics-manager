@@ -99,9 +99,13 @@ try{
    prepared=w.eval(`
     (()=>{
      const d=window.__amV5QaDisc;
-     const e={id:'v5-qa-'+d,week:s.game.week,name:'Universal Live Event QA',kind:'competition',level:'International',location:'QA Stadium',disc:[d],ranked:false,star:1,entries:{[d]:[]},results:{},commentary:{}};
+     const hold=d==='M100'?'W100':'M100';
+     const ds=[d,hold];
+     const entries=Object.fromEntries(ds.map(x=>[x,[]]));
+     const e={id:'v5-qa-'+d,week:s.game.week,name:'Universal Live Event QA',kind:'competition',level:'International',location:'QA Stadium',disc:ds,ranked:false,star:1,entries,results:{},commentary:{}};
+     s.events=[e];
      window.__amV5QaEvent=e;
-     activeEventDisc=d;competitionMode='discipline';view('competition');drawDisciplineScreen(e,true,[d]);
+     activeEventDisc=d;competitionMode='discipline';view('competition');drawDisciplineScreen(e,true,ds);
      return true;
     })()
    `)
