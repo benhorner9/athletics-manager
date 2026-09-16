@@ -2,8 +2,7 @@ name: Apply Universal Event Return Home Fix
 
 on:
   push:
-    branches:
-      - dev
+    branches: [dev]
     paths:
       - '.github/workflows/apply-event-return-home-fix.yml'
 
@@ -17,77 +16,38 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: dev
-      - name: Make completed event results always expose Return Home
+      - name: Apply completed-result home exit
         run: |
           python3 - <<'PY'
           from pathlib import Path
 
-          # Universal V5 shell: never mirror a disabled RESULT CONFIRMED button
-          # when the underlying event flow exposes a RETURN HOME action.
           p=Path('scripts/live-event-shell-v5.js')
           s=p.read_text(encoding='utf-8')
-          old="""function sourceAction(){
- const primary=$('v3start');
- if(primary)return primary;
- return $('v3day')||null
-}"""
-          new="""function sourceAction(){
- const primary=$('v3start'),day=$('v3day'),dayText=String(day?.textContent||'').trim();
- if(day&&/RETURN HOME|RETURN TO GAME|COMPLETE EVENT/i.test(dayText))return day;
- if(primary&&!primary.disabled)return primary;
- return day||primary||null
-}"""
-          if old not in s:
-              raise SystemExit('Live Event V5 sourceAction target was not found')
-          s=s.replace(old,new,1)
-          p.write_text(s,encoding='utf-8')
+          old="function sourceAction(){\n const primary=$('v3start');\n if(primary)return primary;\n return $('v3day')||null\n}"
+          new="function sourceAction(){\n const primary=$('v3start'),day=$('v3day'),dayText=String(day?.textContent||'').trim();\n if(day&&/RETURN HOME|RETURN TO GAME|COMPLETE EVENT/i.test(dayText))return day;\n if(primary&&!primary.disabled)return primary;\n return day||primary||null\n}"
+          if old not in s: raise SystemExit('Live Event V5 sourceAction target missing')
+          p.write_text(s.replace(old,new,1),encoding='utf-8')
 
-          # Competition Journey: once the current discipline has an official result,
-          # give the player an explicit route back to Home even when the wider meeting
-          # still has other disciplines remaining. The event remains resumable.
           p=Path('scripts/competition-journey-v2.js')
           s=p.read_text(encoding='utf-8')
           old="const complete=eventCompleted(e),back=$('v3back');"
           new="const complete=eventCompleted(e),hasResult=Array.isArray(e.results?.[d]),back=$('v3back');"
-          if old not in s:
-              raise SystemExit('Competition Journey completion target was not found')
+          if old not in s: raise SystemExit('Competition Journey completion target missing')
           s=s.replace(old,new,1)
-          old="""const day=$('v3day');if(day){day.textContent=complete?'RETURN HOME':'COMPETITION OVERVIEW';day.classList.toggle('primary',complete);day.classList.toggle('ghost',!complete);day.onclick=()=>{if(disciplineRunning)return safe(()=>toast('Finish the live event first'),null);if(complete)return returnHomeFromEvent(e);"""
-          new="""const day=$('v3day'),canExit=complete||hasResult;if(day){day.textContent=canExit?'RETURN HOME':'COMPETITION OVERVIEW';day.classList.toggle('primary',canExit);day.classList.toggle('ghost',!canExit);day.onclick=()=>{if(disciplineRunning)return safe(()=>toast('Finish the live event first'),null);if(canExit)return returnHomeFromEvent(e);"""
-          if old not in s:
-              raise SystemExit('Competition Journey day-action target was not found')
-          s=s.replace(old,new,1)
-          p.write_text(s,encoding='utf-8')
+          old="const day=$('v3day');if(day){day.textContent=complete?'RETURN HOME':'COMPETITION OVERVIEW';day.classList.toggle('primary',complete);day.classList.toggle('ghost',!complete);day.onclick=()=>{if(disciplineRunning)return safe(()=>toast('Finish the live event first'),null);if(complete)return returnHomeFromEvent(e);"
+          new="const day=$('v3day'),canExit=complete||hasResult;if(day){day.textContent=canExit?'RETURN HOME':'COMPETITION OVERVIEW';day.classList.toggle('primary',canExit);day.classList.toggle('ghost',!canExit);day.onclick=()=>{if(disciplineRunning)return safe(()=>toast('Finish the live event first'),null);if(canExit)return returnHomeFromEvent(e);"
+          if old not in s: raise SystemExit('Competition Journey day-action target missing')
+          p.write_text(s.replace(old,new,1),encoding='utf-8')
 
-          # Regression: every current discipline must end with a visible, enabled
-          # Return Home action and that action must actually leave Competition.
           p=Path('tools/live-event-shell-v5-regression.mjs')
           s=p.read_text(encoding='utf-8')
-          old="""  const rows=w.__amV5QaEvent.results[d];
-  notes.push(`${d} · ${family} · ${rows.length} result rows`);
-"""
-          new="""  const homeReady=await waitFor(()=>{
-   const action=w.document.querySelector('[data-lv5-action]');
-   return !!action&&!action.disabled&&/RETURN HOME/i.test(String(action.textContent||''));
-  });
-  if(!homeReady){
-   const action=w.document.querySelector('[data-lv5-action]'),day=w.document.getElementById('v3day'),start=w.document.getElementById('v3start');
-   fail(`${d}: confirmed result did not expose Return Home (visible=${String(action?.textContent||'none').trim()}, day=${String(day?.textContent||'none').trim()}, start=${String(start?.textContent||'none').trim()}, startDisabled=${!!start?.disabled}).`);
-   break
-  }
-  try{w.document.querySelector('[data-lv5-action]').click()}catch(err){fail(`${d}: Return Home action threw: ${err?.stack||err}`);break}
-  const homeReached=await waitFor(()=>{try{return w.eval(`typeof currentView==='undefined'||currentView==='home'`)}catch(_){return false}});
-  if(!homeReached){fail(`${d}: Return Home action did not leave the completed result for Home.`);break}
-  const rows=w.__amV5QaEvent.results[d];
-  notes.push(`${d} · ${family} · ${rows.length} result rows · Return Home`);
-"""
-          if old not in s:
-              raise SystemExit('Live Event regression result-note target was not found')
+          old="  const rows=w.__amV5QaEvent.results[d];\n  notes.push(`${d} · ${family} · ${rows.length} result rows`);\n"
+          new="  const homeReady=await waitFor(()=>{\n   const action=w.document.querySelector('[data-lv5-action]');\n   return !!action&&!action.disabled&&/RETURN HOME/i.test(String(action.textContent||''));\n  });\n  if(!homeReady){\n   const action=w.document.querySelector('[data-lv5-action]'),day=w.document.getElementById('v3day'),start=w.document.getElementById('v3start');\n   fail(`${d}: confirmed result did not expose Return Home (visible=${String(action?.textContent||'none').trim()}, day=${String(day?.textContent||'none').trim()}, start=${String(start?.textContent||'none').trim()}, startDisabled=${!!start?.disabled}).`);\n   break\n  }\n  try{w.document.querySelector('[data-lv5-action]').click()}catch(err){fail(`${d}: Return Home action threw: ${err?.stack||err}`);break}\n  const homeReached=await waitFor(()=>{try{return w.eval(`typeof currentView==='undefined'||currentView==='home'`)}catch(_){return false}});\n  if(!homeReached){fail(`${d}: Return Home action did not leave the completed result for Home.`);break}\n  const rows=w.__amV5QaEvent.results[d];\n  notes.push(`${d} · ${family} · ${rows.length} result rows · Return Home`);\n"
+          if old not in s: raise SystemExit('Live Event regression result target missing')
           s=s.replace(old,new,1)
           old="console.log('✓ V5 shell retained scoreboard, commentary, progression, playback and event-aware information.');"
-          new=old+"\nconsole.log('✓ Every current discipline result exposed and completed a Return Home route.');"
-          if new not in s:
-              s=s.replace(old,new,1)
+          add=old+"\nconsole.log('✓ Every current discipline result exposed and completed a Return Home route.');"
+          if add not in s: s=s.replace(old,add,1)
           p.write_text(s,encoding='utf-8')
           PY
           node --check scripts/live-event-shell-v5.js
