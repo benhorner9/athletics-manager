@@ -59,6 +59,7 @@ await run('Repository structure audit',['tools/repository-structure-audit.mjs'])
 await run('Static UI / asset regression',['tools/static-regression.mjs']);
 await run('Retired feature regression',['tools/retired-feature-regression.mjs']);
 await syntaxCheck();
+await run('Universal live event shell regression',['tools/live-event-shell-v5-regression.mjs']);
 await run('Persistence performance regression',['tools/persistence-performance-regression.mjs']);
 await run('Annual career refresh regression',['tools/annual-career-refresh-regression.mjs']);
 await run('Athlete conversation regression',['tools/athlete-conversation-regression.mjs']);
