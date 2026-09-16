@@ -6,7 +6,7 @@
 if(window.__amContractDecisionRoutingV1)return;window.__amContractDecisionRoutingV1=1;
 if(typeof document==='undefined')return;
 
-const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const CONTRACT_SUBJECT=/^(?:URGENT\s*[—–-]\s*)?Contract decision:\s*/i;
 function currentMail(){return (s?.emails||[]).find(m=>String(m?.id||'')===String(typeof openMail!=='undefined'?openMail:''))||null}
 function isAthleteContractDecision(m){
