@@ -5,6 +5,7 @@ on:
     branches:
       - dev
     paths:
+      - 'game.html'
       - 'scripts/career-identity-v2.js'
       - 'styles/career-identity-v2.css'
       - 'scripts/manager-profile-sidebar-v1.js'
@@ -24,6 +25,8 @@ jobs:
         with:
           node-version: 22
       - name: Check Career Identity V2 syntax
-        run: node --check scripts/career-identity-v2.js
+        run: |
+          node --check scripts/career-identity-v2.js
+          node --check scripts/manager-profile-sidebar-v1.js
       - name: Run Career Identity long-save regression
         run: node tools/career-identity-v2-regression.mjs
