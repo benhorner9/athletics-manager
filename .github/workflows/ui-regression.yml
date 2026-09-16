@@ -68,7 +68,7 @@ jobs:
       - name: Validate Universal Live Event Shell V5 source
         run: |
           node --check scripts/live-event-shell-v5.js
-          grep -q "version:'5.0.0'" scripts/live-event-shell-v5.js
+          grep -q "version:'5.0.1'" scripts/live-event-shell-v5.js
           grep -q "return'VERTICAL_JUMP'" scripts/live-event-shell-v5.js
           grep -q "return'HORIZONTAL_JUMP'" scripts/live-event-shell-v5.js
           grep -q "return'THROW'" scripts/live-event-shell-v5.js
