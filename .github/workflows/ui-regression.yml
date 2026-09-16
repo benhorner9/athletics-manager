@@ -81,6 +81,10 @@ jobs:
           grep -q "return distance>=800?'PACK_RACE':'LANE_RACE'" scripts/live-event-shell-v5.js
           grep -q 'styles/live-event-shell-v5.css' game.html
           grep -q 'scripts/live-event-shell-v5.js' game.html
+          grep -Fq '.lv4-board-row:nth-child(2)>b' styles/live-event-shell-v5.css
+          grep -Fq '.lv4-board-row:nth-child(3)>b' styles/live-event-shell-v5.css
+          grep -Fq '.lv4-board-row:nth-child(2){background:' styles/live-event-shell-v5.css
+          grep -Fq '.lv4-board-row:nth-child(3){background:' styles/live-event-shell-v5.css
       - name: Check JavaScript syntax
         shell: bash
         run: |
