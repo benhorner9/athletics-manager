@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 
 const source=fs.readFileSync(new URL('../scripts/career-identity-v2.js',import.meta.url),'utf8');
 assert(!/\bOVR\b|overall rating/i.test(source),'Career Identity V2 must not introduce visible OVR language');
+assert(source.includes('function programmeStats'),'Career Identity V2 source is incomplete after migration/repair');
 
 const listeners={};
 const documentStub={
