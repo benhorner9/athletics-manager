@@ -50,11 +50,11 @@ function loadMarathonRoadMotionV4(){
 function loadMarathonRoadBroadcastV3(){
  if(typeof document==='undefined')return;
  if(!document.querySelector('link[data-am-marathon-road-broadcast-v3-style]')){
-  const style=document.createElement('link');style.rel='stylesheet';style.href='styles/marathon-road-broadcast-v3.css?v=20260916-marathon5';style.dataset.amMarathonRoadBroadcastV3Style='1';document.head.appendChild(style);
+  const style=document.createElement('link');style.rel='stylesheet';style.href='styles/marathon-road-broadcast-v3.css?v=20260916-marathon7';style.dataset.amMarathonRoadBroadcastV3Style='1';document.head.appendChild(style);
  }
  if(window.__amMarathonRoadBroadcastV3){reassertSeasonIntegrity();loadMarathonRoadMotionV4();return}
  if(document.querySelector('script[data-am-marathon-road-broadcast-v3]'))return;
- const script=document.createElement('script');script.src='scripts/marathon-road-broadcast-v3.js?v=20260916-marathon5';script.dataset.amMarathonRoadBroadcastV3='1';script.onerror=()=>console.warn('Marathon road broadcast V3 failed to load');script.onload=()=>{reassertSeasonIntegrity();loadMarathonRoadMotionV4()};document.body.appendChild(script);
+ const script=document.createElement('script');script.src='scripts/marathon-road-broadcast-v3.js?v=20260916-marathon7';script.dataset.amMarathonRoadBroadcastV3='1';script.onerror=()=>console.warn('Marathon road broadcast V3 failed to load');script.onload=()=>{reassertSeasonIntegrity();loadMarathonRoadMotionV4()};document.body.appendChild(script);
 }
 function loadMarathonRoadBroadcastV2(){
  if(typeof document==='undefined')return;
