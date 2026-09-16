@@ -1,0 +1,48 @@
+name: Apply Career Identity UI Loop Fix
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - '.github/workflows/apply-career-identity-ui-loop-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev
+      - name: Guard custom profile rendering from observer loops
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/career-identity-v2.js')
+          s=p.read_text()
+          old="if(customManagerTab)renderManagerCustom(dialog,customManagerTab)}"
+          new="if(customManagerTab&&content.dataset.civ2Rendered!==customManagerTab)renderManagerCustom(dialog,customManagerTab)}"
+          if old not in s: raise SystemExit('manager observer render target missing')
+          s=s.replace(old,new,1)
+          old="function renderManagerCustom(dialog,id){const nav=qs('.am-mgr-tabs',dialog),content=qs('.am-mgr-content',dialog);if(!nav||!content)return;syncAll();qsa('button',nav).forEach(b=>{const on=b.dataset.civ2ManagerTab===id;b.classList.toggle('on',on);b.setAttribute('aria-selected',String(on))});content.innerHTML=id==='athletes'?managerAthletesHTML():id==='programme'?managerProgrammeHTML():managerLegacyHTML();bindCustom(content)}"
+          new="function renderManagerCustom(dialog,id){const nav=qs('.am-mgr-tabs',dialog),content=qs('.am-mgr-content',dialog);if(!nav||!content)return;syncAll();qsa('button',nav).forEach(b=>{const on=b.dataset.civ2ManagerTab===id;b.classList.toggle('on',on);b.setAttribute('aria-selected',String(on))});content.dataset.civ2Rendered=id;content.innerHTML=id==='athletes'?managerAthletesHTML():id==='programme'?managerProgrammeHTML():managerLegacyHTML();bindCustom(content)}"
+          if old not in s: raise SystemExit('manager custom render function target missing')
+          s=s.replace(old,new,1)
+          old="if(force||dialog.dataset.civ2History==='1'){qsa('button',nav).forEach(b=>{const on=!!b.dataset.civ2AthleteTab;b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on))});body.innerHTML=athleteHistoryHTML(id);bindCustom(body)}}"
+          new="if((force||dialog.dataset.civ2History==='1')&&(force||body.dataset.civ2Rendered!=='history')){qsa('button',nav).forEach(b=>{const on=!!b.dataset.civ2AthleteTab;b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on))});body.dataset.civ2Rendered='history';body.innerHTML=athleteHistoryHTML(id);bindCustom(body)}}"
+          if old not in s: raise SystemExit('athlete observer render target missing')
+          s=s.replace(old,new,1)
+          p.write_text(s)
+          PY
+          node --check scripts/career-identity-v2.js
+          node tools/career-identity-v2-regression.mjs
+      - name: Commit guard
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/career-identity-v2.js
+          git commit -m "fix: prevent career identity observer render loops"
+          git push origin HEAD:dev
