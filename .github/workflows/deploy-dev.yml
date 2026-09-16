@@ -37,13 +37,61 @@ jobs:
       - name: Install Chromium and WebKit
         run: npx playwright install --with-deps chromium webkit
 
+      - name: Publish deterministic QA status
+        if: github.event_name != 'pull_request'
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PORT: ${{ secrets.FTP_PORT }}
+          AM_PIPELINE_STATE: running
+          AM_PIPELINE_STAGE: deterministic
+          AM_PIPELINE_LABEL: Tests and 16-week career soak are running
+        run: bash tools/publish-dev-pipeline-status.sh
+
       - name: Run deterministic tests and 16-week career soak
         env:
           AM_AUDIT_WEEKS: '16'
         run: node tools/automated-qa.mjs soak
 
+      - name: Publish browser QA status
+        if: github.event_name != 'pull_request'
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PORT: ${{ secrets.FTP_PORT }}
+          AM_PIPELINE_STATE: running
+          AM_PIPELINE_STAGE: browser
+          AM_PIPELINE_LABEL: Desktop, iPad and iPhone browser QA is running
+        run: bash tools/publish-dev-pipeline-status.sh
+
       - name: Run real-browser desktop, iPad and iPhone QA
         run: node tools/browser-qa.mjs
+
+      - name: Publish QA passed status
+        if: github.event_name != 'pull_request'
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PORT: ${{ secrets.FTP_PORT }}
+          AM_PIPELINE_STATE: passed
+          AM_PIPELINE_STAGE: qa
+          AM_PIPELINE_LABEL: All QA gates passed; deployment is next
+        run: bash tools/publish-dev-pipeline-status.sh
+
+      - name: Publish QA failed status
+        if: failure() && github.event_name != 'pull_request'
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PORT: ${{ secrets.FTP_PORT }}
+          AM_PIPELINE_STATE: failed
+          AM_PIPELINE_STAGE: qa
+          AM_PIPELINE_LABEL: QA failed; this candidate was not deployed
+        run: bash tools/publish-dev-pipeline-status.sh
 
       - name: Upload QA screenshots
         if: always()
@@ -63,6 +111,17 @@ jobs:
     steps:
       - name: Check out dev build
         uses: actions/checkout@v4
+
+      - name: Publish deploying status
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PORT: ${{ secrets.FTP_PORT }}
+          AM_PIPELINE_STATE: deploying
+          AM_PIPELINE_STAGE: deploy
+          AM_PIPELINE_LABEL: QA passed; uploading the new dev build
+        run: bash tools/publish-dev-pipeline-status.sh
 
       - name: Validate Live Event engines
         run: |
@@ -97,8 +156,6 @@ jobs:
           html = path.read_text(encoding='utf-8')
           build = os.environ['GITHUB_SHA'][:8]
 
-          # Dev is tested heavily on Safari/iPad. Give hand-off authority scripts a
-          # build-specific URL so freshly deployed routing fixes cannot be masked by cache.
           for asset in (
               'competition-journey-route-guard-v1.js',
               'ui-cutover-v1.js',
@@ -109,10 +166,6 @@ jobs:
                   html,
               )
 
-          # /dev and live share one browser origin, so plain localStorage keys also
-          # share one namespace. Inject the isolation guard before game.js so every
-          # live career-key access made by the dev client is transparently redirected
-          # to a dev-only key. The live key is never modified by the dev client.
           storage_marker = '<!-- AM_DEV_STORAGE_ISOLATION -->'
           storage_tag = f'{storage_marker}\n<script src="scripts/dev/dev-storage-isolation-v1.js?v={build}"></script>'
           if storage_marker not in html:
@@ -134,7 +187,6 @@ jobs:
               raise SystemExit('Dev storage isolation must load before game.js')
           path.write_text(html, encoding='utf-8')
 
-          # Keep the lightweight entry-page save marker in the same dev namespace.
           index_path = Path('index.html')
           index_html = index_path.read_text(encoding='utf-8')
           index_html = index_html.replace(
@@ -178,8 +230,6 @@ jobs:
           BASE="ftp://${FTP_SERVER}:${PORT}/dev"
           mkdir -p .deploy-status
 
-          # The shared host presents a certificate for the hosting domain rather than
-          # the FTP hostname. Keep FTPS encryption, but allow that known name mismatch.
           curl --insecure --silent --show-error --ssl-reqd \
             --user "$FTP_USERNAME:$FTP_PASSWORD" \
             "$BASE/dev-build-history.json" \
@@ -236,8 +286,30 @@ jobs:
             -T .deploy-status/dev-runtime-build.js \
             "$BASE/scripts/dev/dev-runtime-build.js"
 
-          # Publish the manifest last. Its presence means the complete dev build is live.
           curl --insecure --fail --silent --show-error --ssl-reqd --ftp-create-dirs \
             --user "$FTP_USERNAME:$FTP_PASSWORD" \
             -T .deploy-status/dev-build.json \
             "$BASE/dev-build.json"
+
+      - name: Publish live pipeline status
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PORT: ${{ secrets.FTP_PORT }}
+          AM_PIPELINE_STATE: live
+          AM_PIPELINE_STAGE: complete
+          AM_PIPELINE_LABEL: New dev build is live
+        run: bash tools/publish-dev-pipeline-status.sh
+
+      - name: Publish deployment failed status
+        if: failure()
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PORT: ${{ secrets.FTP_PORT }}
+          AM_PIPELINE_STATE: failed
+          AM_PIPELINE_STAGE: deploy
+          AM_PIPELINE_LABEL: Deployment failed; previous dev build remains authoritative
+        run: bash tools/publish-dev-pipeline-status.sh

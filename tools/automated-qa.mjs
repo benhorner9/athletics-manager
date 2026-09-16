@@ -55,14 +55,27 @@ async function syntaxCheck(){
 }
 
 await run('Repository hygiene',['tools/repository-hygiene.mjs']);
+await run('Repository structure audit',['tools/repository-structure-audit.mjs']);
 await run('Static UI / asset regression',['tools/static-regression.mjs']);
+await run('Retired feature regression',['tools/retired-feature-regression.mjs']);
 await syntaxCheck();
+await run('Universal live event shell regression',['tools/live-event-shell-v5-regression.mjs']);
 await run('Persistence performance regression',['tools/persistence-performance-regression.mjs']);
 await run('Annual career refresh regression',['tools/annual-career-refresh-regression.mjs']);
+await run('Athlete conversation regression',['tools/athlete-conversation-regression.mjs']);
+await run('Commercial partnership regression',['tools/commercial-partnership-regression.mjs']);
+await run('Commercial negotiation bridge regression',['tools/commercial-negotiation-bridge-regression.mjs']);
+await run('Commercial negotiation runtime regression',['tools/commercial-negotiation-runtime-regression.mjs']);
+await run('Commercial media planning regression',['tools/commercial-media-planning-regression.mjs']);
+await run('Commercial finance render regression',['tools/commercial-finance-render-regression.mjs']);
+await run('Commercial finance WebKit regression',['tools/commercial-finance-browser-regression.mjs'],{timeout:120000});
+await run('Season event integrity WebKit regression',['tools/season-event-integrity-browser-regression.mjs'],{timeout:120000});
 await run('Scouting persistence regression',['tools/scouting-persistence-regression.mjs']);
 await run('Scouting discovery runtime regression',['tools/scouting-discovery-runtime-regression.mjs'],{timeout:180000});
 await run('Scouting V2 storage audit',['tools/scouting-v2-storage-audit.mjs']);
 await run('Contract expiry reentrancy regression',['tools/contract-expiry-reentrancy-regression.mjs']);
+await run('Contract decision WebKit regression',['tools/contract-decision-browser-regression.mjs'],{timeout:120000});
+await run('Summit selection morale regression',['tools/summit-selection-morale-regression.mjs']);
 await run('Deterministic gameplay regressions',['tools/automated-gameplay-regression.mjs']);
 await run('Training attention authority regression',['tools/training-attention-regression.mjs']);
 await run('Stability regressions',['tools/dev-stability-regression.mjs'],{timeout:480000});

@@ -37,6 +37,33 @@ function onKeyDown(event){
  button.click();
 }
 
+function reassertSeasonIntegrity(){try{window.AMSeasonEventIntegrity?.reinstall?.()}catch(err){console.warn('Season event integrity reinstall failed',err)}}
+function loadContractDecisionRouting(){
+ if(typeof document==='undefined'||window.__amContractDecisionRoutingV1||document.querySelector('script[data-am-contract-decision-routing]'))return;
+ const script=document.createElement('script');
+ script.src='scripts/contract-decision-routing-v1.js?v=20260916-contractrouting3';
+ script.dataset.amContractDecisionRouting='1';
+ script.onerror=()=>console.warn('Contract decision routing guard failed to load');
+ document.body.appendChild(script);
+}
+function loadSeasonEventIntegrity(){
+ if(typeof document==='undefined')return;
+ if(window.__amSeasonEventIntegrityV1Build6){reassertSeasonIntegrity();return}
+ if(document.querySelector('script[data-am-season-event-integrity]'))return;
+ const script=document.createElement('script');
+ script.src='scripts/season-event-integrity-v1.js?v=20260916-eventintegrity6';
+ script.dataset.amSeasonEventIntegrity='1';
+ script.onerror=()=>console.warn('Season event integrity guard failed to load');
+ script.onload=()=>reassertSeasonIntegrity();
+ document.body.appendChild(script);
+}
+function loadLateRuntime(){
+ loadContractDecisionRouting();
+ loadSeasonEventIntegrity();
+}
+
 document.addEventListener('keydown',onKeyDown);
-window.AMKeyboardShortcutsV1={version:'1.0',advanceKey:'Space'};
+window.AMKeyboardShortcutsV1={version:'1.5',advanceKey:'Space'};
+if(document.readyState==='complete')setTimeout(loadLateRuntime,0);
+else window.addEventListener('load',()=>setTimeout(loadLateRuntime,0),{once:true});
 })();

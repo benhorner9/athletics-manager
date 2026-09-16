@@ -5,7 +5,7 @@
 'use strict';
 if(window.__amInboxSingleRenderV1)return;window.__amInboxSingleRenderV1=1;
 const $=id=>document.getElementById(id);
-const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
 const core=()=>window.__athleticsInboxDecisionCore;
 const meta=m=>s?.inboxDecisionSystem?.emailMeta?.[m.id]||{};
 function saveSafe(){try{save()}catch(_){}}
@@ -41,7 +41,23 @@ function openSelection(c,decline=false){
   return true
  }catch(err){console.error('[Athletics Manager] Selection Centre launch failed',err);try{toast('Selection Centre could not be opened. Try again.')}catch(_){}return false}
 }
-function staffAction(m){try{return window.__athleticsDecisionFinalizer?.actions?.().find(a=>a.source==='staff'&&String(a.emailId)===String(m.id))||null}catch(_){return null}}
+function programmeContractAction(m){
+ const match=String(m?.subject||'').match(/^Contract decision:\s*(.+)$/i);if(!match)return null;
+ const name=match[1].trim(),ath=(s?.athletes||[]).find(a=>String(a?.name||'').trim()===name);if(!ath)return null;
+ return{athleteId:ath.id,tab:'contracts',title:`Contract decision: ${ath.name}`}
+}
+function staffAction(m){
+ /* Current athlete funding decisions share the historic "Contract decision:" prefix.
+    Never enumerate legacy staff actions for a mail that resolves to an athlete. */
+ if(programmeContractAction(m))return null;
+ try{return window.__athleticsDecisionFinalizer?.actions?.().find(a=>a.source==='staff'&&String(a.emailId)===String(m.id))||null}catch(_){return null}
+}
+function isAppointmentContractMail(m){
+ if(String(m?.type||'')!=='contract')return false;
+ if(/^Contract decision:/i.test(String(m?.subject||'')))return false;
+ if(m?.programmeAction)return false;
+ try{return typeof appointmentPending==='function'&&appointmentPending()}catch(_){return false}
+}
 function confirmStaff(a,decision){let d=$('amSingleReaderConfirm');if(!d){d=document.createElement('dialog');d.id='amSingleReaderConfirm';d.className='amdf-confirm';document.body.appendChild(d)}const renew=decision==='renew';d.innerHTML=`<div class="amdf-confirm-card"><small>CONFIRM DECISION</small><h2>${esc(renew?'Renew contract?':'Let contract expire?')}</h2><p>${esc(renew?'The renewal cost will be paid immediately and the staff contract will be extended for another 52 weeks.':'The contract will end at expiry and interim cover will take over until a replacement is appointed.')}</p><div><button class="btn ghost" type="button" data-cancel>CANCEL</button><button class="btn primary" type="button" data-confirm>${renew?'RENEW CONTRACT':'LET CONTRACT EXPIRE'}</button></div></div>`;d.querySelector('[data-cancel]').onclick=()=>d.close();d.querySelector('[data-confirm]').onclick=()=>{const b=d.querySelector('[data-confirm]');b.disabled=true;const ok=window.__athleticsDecisionFinalizer?.resolveStaff?.(a.entityId,decision);if(ok!==false){d.close();try{render()}catch(_){};if(currentView==='inbox')drawInbox() }else b.disabled=false};if(!d.open)d.showModal()}
 function bindAthleteRequests(reader){
  const buttons=[...reader.querySelectorAll('[data-athlete-request][data-athlete-choice]')];if(!buttons.length)return;
@@ -59,14 +75,16 @@ function bindAthleteRequests(reader){
  }))
 }
 function bindCommon(reader,m){reader.querySelector('[data-reader-back]')?.addEventListener('click',()=>document.body.classList.remove('amv2-reading'));reader.querySelector('[data-reader-archive]')?.addEventListener('click',()=>window.__athleticsInboxAAA?.archiveMail?.(m.id));bindAthleteRequests(reader)}
-function renderOne(){const reader=$('reader');if(!reader)return;const m=(s.emails||[]).find(x=>String(x.id)===String(openMail))||(s.emails||[]).at?.(-1);if(!m){reader.innerHTML='<div class="amv2-reader-empty"><strong>Select a message</strong><span>Choose a message from the inbox.</span></div>';return}openMail=m.id;if(m.unread)m.unread=false;if(m.type==='systems'){try{appointmentTask('systems')}catch(_){saveSafe()}}else saveSafe();try{syncMailBadge()}catch(_){}const z=meta(m),a=actionFor(m),c=m.type==='selection'?selectionContext(m):null,staff=staffAction(m),programme=m.programmeAction&&a?m.programmeAction:null;let body=c?selectionBody(m,c):genericBody(m);body+=threadHTML(m);let actions='';
+function renderOne(){const reader=$('reader');if(!reader)return;const m=(s.emails||[]).find(x=>String(x.id)===String(openMail))||(s.emails||[]).at?.(-1);if(!m){reader.innerHTML='<div class="amv2-reader-empty"><strong>Select a message</strong><span>Choose a message from the inbox.</span></div>';return}openMail=m.id;if(m.unread)m.unread=false;if(m.type==='systems'){try{appointmentTask('systems')}catch(_){saveSafe()}}else saveSafe();try{syncMailBadge()}catch(_){}const z=meta(m),a=actionFor(m),c=m.type==='selection'?selectionContext(m):null,programmeContract=programmeContractAction(m),staff=programmeContract?null:staffAction(m),programme=m.programmeAction&&a?m.programmeAction:null;let body=c?selectionBody(m,c):genericBody(m);body+=threadHTML(m);let actions='';
  if(c){actions=`<button class="btn primary" type="button" data-open-selection>${c.done?'VIEW SELECTION':'OPEN SELECTION'}</button>${!c.done?'<button class="btn ghost" type="button" data-decline-selection>DO NOT ENTER</button>':''}`}
+ else if(programmeContract){actions='<button class="btn primary" type="button" data-open-athlete-contracts>OPEN CONTRACTS</button>'}
  else if(staff){actions=`<button class="btn ghost" type="button" data-staff-expire>LET CONTRACT EXPIRE</button><button class="btn secondary" type="button" data-open-staff>OPEN STAFF</button><button class="btn primary" type="button" data-staff-renew>RENEW CONTRACT</button>`}
  else if(programme){actions=`<button class="btn primary" type="button" data-open-programme>OPEN ${String(programme.tab||'finance').toUpperCase()}</button>`}
- else if(m.type==='contract'&&typeof appointmentPending==='function'&&appointmentPending()){body=`<p>${esc(m.body||'')}</p>${typeof contractHTML==='function'?contractHTML():''}`}
+ else if(isAppointmentContractMail(m)){body=`<p>${esc(m.body||'')}</p>${typeof contractHTML==='function'?contractHTML():''}`}
  else if(!a&&z.resolutionState!=='awaiting_response'&&z.resolution!=='awaiting_response'){actions='<button class="btn ghost" type="button" data-reader-archive>ARCHIVE</button>'}
  reader.innerHTML=`${header(m,a,z)}<div class="reader-body amv2-reader-body">${body}</div><div class="reader-actions amv2-sticky-actions">${actions}</div>`;bindCommon(reader,m);
  if(c){reader.querySelector('[data-open-selection]')?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();openSelection(c,false)});reader.querySelector('[data-decline-selection]')?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();openSelection(c,true)})}
+ if(programmeContract){reader.querySelector('[data-open-athlete-contracts]')?.addEventListener('click',()=>window.AMProgrammeEconomy?.openFinanceView?.('contracts'))}
  if(staff){reader.querySelector('[data-open-staff]').onclick=()=>view('staff');reader.querySelector('[data-staff-renew]').onclick=()=>confirmStaff(staff,'renew');reader.querySelector('[data-staff-expire]').onclick=()=>confirmStaff(staff,'release_at_expiry')}
  if(programme){reader.querySelector('[data-open-programme]')?.addEventListener('click',()=>window.AMProgrammeEconomy?.openFinanceView?.(programme.tab||'overview'))}
  const sign=reader.querySelector('#signContract,#signContractBtn');if(sign&&typeof signAppointmentContract==='function')sign.onclick=signAppointmentContract;

@@ -12,13 +12,13 @@ export async function run(w){
   const dialog=w.document.getElementById('selectionDecisionV3');
   assert.equal(dialog.querySelectorAll('[data-disc]').length,event.disc.filter(d=>d!=='ALL').length);
   dialog.querySelector('[data-coach-all]').click();
+  const eligibleByDisc=Object.fromEntries(event.disc.filter(d=>d!=='ALL').map(d=>[d,new Set(w.eligibleFor(event,d).map(a=>String(a.id)))]));
   assert.equal(w.__athleticsExplicitSelectionV3.validate().length,0);
   const review=dialog.querySelector('[data-review]');assert.ok(review&&!review.disabled,'review must be enabled');review.click();
   const submit=dialog.querySelector('[data-submit]');assert.ok(submit);submit.click();
   assert.ok(event.decision,'submission must persist official decision');
   const entries=JSON.stringify(event.entries);submit.click();assert.equal(JSON.stringify(event.entries),entries,'repeat submission changed entries');
-  const team=new Set(read('managedTeam().map(a=>a.id)'));
-  for(const ids of Object.values(event.entries))for(const id of ids)assert.ok(team.has(id),'pool or foreign athlete selected');
+  for(const [d,ids] of Object.entries(event.entries||{}))for(const id of ids)assert.ok(eligibleByDisc[d]?.has(String(id)),`ineligible athlete selected for ${d}: ${id}`);
   assert.ok(!w.__athleticsInboxDecisionCore.getUnresolvedActions().some(a=>a.entityId===event.id),'completed selection still actionable');
   selected.push(event.id);dialog.close();
  }

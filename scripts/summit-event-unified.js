@@ -2,7 +2,7 @@
 (function(){
 'use strict';
 if(window.__amSummitUnifiedV2)return;window.__amSummitUnifiedV2=1;window.__amSummitUnified=2;
-const $=id=>document.getElementById(id),all=()=>Object.keys(DISCIPLINES),saveNow=()=>{try{save()}catch(_){}};
+const $=id=>document.getElementById(id),all=()=>Object.keys(DISCIPLINES).filter(d=>DISCIPLINES[d]?.road!==true&&DISCIPLINES[d]?.family!=='road'),saveNow=()=>{try{save()}catch(_){}};
 const baseProxy=summitProxy,baseBuild=buildEventField,normalCommit=commitDisciplineResults,normalFinal=finaliseEvent;
 summitProxy=function(m){const p=baseProxy(m);p.__summit=m;p.kind='competition';p.level='Summit Series';p.ranked=false;p.completed=!!m.completed;p.disc=all();p.results=m.results;p.entries={};for(const d of all())p.entries[d]=summitEntriesForDisc(m,d).map(a=>a.id);return p};
 buildEventField=function(e,d){return e?.__summit?summitField(e.__summit,d):baseBuild(e,d)};

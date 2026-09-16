@@ -26,6 +26,12 @@ const fmt=(d,v)=>{try{return fmtPerf(d,v)}catch(_){return v==null?'—':String(v
 const clone=v=>{try{return structuredClone(v)}catch(_){return JSON.parse(JSON.stringify(v))}};
 const saveNow=()=>{try{save()}catch(_){}};
 const TRACK={L:200,R:560,Y:224,I:64,W:11};
+const TRACK_LAP_M=400;
+const TRACK_STRAIGHT_M=84.39;
+const TRACK_BEND_M=(TRACK_LAP_M-TRACK_STRAIGHT_M*2)/2;
+const TRACK_LANE_WIDTH_M=1.22;
+const TRACK_HALF_STAGGER_M=Math.PI*TRACK_LANE_WIDTH_M;
+const TRACK_FULL_STAGGER_M=Math.PI*2*TRACK_LANE_WIDTH_M;
 let live=null,frame=0;
 
 function hash(v){try{return hashString(String(v))>>>0}catch(_){let x=2166136261;for(const c of String(v)){x^=c.charCodeAt(0);x=Math.imul(x,16777619)}return x>>>0}}
@@ -121,9 +127,28 @@ function metres(plan,clock){if(clock<=0)return 0;if(clock>=plan.total)return pla
 function trackInit(e,d,r,done){let rr=rowsFor(r).slice(0,8),used=new Set(),lanes=e.eventDayLaneMap?.[d]||{};if(dist(d)<=800)rr.forEach((x,i)=>{let l=+x.lane||+lanes[x.id];if(l<1||l>8||used.has(l))l=[4,5,3,6,2,7,1,8].find(v=>!used.has(v))||i+1;used.add(l);x.lane=l});const key=`${e.id}|${d}|broadcast4`;return{kind:'track',e,d,r,rr,done,key,duration:duration(dist(d)),elapsed:0,intro:presentationTier(e)==='standard'?1.35:2.0,paused:false,speed:'broadcast',last:null,plans:new Map(rr.map(x=>[String(x.id),racePlan(x,d,key)])),comments:[],commentQueue:[],lastSpeechAt:0,leader:null,next:1,state:null,photo:null,settle:null,runout:null,finishPhoto:false,focusUntil:0,boardStamp:0,boardOrder:'',started:false,tier:presentationTier(e),camera:null,gunFlash:0,split:null,splitTTL:0,lastStage:'',lastLap:null,bellShown:false,lastBreakaway:false,lastGapCue:0,lastLeadCommentAt:0}}
 function trackState(c){const n=dist(c.d),p=Math.min(1,c.elapsed/c.duration),max=Math.max(1,...c.rr.map(x=>x.perf||1)),clock=p*max,inj=c.e.engine?.[c.d]?.aiRealism?.plans||{};let a=c.rr.map((x,i)=>{let m=x.status==='DNS'?0:metres(c.plans.get(String(x.id)),clock),st=x.status,ip=inj[x.id]||x.raw?.eventAI||{};if(st==='DNF'||ip.dnf){const lim=n*(num(ip.injuryProgress)??rnd(`${c.key}|${x.id}|dnf`,.5,.82));if(m>=lim){m=lim;st='DNF'}}return{r:x,m,status:st,finish:!st&&m>=n-.001,cosmetic:rnd(`${c.key}|lane|${x.id}`, -1.2,1.2)}});a.sort((x,y)=>x.finish&&y.finish?(x.r.perf||99999)-(y.r.perf||99999):x.finish!==y.finish?x.finish?-1:1:!!x.status!==!!y.status?x.status?1:-1:y.m-x.m||(x.r.perf||99999)-(y.r.perf||99999));a.forEach((x,i)=>x.pos=i+1);return{p,clock,a,lead:a.find(x=>!x.status)||a[0]}}
 function rad(l){return TRACK.I+(Math.max(1,Math.min(8,+l||1))-.5)*TRACK.W}
-function stadium(r,m){const straight=TRACK.R-TRACK.L,per=2*straight+2*Math.PI*r;let q=((m%400)+400)%400/400*per;if(q<straight)return{x:TRACK.R-q,y:TRACK.Y+r};q-=straight;if(q<Math.PI*r){const a=Math.PI/2+q/r;return{x:TRACK.L+Math.cos(a)*r,y:TRACK.Y+Math.sin(a)*r}}q-=Math.PI*r;if(q<straight)return{x:TRACK.L+q,y:TRACK.Y-r};q-=straight;const a=3*Math.PI/2+q/r;return{x:TRACK.R+Math.cos(a)*r,y:TRACK.Y+Math.sin(a)*r}}
+function straightTrack(d){return dist(d)<=110&&!isRelay(d)}
+function raceStartOffset(d){const n=dist(d);if(straightTrack(d))return 0;return((TRACK_LAP_M-(n%TRACK_LAP_M))%TRACK_LAP_M)}
+function laneStaggerMeters(d,lane){const n=dist(d),l=Math.max(1,Math.min(8,Number(lane)||1))-1;if(straightTrack(d)||l<=0)return 0;if(n===200||n===800)return TRACK_HALF_STAGGER_M*l;if(n===400)return TRACK_FULL_STAGGER_M*l;return 0}
+function stadium(r,m){
+ let q=((Number(m)||0)%TRACK_LAP_M+TRACK_LAP_M)%TRACK_LAP_M;
+ if(q<TRACK_BEND_M){const z=q/TRACK_BEND_M,a=Math.PI/2-Math.PI*z;return{x:TRACK.R+Math.cos(a)*r,y:TRACK.Y+Math.sin(a)*r}}
+ q-=TRACK_BEND_M;
+ if(q<TRACK_STRAIGHT_M){const z=q/TRACK_STRAIGHT_M;return{x:TRACK.R-(TRACK.R-TRACK.L)*z,y:TRACK.Y-r}}
+ q-=TRACK_STRAIGHT_M;
+ if(q<TRACK_BEND_M){const z=q/TRACK_BEND_M,a=-Math.PI/2-Math.PI*z;return{x:TRACK.L+Math.cos(a)*r,y:TRACK.Y+Math.sin(a)*r}}
+ q-=TRACK_BEND_M;
+ const z=Math.max(0,Math.min(1,q/TRACK_STRAIGHT_M));return{x:TRACK.L+(TRACK.R-TRACK.L)*z,y:TRACK.Y+r}
+}
 function distancePackRadius(x){const seed=hash(`pack|${x.r.id}`),base=rad(1)+2.5+(seed%5)*2.05,micro=Math.sin((x.m||0)/54+(seed%31))*1.15;return base+micro}
-function trackPos(d,x,i){const n=dist(d),p=Math.min(1,x.m/n),l=x.r.lane;if(n===100)return{x:TRACK.L+(TRACK.R-TRACK.L)*p,y:TRACK.Y+rad(l)+x.cosmetic};if(n===200)return stadium(rad(l),200+x.m+(l-1)*3.8*(1-p));if(n===400)return stadium(rad(l),x.m+(l-1)*7.4*(1-p));if(n===800){const z=Math.min(1,x.m/125),pack=distancePackRadius(x);return stadium(pack+(rad(l)-pack)*(1-z),x.m+(l-1)*3.7*(1-z))}return stadium(distancePackRadius(x),x.m)}
+function trackPos(d,x,i){
+ const n=dist(d),m=Math.max(0,Number(x.m)||0),p=Math.max(0,Math.min(1,m/Math.max(1,n))),l=x.r.lane,base=raceStartOffset(d);
+ if(straightTrack(d))return{x:TRACK.L+(TRACK.R-TRACK.L)*p,y:TRACK.Y+rad(l)+(x.cosmetic||0)};
+ if(n===200)return stadium(rad(l),base+m+laneStaggerMeters(d,l)*(1-p));
+ if(n===400)return stadium(rad(l),base+m+laneStaggerMeters(d,l)*(1-p));
+ if(n===800){const z=Math.min(1,m/TRACK_BEND_M),pack=distancePackRadius(x);return stadium(pack+(rad(l)-pack)*(1-z),base+m+laneStaggerMeters(d,l)*(1-z))}
+ return stadium(distancePackRadius(x),base+m)
+}
 function sprintPhase(c,state){const n=dist(c.d),p=state?.p||0;if(c.intro>0)return c.intro<.38?'SET':'START LIST';if(c.photo!=null)return'PHOTO';if(c.runout!=null||c.settle!=null)return'PROVISIONAL';if(isRelay(c.d)){const m=state?.lead?.m||0,z=relayExchangeAt(m);if(z)return`EXCHANGE ${z/100}`;const leg=relayLegIndex(m)+1;return leg===4?'ANCHOR LEG':`LEG ${leg}`}if(n===100)return p<.18?'DRIVE PHASE':p<.58?'ACCELERATION':p<.84?'TOP SPEED':'FINISH';if(n===200)return p<.46?'BEND':p<.61?'TRANSITION':'HOME STRAIGHT';if(n===400)return p<.23?'FIRST BEND':p<.5?'BACK STRAIGHT':p<.76?'FINAL BEND':'HOME STRAIGHT';if(n>=800){const laps=Math.max(2,Math.ceil(n/400)),lead=state?.lead?.m||0,remaining=Math.max(0,n-lead);if(remaining<=200)return'FINAL 200';if(remaining<=400)return'FINAL LAP';const left=Math.ceil(remaining/400);return left<=2?'2 LAPS TO GO':`LAP ${Math.min(laps,Math.floor(lead/400)+1)}/${laps}`}return'LIVE'}
 function fitCamera(points,pad=66,minW=400,minH=235){if(!points.length)return[20,18,720,419];let minX=Math.min(...points.map(p=>p.x))-pad,maxX=Math.max(...points.map(p=>p.x))+pad,minY=Math.min(...points.map(p=>p.y))-pad,maxY=Math.max(...points.map(p=>p.y))+pad,w=Math.max(minW,maxX-minX),h=Math.max(minH,maxY-minY);const ar=760/455;if(w/h<ar)w=h*ar;else h=w/ar;w=Math.min(720,w);h=Math.min(419,h);let x=(minX+maxX)/2-w/2,y=(minY+maxY)/2-h/2;x=Math.max(20,Math.min(740-w,x));y=Math.max(18,Math.min(437-h,y));return[x,y,w,h]}
 function distanceGroups(c,state){const active=(state?.a||[]).filter(x=>!x.status),n=dist(c.d),speed=(active[0]?.r?.perf&&n)?n/active[0].r.perf:6,gapM=n<=800?4.5:n<=1500?6.5:10,groups=[];for(const x of active){const prev=groups.at(-1)?.at(-1);if(!prev||prev.m-x.m<=gapM){if(groups.length)groups.at(-1).push(x);else groups.push([x])}else groups.push([x])}const lead=active[0],second=active[1],gapS=lead&&second?Math.max(0,(lead.m-second.m)/(speed||1)):0;return{active,groups,gapS,breakaway:gapS>=(n<=800?.65:n<=1500?1:1.8)}}
@@ -131,19 +156,31 @@ function distanceCameraTarget(c,state){const n=dist(c.d),g=distanceGroups(c,stat
 function cameraTarget(c,state){const n=dist(c.d),p=state?.p||0,lead=state?.lead?.m||0;if(isRelay(c.d))return[20,18,720,419];if(n===100){if(c.intro>0)return[135,270,505,125];const w=p<.18?485:p<.7?420:365,h=p<.18?125:118,x=Math.max(135,Math.min(250,TRACK.L+(TRACK.R-TRACK.L)*(lead/n)-w*.62));return[x,274,w,h]}if(n===200){if(p<.42)return[38,32,684,390];if(p<.68)return[74,126,620,300];return[118,240,548,178]}if(n===400){if(p<.55)return[28,22,704,411];if(p<.78)return[58,86,660,335];return[116,238,548,182]}if(n>=800)return distanceCameraTarget(c,state);return[0,0,760,455]}
 function cameraBox(c,state){const target=cameraTarget(c,state);if(!c.camera)c.camera=target.slice();const stage=sprintPhase(c,state),snap=stage!==c.lastStage?.22:.11;c.lastStage=stage;c.camera=c.camera.map((v,i)=>v+(target[i]-v)*snap);return c.camera.map(v=>Math.round(v))}
 function hurdleLike(d){return /hurd|\b\d{2,3}h\b|H$/i.test(`${d} ${label(d)}`)}
-function laneStart(d,lane){const n=dist(d),fake={r:{lane},m:0,cosmetic:0};if(n===100)return{x:TRACK.L,y:TRACK.Y+rad(lane)};return trackPos(d,fake,lane-1)}
+function laneStart(d,lane){const fake={r:{lane,id:`start-${d}-${lane}`},m:0,cosmetic:0};return trackPos(d,fake,lane-1)}
+function laneFrame(d,lane,m=0){
+ const n=dist(d),a={r:{lane,id:`frame-${d}-${lane}`},m:Math.max(0,m),cosmetic:0},b={...a,m:Math.min(n,Math.max(0,m)+1)};
+ const p=trackPos(d,a,lane-1),q=trackPos(d,b,lane-1),dx=q.x-p.x,dy=q.y-p.y,mag=Math.hypot(dx,dy)||1,tx=dx/mag,ty=dy/mag;
+ return{p,tx,ty,nx:-ty,ny:tx,angle:Math.atan2(ty,tx)*180/Math.PI}
+}
+function laneStartTick(d,lane){const f=laneFrame(d,lane,0),h=TRACK.W*.46;return`<line x1="${(f.p.x-f.nx*h).toFixed(1)}" y1="${(f.p.y-f.ny*h).toFixed(1)}" x2="${(f.p.x+f.nx*h).toFixed(1)}" y2="${(f.p.y+f.ny*h).toFixed(1)}" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>`}
+function massStartLine(d){
+ const offset=raceStartOffset(d),inner=stadium(TRACK.I+2,offset),outer=stadium(TRACK.I+8*TRACK.W-2,offset),shared=Math.abs(offset)<.001;
+ if(shared)return`<text x="${(outer.x+10).toFixed(1)}" y="${(outer.y-8).toFixed(1)}" fill="#f4c95d" font-size="9" font-weight="900">START / FINISH</text>`;
+ return`<line x1="${inner.x.toFixed(1)}" y1="${inner.y.toFixed(1)}" x2="${outer.x.toFixed(1)}" y2="${outer.y.toFixed(1)}" stroke="#fff" stroke-width="3" stroke-linecap="round"/><text x="${(outer.x+8).toFixed(1)}" y="${(outer.y-7).toFixed(1)}" fill="#f7eee6" font-size="9" font-weight="900">START</text>`
+}
+function startMarkings(c){const n=dist(c.d);if(straightTrack(c.d))return`<line x1="${TRACK.L}" y1="${TRACK.Y+TRACK.I}" x2="${TRACK.L}" y2="${TRACK.Y+TRACK.I+8*TRACK.W}" stroke="#fff" stroke-width="4"/>`;if(n===200||n===400||n===800)return Array.from({length:8},(_,i)=>laneStartTick(c.d,i+1)).join('');if(n>800)return massStartLine(c.d);return''}
 function trackEnvironment(c,state){const outer=TRACK.I+8*TRACK.W,straight=TRACK.R-TRACK.L,n=dist(c.d);let out=`<rect width="760" height="455" fill="#0d2a22"/><rect x="22" y="18" width="716" height="419" rx="26" fill="#173d30"/><rect x="${TRACK.L-outer}" y="${TRACK.Y-outer}" width="${straight+2*outer}" height="${2*outer}" rx="${outer}" fill="#8b4c52"/><rect x="${TRACK.L-TRACK.I}" y="${TRACK.Y-TRACK.I}" width="${straight+2*TRACK.I}" height="${2*TRACK.I}" rx="${TRACK.I}" fill="#2c684c"/>`;
  for(let i=0;i<=8;i++){const r=TRACK.I+i*TRACK.W;out+=`<rect x="${TRACK.L-r}" y="${TRACK.Y-r}" width="${straight+2*r}" height="${2*r}" rx="${r}" fill="none" stroke="#f7eee6" stroke-opacity="${(i===0||i===8)?0.7:0.32}" stroke-width="1.5"/>`}
- /* Finish and 100m straight start. */
- out+=`<line x1="${TRACK.R}" y1="${TRACK.Y+TRACK.I}" x2="${TRACK.R}" y2="${TRACK.Y+outer}" stroke="#fff" stroke-width="4"/><line x1="${TRACK.L}" y1="${TRACK.Y+TRACK.I}" x2="${TRACK.L}" y2="${TRACK.Y+outer}" stroke="#fff" stroke-opacity="${n===100?1:.24}" stroke-width="${n===100?4:2}"/>`;
- if(isRelay(c.d)){for(const z of [100,200,300])for(let l=1;l<=8;l++){const a=trackPos(c.d,{r:{lane:l},m:z-10,cosmetic:0},l-1),b=trackPos(c.d,{r:{lane:l},m:z+10,cosmetic:0},l-1);out+=`<path d="M${a.x.toFixed(1)} ${a.y.toFixed(1)} L${b.x.toFixed(1)} ${b.y.toFixed(1)}" stroke="#f4c95d" stroke-opacity=".34" stroke-width="5" stroke-linecap="round"/>`}}
- for(let l=1;l<=8;l++){const y=TRACK.Y+rad(l);out+=`<text x="${TRACK.L-12}" y="${y+3}" text-anchor="end" class="lv4-lane-number">${l}</text>`}
- if(n<=400){for(let l=1;l<=8;l++){const p=laneStart(c.d,l);out+=`<g class="lv4-block" transform="translate(${p.x} ${p.y})"><rect x="-7" y="-4" width="6" height="3" rx="1"/><rect x="1" y="-4" width="6" height="3" rx="1"/></g>`}}
- if(hurdleLike(c.d)){const count=10;for(let h=1;h<=count;h++)for(let l=1;l<=8;l++){const m=n*(.12+h*.072),p=trackPos(c.d,{r:{lane:l},m,cosmetic:0},l-1);out+=`<rect class="lv4-hurdle" x="${p.x-4}" y="${p.y-1}" width="8" height="2" rx="1"/>`}}
+ /* Every oval discipline now approaches the same finish line along the home straight. Event-specific starts are painted separately. */
+ out+=`<line x1="${TRACK.R}" y1="${TRACK.Y+TRACK.I}" x2="${TRACK.R}" y2="${TRACK.Y+outer}" stroke="#fff" stroke-width="4"/>${startMarkings(c)}`;
+ if(isRelay(c.d)){for(const z of [100,200,300])for(let l=1;l<=8;l++){const a=trackPos(c.d,{r:{lane:l,id:`relay-zone-${l}`},m:z-10,cosmetic:0},l-1),b=trackPos(c.d,{r:{lane:l,id:`relay-zone-${l}`},m:z+10,cosmetic:0},l-1);out+=`<path d="M${a.x.toFixed(1)} ${a.y.toFixed(1)} L${b.x.toFixed(1)} ${b.y.toFixed(1)}" stroke="#f4c95d" stroke-opacity=".34" stroke-width="5" stroke-linecap="round"/>`}}
+ if(straightTrack(c.d)){for(let l=1;l<=8;l++){const y=TRACK.Y+rad(l);out+=`<text x="${TRACK.L-12}" y="${y+3}" text-anchor="end" class="lv4-lane-number">${l}</text>`}}
+ if(n<=400){for(let l=1;l<=8;l++){const f=laneFrame(c.d,l,0);out+=`<g class="lv4-block" transform="translate(${f.p.x.toFixed(1)} ${f.p.y.toFixed(1)}) rotate(${f.angle.toFixed(1)})"><rect x="-7" y="-4" width="6" height="3" rx="1"/><rect x="1" y="-4" width="6" height="3" rx="1"/></g>`}}
+ if(hurdleLike(c.d)){const count=10;for(let h=1;h<=count;h++)for(let l=1;l<=8;l++){const m=n*(.12+h*.072),f=laneFrame(c.d,l,m),w=4.5;out+=`<line class="lv4-hurdle" x1="${(f.p.x-f.nx*w).toFixed(1)}" y1="${(f.p.y-f.ny*w).toFixed(1)}" x2="${(f.p.x+f.nx*w).toFixed(1)}" y2="${(f.p.y+f.ny*w).toFixed(1)}"/>`}}
  out+=`<g class="lv4-official"><circle cx="${TRACK.R+30}" cy="${TRACK.Y+outer-8}" r="5"/><rect x="${TRACK.R+27}" y="${TRACK.Y+outer-3}" width="6" height="10" rx="2"/></g>`;
  out+=`<g class="lv4-stadium-detail"><rect x="305" y="193" width="150" height="60" rx="6"/><text x="380" y="219" text-anchor="middle">ATHLETICS MANAGER</text><text x="380" y="238" text-anchor="middle">${E(c.e.name||'LIVE MEETING')}</text></g>`;
  return out}
-function postFinishPos(d,x,i,extra){const n=dist(d),a=trackPos(d,{...x,m:Math.max(0,n-.9)},i),b=trackPos(d,{...x,m:Math.max(0,n-.03)},i),dx=b.x-a.x,dy=b.y-a.y,mag=Math.hypot(dx,dy)||1;return{x:b.x+dx/mag*extra,y:b.y+dy/mag*extra}}
+function postFinishPos(d,x,i,extra){const n=dist(d);if(straightTrack(d)){const a=trackPos(d,{...x,m:Math.max(0,n-.9)},i),b=trackPos(d,{...x,m:Math.max(0,n-.03)},i),dx=b.x-a.x,dy=b.y-a.y,mag=Math.hypot(dx,dy)||1;return{x:b.x+dx/mag*extra,y:b.y+dy/mag*extra}}return trackPos(d,{...x,m:n+Math.max(1,extra*.3)},i)}
 function marker(c,x,i,state){
  let p=trackPos(c.d,x,i);if(c.runout!=null&&x.finish&&!x.status)p=postFinishPos(c.d,x,i,8+Math.min(1,c.runout/.8)*30);
  const ours=x.r.nation===myNation(),leader=x.pos===1&&!x.status,n=dist(c.d),relay=isRelay(c.d),runner=relay?relayRunnerAt(x.r,x.m):null,displayName=runner?.name||x.r.name,showLabel=c.intro>0||ours||leader||x.pos<=3||state?.p<.08;
@@ -157,6 +194,11 @@ function trackSvg(c,state){state??=trackState(c);const box=cameraBox(c,state),n=
 function trackBoardRows(c,state){const leader=state.a.find(x=>!x.status),n=dist(c.d),leadSpeed=leader?.r?.perf?n/leader.r.perf:0,relay=isRelay(c.d);return state.a.map(x=>{let value;if(x.status)value=x.status;else if(x.finish)value=fmt(c.d,x.r.perf);else if(leader&&x!==leader){const gap=Math.max(0,leader.m-x.m),gapS=leadSpeed?gap/leadSpeed:0;value=gapS<.005?'+0.00':`+${gapS.toFixed(2)}`}else value='LEAD';const active=relay?relayRunnerAt(x.r,x.m):null,boardR=active?{...x.r,name:active.name}:x.r,sub=relay?(x.status==='DNS'&&x.r.raw?.withdrawalReason?`${nation(x.r.nation)} · ${x.r.raw.withdrawalReason}`:`${nation(x.r.nation)} · ${relayLegLabel(x.m)}${x.r.lane?` · Lane ${x.r.lane}`:''}`):`${nation(x.r.nation)}${x.r.lane?` · Lane ${x.r.lane}`:''}`;return{id:x.r.id,pos:x.status?'—':x.pos,r:boardR,value,sub,leader:x.pos===1&&!x.status,ours:x.r.nation===myNation()}})}
 function photoFinish(c){const a=c.rr.filter(x=>!x.status).sort((x,y)=>(x.perf||999)-(y.perf||999));if(a.length<2)return false;const gap=Math.abs((a[1].perf||0)-(a[0].perf||0));return dist(c.d)<=400?gap<=.025:gap<=.12}
 function trackSpeed(c,now){if(c.speed!=='broadcast')return Number(c.speed)||1;if(now<c.focusUntil)return 1;const n=dist(c.d),p=c.state?.p||0;if(n<=400)return 1;const remaining=Math.max(0,n-(c.state?.lead?.m||0)),g=distanceGroups(c,c.state);if(p<.1||remaining<=420||g.breakaway)return 1;if(n<=800)return 1.28;if(n<=1500)return remaining<=800?1.2:1.65;if(remaining<=1200)return 1.25;return 2.15}
+function geometrySnapshot(d,lane=1){
+ const n=dist(d),l=Math.max(1,Math.min(8,Number(lane)||1)),seed={r:{lane:l,id:`geometry-${d}-${l}`},cosmetic:0};
+ const at=m=>trackPos(d,{...seed,m},l-1),start=at(0),preFinish=at(Math.max(0,n-10)),finish=at(n),afterFinish=straightTrack(d)?null:at(n+10);
+ return{distance:n,lane:l,straight:straightTrack(d),startOffset:raceStartOffset(d),stagger:laneStaggerMeters(d,l),start,preFinish,finish,afterFinish,finishLineX:TRACK.R}
+}
 
 /* ---------- Field model ---------- */
 function attemptSeq(d,r){let rr=rowsFor(r),out=[];if(isHeight(d)){const hs=[...new Set(rr.flatMap(x=>(x.raw.hjAttempts||[]).map(y=>+y.height)))].sort((a,b)=>a-b);for(const H of hs)for(const x of rr){const q=(x.raw.hjAttempts||[]).find(y=>+y.height===H);if(!q)continue;if(q.marks?.[0]==='-'){out.push({r:x,H,o:'-',a:0});continue}for(let i=0;i<(q.marks||[]).length;i++){const o=q.marks[i];if(!['O','X'].includes(o))continue;out.push({r:x,H,o,a:i+1});if(o==='O')break}}}else{const mx=Math.max(1,...rr.map(x=>(x.raw.throwAttempts||x.raw.jumpAttempts||[]).length));for(let a=1;a<=mx;a++)for(const x of rr){const ar=x.raw.throwAttempts||x.raw.jumpAttempts;if(ar?.length>=a){const m=ar[a-1];out.push({r:x,a,m:Number.isFinite(m)?m:null,f:!Number.isFinite(m)})}else if(mx===1&&x.perf!=null)out.push({r:x,a:1,m:x.perf,f:false})}}return{rr,out}}
@@ -397,7 +439,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&live&&!liv
 window.addEventListener('orientationchange',()=>{if(live)setTimeout(()=>render(live,true),120)});
 window.addEventListener('resize',()=>{if(live)render(live,true)},{passive:true});
 
-const api={version:'4.6.0',commentaryVersion:'1.0',commentator:'Gavin Potts',get active(){return live},get previous(){return previous},qa(){return qaSnapshot(live)},diagnostics(){const root=$('liveEventVisual'),qa=qaSnapshot(live);return{loaded:true,renderer:'Broadcast V4.6 Optimised',disc:typeof activeEventDisc!=='undefined'?activeEventDisc:null,active:!!live,mode:live?.speed||null,phase:live?eventPhase(live):null,targetFps:presentationHz(),paintCount:live?.paintCount||0,lastPaintMs:live?.lastPaintMs||0,qa,legacyOvalPresent:!!root?.querySelector('ellipse'),attributeRaceShape:true}}};
+const api={version:'4.6.0',trackGeometryVersion:'2026.09',geometry:geometrySnapshot,commentaryVersion:'1.0',commentator:'Gavin Potts',get active(){return live},get previous(){return previous},qa(){return qaSnapshot(live)},diagnostics(){const root=$('liveEventVisual'),qa=qaSnapshot(live);return{loaded:true,renderer:'Broadcast V4.6 Optimised',disc:typeof activeEventDisc!=='undefined'?activeEventDisc:null,active:!!live,mode:live?.speed||null,phase:live?eventPhase(live):null,targetFps:presentationHz(),paintCount:live?.paintCount||0,lastPaintMs:live?.lastPaintMs||0,qa,legacyOvalPresent:!!root?.querySelector('ellipse'),attributeRaceShape:true}}};
 window.AMLiveBroadcastV4=api;
 /* Keep the historic public handle alive so existing Shot Put and diagnostics integrations continue to resolve the authoritative active event. */
 window.AMLiveEventV3=api;
