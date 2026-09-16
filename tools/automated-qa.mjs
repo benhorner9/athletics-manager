@@ -70,6 +70,7 @@ await run('Marathon & Road Racing regression',['tools/marathon-road-regression.m
 await run('Marathon & Road Racing WebKit regression',['tools/marathon-road-browser-regression.mjs'],{timeout:180000});
 await run('Marathon athlete-first motion WebKit regression',['tools/marathon-road-motion-browser-regression.mjs'],{timeout:180000});
 await run('Marathon playback integrity WebKit regression',['tools/marathon-playback-integrity-browser-regression.mjs'],{timeout:180000});
+await run('Natural marathon playback WebKit regression',['tools/marathon-natural-playback-browser-regression.mjs'],{timeout:180000});
 await run('Season event integrity WebKit regression',['tools/season-event-integrity-browser-regression.mjs'],{timeout:120000});
 await run('Scouting persistence regression',['tools/scouting-persistence-regression.mjs']);
 await run('Scouting discovery runtime regression',['tools/scouting-discovery-runtime-regression.mjs'],{timeout:180000});
