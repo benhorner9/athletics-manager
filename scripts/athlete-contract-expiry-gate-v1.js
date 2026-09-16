@@ -94,7 +94,7 @@ function decorateFinance(){
   row.classList.toggle('am-contract-expiry-urgent',c.expiryDecision!=='allow');
   const info=row.firstElementChild,small=info?.querySelector('small');let note=row.querySelector('.am-contract-expiry-note');
   if(small&&!note){note=document.createElement('span');note.className='am-contract-expiry-note';small.insertAdjacentElement('afterend',note)}
-  if(note)note.textContent=c.expiryDecision==='allow'?'EXPIRY CONFIRMED':'DECISION REQUIRED';
+  const noteLabel=c.expiryDecision==='allow'?'EXPIRY CONFIRMED':'DECISION REQUIRED';if(note&&note.textContent!==noteLabel)note.textContent=noteLabel;
   let actions=row.querySelector('.am-contract-expiry-actions');
   if(!actions){actions=document.createElement('div');actions.className='am-contract-expiry-actions';renew.replaceWith(actions);actions.appendChild(renew)}
   let expiry=actions.querySelector('[data-am-contract-expire]');
@@ -109,7 +109,9 @@ function styles(){
  @media(max-width:760px){.am-contract-expiry-actions{display:grid;grid-template-columns:1fr}.am-contract-expiry-actions .btn{width:100%}}
  `;document.head.appendChild(style)
 }
-function queueDecorate(){if(decorateQueued)return;decorateQueued=true;queueMicrotask(()=>{decorateQueued=false;decorateFinance()})}
+/* Finance is observed for re-renders. Keep decoration frame-bounded and idempotent so
+   our own DOM writes cannot schedule an unbounded MutationObserver microtask loop. */
+function queueDecorate(){if(decorateQueued)return;decorateQueued=true;requestAnimationFrame(()=>{decorateQueued=false;decorateFinance()})}
 function observeFinance(){const root=$('finance');if(!root||financeObserver)return;financeObserver=new MutationObserver(queueDecorate);financeObserver.observe(root,{childList:true,subtree:true})}
 document.addEventListener('click',event=>{const b=event.target.closest?.('[data-am-contract-expire]');if(!b||b.disabled)return;event.preventDefault();event.stopPropagation();allowExpiry(b.dataset.amContractExpire)},true);
 
