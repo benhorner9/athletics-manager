@@ -37,18 +37,28 @@ function onKeyDown(event){
  button.click();
 }
 
+function loadMarathonRoadBroadcastV2(){
+ if(typeof document==='undefined')return;
+ if(!document.querySelector('link[data-am-marathon-road-broadcast-v2-style]')){
+  const style=document.createElement('link');style.rel='stylesheet';style.href='styles/marathon-road-broadcast-v2.css?v=20260916-marathon4';style.dataset.amMarathonRoadBroadcastV2Style='1';document.head.appendChild(style);
+ }
+ if(window.__amMarathonRoadBroadcastV2||document.querySelector('script[data-am-marathon-road-broadcast-v2]'))return;
+ const script=document.createElement('script');script.src='scripts/marathon-road-broadcast-v2.js?v=20260916-marathon4';script.dataset.amMarathonRoadBroadcastV2='1';script.onerror=()=>console.warn('Marathon road broadcast V2 failed to load');document.body.appendChild(script);
+}
 function loadMarathonRoadRouter(){
- if(typeof document==='undefined'||window.__amMarathonRoadRouterV1||document.querySelector('script[data-am-marathon-road-router]'))return;
- const script=document.createElement('script');script.src='scripts/marathon-road-router-v1.js?v=20260915-marathon3';script.dataset.amMarathonRoadRouter='1';script.onerror=()=>console.warn('Marathon road router failed to load');document.body.appendChild(script);
+ if(typeof document==='undefined')return;
+ if(window.__amMarathonRoadRouterV1){loadMarathonRoadBroadcastV2();return}
+ if(document.querySelector('script[data-am-marathon-road-router]'))return;
+ const script=document.createElement('script');script.src='scripts/marathon-road-router-v1.js?v=20260916-marathon4';script.dataset.amMarathonRoadRouter='1';script.onerror=()=>console.warn('Marathon road router failed to load');script.onload=()=>loadMarathonRoadBroadcastV2();document.body.appendChild(script);
 }
 function loadMarathonRoad(){
  if(typeof document==='undefined')return;
  if(!document.querySelector('link[data-am-marathon-road-style]')){
-  const style=document.createElement('link');style.rel='stylesheet';style.href='styles/marathon-road-v1.css?v=20260915-marathon3';style.dataset.amMarathonRoadStyle='1';document.head.appendChild(style);
+  const style=document.createElement('link');style.rel='stylesheet';style.href='styles/marathon-road-v1.css?v=20260916-marathon4';style.dataset.amMarathonRoadStyle='1';document.head.appendChild(style);
  }
  if(window.__amMarathonRoadV1){loadMarathonRoadRouter();return}
  if(document.querySelector('script[data-am-marathon-road]'))return;
- const script=document.createElement('script');script.src='scripts/marathon-road-v1.js?v=20260915-marathon3';script.dataset.amMarathonRoad='1';script.onerror=()=>console.warn('Marathon & Road Racing failed to load');script.onload=()=>loadMarathonRoadRouter();document.body.appendChild(script);
+ const script=document.createElement('script');script.src='scripts/marathon-road-v1.js?v=20260916-marathon4';script.dataset.amMarathonRoad='1';script.onerror=()=>console.warn('Marathon & Road Racing failed to load');script.onload=()=>loadMarathonRoadRouter();document.body.appendChild(script);
 }
 function loadContractDecisionRouting(){
  if(typeof document==='undefined'||window.__amContractDecisionRoutingV1||document.querySelector('script[data-am-contract-decision-routing]'))return;
