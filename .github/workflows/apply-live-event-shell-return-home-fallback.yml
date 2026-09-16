@@ -1,0 +1,79 @@
+name: Apply Live Event Return Home Fallback
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/apply-live-event-shell-return-home-fallback.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev
+      - name: Add shell-level result exit fallback
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/live-event-shell-v5.js')
+          s=p.read_text(encoding='utf-8')
+
+          old="""function clickSource(source){if(!source||source.disabled)return;source.click()}
+function playbackSource(value){return document.querySelector(`#liveEventVisual [data-speed="${value}"]`)}"""
+          new="""function resultExitContext(){
+ const c=liveState(),e=c?.e||context.event,d=c?.d||context.disc||activeDisc();
+ return !c&&e&&d&&Array.isArray(e?.results?.[d])?{e,d}:null
+}
+function clickSource(source){if(!source||source.disabled)return;source.click()}
+function returnHomeFromResult(){
+ const hit=resultExitContext();if(!hit)return false;
+ try{const api=window.__athleticsCompetitionJourneyV2;if(api?.returnHomeFromEvent)return api.returnHomeFromEvent(hit.e)}catch(_){}
+ try{if(typeof returnHomeFromCompletedEvent==='function')return returnHomeFromCompletedEvent(hit.e)}catch(_){}
+ try{view('home');return true}catch(_){return false}
+}
+function playbackSource(value){return document.querySelector(`#liveEventVisual [data-speed="${value}"]`)}"""
+          if old not in s: raise SystemExit('V5 clickSource target missing')
+          s=s.replace(old,new,1)
+
+          old="""function syncHeaderAction(){
+ const proxy=document.querySelector('[data-lv5-action]'),src=sourceAction();if(!proxy)return;
+ if(!src){proxy.hidden=true;return}
+ proxy.hidden=false;proxy.disabled=!!src.disabled;
+ const text=String(src.textContent||'CONTINUE').trim();
+ proxy.innerHTML=`<span>${esc(text)}</span><b aria-hidden="true">→</b>`
+}"""
+          new="""function syncHeaderAction(){
+ const proxy=document.querySelector('[data-lv5-action]'),src=sourceAction(),resultExit=resultExitContext();if(!proxy)return;
+ if(resultExit&&(!src||src.disabled)){
+  proxy.hidden=false;proxy.disabled=false;proxy.dataset.lv5ResultExit='1';
+  proxy.innerHTML=`<span>RETURN HOME</span><b aria-hidden="true">→</b>`;return
+ }
+ delete proxy.dataset.lv5ResultExit;
+ if(!src){proxy.hidden=true;return}
+ proxy.hidden=false;proxy.disabled=!!src.disabled;
+ const text=String(src.textContent||'CONTINUE').trim();
+ proxy.innerHTML=`<span>${esc(text)}</span><b aria-hidden="true">→</b>`
+}"""
+          if old not in s: raise SystemExit('V5 syncHeaderAction target missing')
+          s=s.replace(old,new,1)
+
+          old=""" root.querySelector('[data-lv5-action]')?.addEventListener('click',()=>clickSource(sourceAction()));"""
+          new=""" root.querySelector('[data-lv5-action]')?.addEventListener('click',event=>{const button=event.currentTarget;if(button?.dataset?.lv5ResultExit==='1')returnHomeFromResult();else clickSource(sourceAction())});"""
+          if old not in s: raise SystemExit('V5 action wire target missing')
+          s=s.replace(old,new,1)
+
+          p.write_text(s,encoding='utf-8')
+          PY
+          node --check scripts/live-event-shell-v5.js
+      - name: Commit shell fallback
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/live-event-shell-v5.js
+          git commit -m "fix: guarantee return home after live event results"
+          git push origin HEAD:dev
