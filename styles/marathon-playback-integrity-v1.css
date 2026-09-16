@@ -1,0 +1,12 @@
+/* Athletics Manager — Marathon Playback Integrity V1
+   The road and scenery stay fixed. Athlete dots provide the motion. */
+.road-broadcast-v3 .road-v3-road-mark,
+.road-broadcast-v3 .road-v3-scroll-far,
+.road-broadcast-v3 .road-v3-scroll-near{
+ animation:none!important;
+ transform:none!important;
+ will-change:auto!important;
+}
+.road-playback-integrity-v1 .matchday-live-row small{color:#b8ccd6}
+.road-playback-integrity-v1 .matchday-start:disabled,
+.road-playback-integrity-v1 #startDiscipline:disabled{opacity:.72}
