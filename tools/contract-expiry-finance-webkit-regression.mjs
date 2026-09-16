@@ -27,7 +27,21 @@ try{
  const pageErrors=[];
  page.on('pageerror',err=>pageErrors.push(String(err?.stack||err)));
  await page.goto(`http://127.0.0.1:${port}/game.html`,{waitUntil:'load',timeout:30000});
- await page.waitForFunction(()=>window.__athleticsInboxProduction&&window.__athleticsInboxDecisionCore&&window.AMProgrammeEconomy&&window.AMAthleteContractExpiryGate,{timeout:20000});
+
+ // A no-save browser deliberately lands on the main menu with `s === null`. Some late
+ // UI layers finish attaching immediately after load, so poll for the actual APIs rather
+ // than asking the page to render a career before the fixture installs one.
+ let ready=false;
+ for(let i=0;i<100&&!ready;i++){
+  ready=await page.evaluate(()=>{
+   try{return !!(window.__athleticsInboxProduction&&window.__athleticsInboxDecisionCore&&window.AMProgrammeEconomy&&window.AMAthleteContractExpiryGate&&window.eval(`typeof fresh==='function'&&typeof ensureState==='function'&&typeof view==='function'&&typeof drawInbox==='function'`))}catch(_){return false}
+  });
+  if(!ready)await page.waitForTimeout(50);
+ }
+ assert.equal(ready,true,'Athletics Manager contract/inbox runtime did not finish loading');
+ // Startup/main-menu noise is outside this regression. From here on, every page error
+ // belongs to the seeded urgent-contract journey and must fail the test.
+ pageErrors.length=0;
 
  const seeded=await page.evaluate(()=>{
   try{return window.eval(`
@@ -63,7 +77,7 @@ try{
  assert.equal(opened.ok,true,`Urgent contract email could not be opened: ${opened.reason||'unknown'}`);
  await page.waitForFunction(subject=>document.querySelector('#reader h2')?.textContent?.includes('Contract decision')||document.querySelector('#reader h2')?.textContent?.includes(subject),info.subject,{timeout:5000});
 
- const routeButton=page.locator('#reader [data-open-athlete-contracts],#reader [data-action-destination="finance"],#reader .reader-actions button').filter({hasText:/OPEN CONTRACTS|REVIEW CONTRACT|CONTRACT/i}).first();
+ const routeButton=page.locator('#reader [data-open-programme],#reader [data-open-athlete-contracts],#reader [data-action-destination="finance"],#reader .reader-actions button').filter({hasText:/OPEN CONTRACTS|REVIEW CONTRACT|CONTRACT/i}).first();
  assert.ok(await routeButton.count(),'Urgent contract email did not expose a contract review action');
  await routeButton.click();
  await page.waitForFunction(()=>document.getElementById('finance')?.classList.contains('on'),{timeout:5000});
