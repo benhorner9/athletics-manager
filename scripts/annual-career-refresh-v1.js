@@ -132,10 +132,21 @@ function loadCareerIdentityPerformanceGuard(){
  script.onerror=()=>console.warn('Career Identity performance guard failed to load');
  document.body.appendChild(script);
 }
+function loadDevStatusStaleGuard(){
+ if(typeof document==='undefined')return;
+ const isDev=/^dev\./i.test(location.hostname)||/(^|\/)dev(\/|$)/i.test(location.pathname);
+ if(!isDev||window.__amDevBuildStatusStaleV1||document.querySelector('script[data-am-dev-status-stale]'))return;
+ const script=document.createElement('script');
+ script.src='scripts/dev/dev-build-status-stale-v1.js?v=20260916-phase1-status1';
+ script.dataset.amDevStatusStale='1';
+ script.onerror=()=>console.warn('Dev pipeline stale-status guard failed to load');
+ document.body.appendChild(script);
+}
 
 window.AMAnnualCareerRefresh={version:VERSION,run,state,cleanupDecisionSystem};
 install();
 loadCommercialNegotiationBridge();
 loadCommercialMediaPlanning();
 loadCareerIdentityPerformanceGuard();
+loadDevStatusStaleGuard();
 })();
