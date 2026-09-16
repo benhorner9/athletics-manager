@@ -85,8 +85,8 @@ assert.match(director,/weatherFor\(/,'road broadcast must expose lightweight wea
 assert.match(director,/drinkStation\(/,'road modules must support drink stations');
 
 assert.match(loader,/function loadMarathonRoadBroadcastV3\(\)/,'late loader must install Broadcast V3');
-assert.match(loader,/marathon-road-broadcast-v3\.css\?v=20260916-marathon5/,'Broadcast V3 stylesheet must be cache-busted');
-assert.match(loader,/marathon-road-broadcast-v3\.js\?v=20260916-marathon5/,'Broadcast V3 runtime must be cache-busted');
+assert.match(loader,/marathon-road-broadcast-v3\.css\?v=20260916-marathon7/,'Broadcast V3 stylesheet must be cache-busted');
+assert.match(loader,/marathon-road-broadcast-v3\.js\?v=20260916-marathon7/,'Broadcast V3 runtime must be cache-busted');
 assert.match(loader,/script\.onload=\(\)=>loadMarathonRoadBroadcastV3\(\)/,'V3 must install immediately after Broadcast V2');
 assert.match(loader,/if\(window\.__amMarathonRoadBroadcastV2\)\{loadMarathonRoadBroadcastV3\(\);return\}/,'V3 must install even when V2 is already resident');
 assert.match(loader,/function loadLateRuntime\(\)\{loadMarathonRoad\(\);loadContractDecisionRouting\(\);loadSeasonEventIntegrity\(\)\}/,'late runtime loader must retain Marathon and recovery guards');
