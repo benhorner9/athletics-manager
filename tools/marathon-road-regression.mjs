@@ -87,10 +87,12 @@ assert.match(director,/drinkStation\(/,'road modules must support drink stations
 
 assert.match(integrity,/window\.__amMarathonPlaybackIntegrityV2/,'Playback Integrity V2 guard must exist');
 assert.match(integrity,/blocked premature marathon result commit/,'playback authority must block legacy premature result commits');
+assert.match(integrity,/authorizedCommitDepth\+\+/,'nested road commit wrappers must preserve skip-to-finish authorization');
+assert.match(integrity,/authorizedCommitDepth===0\)authorizedCommitKey=null/,'road commit authorization must clear only after the full nested commit chain');
 assert.match(integrity,/stopImmediatePropagation\(\)/,'playback authority must intercept legacy marathon start controls');
 assert.match(integrity,/forceCurrentStage\(c\)/,'playback authority must restore the active V3 highlight if another renderer replaces it');
 assert.match(loader,/function loadMarathonPlaybackIntegrityV2\(next\)/,'late loader must install Playback Integrity V2');
-assert.match(loader,/marathon-playback-integrity-v2\.js\?v=20260916-marathon9/,'Playback Integrity V2 runtime must be cache-busted');
+assert.match(loader,/marathon-playback-integrity-v2\.js\?v=20260916-marathon10/,'Playback Integrity V2 runtime must be cache-busted');
 assert.match(loader,/function loadMarathonRoadBroadcastV3\(\)/,'late loader must install Broadcast V3');
 assert.match(loader,/marathon-road-broadcast-v3\.css\?v=20260916-marathon9/,'Broadcast V3 stylesheet must be cache-busted');
 assert.match(loader,/marathon-road-broadcast-v3\.js\?v=20260916-marathon9/,'Broadcast V3 runtime must be cache-busted');
