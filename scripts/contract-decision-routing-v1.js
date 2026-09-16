@@ -62,15 +62,24 @@ function renderContract(m){
 function install(){
  const api=window.__athleticsInboxSingleRender;
  if(!api?.render)return false;
- const activeReader=(()=>{try{return typeof drawReader==='function'?drawReader:null}catch(_){return null}})()||api.render;
- if(activeReader?.__amContractDecisionRoutingV1){window.AMContractDecisionRouting??={version:1,isAthleteContractDecision,athleteFor,render:renderContract,openContracts:activateFinanceContracts};return true}
- const base=activeReader.bind(window);
- const wrapped=function(){const m=currentMail();if(isAthleteContractDecision(m))return renderContract(m);return base()};
- Object.defineProperty(wrapped,'__amContractDecisionRoutingV1',{value:true});
- api.render=wrapped;
- try{drawReader=wrapped}catch(_){}
- window.drawReader=wrapped;
- window.AMContractDecisionRouting={version:1,isAthleteContractDecision,athleteFor,render:renderContract,openContracts:activateFinanceContracts};
+ const currentGlobal=(()=>{try{return typeof drawReader==='function'?drawReader:null}catch(_){return null}})();
+ if(api.render?.__amContractDecisionRoutingApiV1&&currentGlobal?.__amContractDecisionRoutingV1){
+  window.AMContractDecisionRouting??={version:1,isAthleteContractDecision,athleteFor,render:renderContract,openContracts:activateFinanceContracts};return true
+ }
+ /* Keep two independent bases. The API base must always be the original Single-Pass
+    Reader. The global base may include presentation wrappers such as character voices.
+    Never make the API wrapper fall through to the global reader: Production Inbox's
+    canonical reader calls api.render(), which would otherwise recurse indefinitely. */
+ const baseApi=api.render.bind(api);
+ const baseGlobal=(currentGlobal||api.render).bind(window);
+ const apiWrapped=function(){const m=currentMail();if(isAthleteContractDecision(m))return renderContract(m);return baseApi()};
+ const globalWrapped=function(){const m=currentMail();if(isAthleteContractDecision(m))return renderContract(m);return baseGlobal()};
+ Object.defineProperty(apiWrapped,'__amContractDecisionRoutingApiV1',{value:true});
+ Object.defineProperty(globalWrapped,'__amContractDecisionRoutingV1',{value:true});
+ api.render=apiWrapped;
+ try{drawReader=globalWrapped}catch(_){}
+ window.drawReader=globalWrapped;
+ window.AMContractDecisionRouting={version:1,isAthleteContractDecision,athleteFor,render:renderContract,openContracts:activateFinanceContracts,debug:()=>({apiGuard:!!api.render?.__amContractDecisionRoutingApiV1,globalGuard:!!window.drawReader?.__amContractDecisionRoutingV1})};
  return true
 }
 if(!install())window.addEventListener('load',install,{once:true});
