@@ -52,6 +52,27 @@ try{
  assert.ok(!String(seeded).startsWith('ERROR:'),seeded);
  const info=JSON.parse(seeded);
 
+ const generic=await page.evaluate(()=>{
+  try{
+   const id='qa-generic-welcome';
+   const subject='Welcome to the Great Britain Programme';
+   const mail={id,type:'welcome',subject,body:'Welcome to the programme. Start by getting to know the squad and your staff.',html:'<div class="mail-section"><h3>Welcome to Great Britain</h3><p>Your programme is ready. Start by meeting the athletes you have inherited.</p></div>',sender:'Great Britain',year:1,week:1,unread:true};
+   s.emails=(s.emails||[]).filter(m=>m.id!==id);s.emails.push(mail);openMail=id;
+   drawInbox();
+   drawReader();
+   const direct={heading:document.querySelector('#reader h2')?.textContent||'',fallback:/Message could not be displayed/i.test(document.querySelector('#reader')?.textContent||'')};
+   drawInbox();
+   const row=document.querySelector(`[data-v3-mail="${CSS.escape(id)}"]`);if(!row)throw new Error('Generic welcome row missing');row.click();
+   return {subject,direct,heading:document.querySelector('#reader h2')?.textContent||'',fallback:/Message could not be displayed/i.test(document.querySelector('#reader')?.textContent||''),readerHeads:document.querySelectorAll('#reader .reader-head').length};
+  }catch(err){return {error:String(err?.message||err)+' | '+String(err?.stack||'')}}
+ });
+ assert.ok(!generic.error,`Generic welcome reader threw: ${generic.error||''}`);
+ assert.equal(generic.direct.fallback,false,'Direct generic welcome render fell into recovery state');
+ assert.ok(generic.direct.heading.includes(generic.subject),'Direct generic welcome reader heading missing');
+ assert.equal(generic.fallback,false,'Inbox click on generic welcome email fell into recovery state');
+ assert.ok(generic.heading.includes(generic.subject),'Generic welcome email heading disappeared');
+ assert.equal(generic.readerHeads,1,'Generic welcome reader duplicated its header');
+
  for(let i=0;i<8;i++){
   const open=await page.evaluate(id=>{
    try{
@@ -94,8 +115,8 @@ try{
  });
  assert.equal(route.clicked,true,'Open Contracts action was unavailable');
  assert.equal(route.financeOn,true,'Finance view was not activated by contract decision action');
- assert.deepEqual(pageErrors,[],'WebKit reported an uncaught page error while opening programme contract decisions');
- console.log('Contract decision WebKit regression passed.');
+ assert.deepEqual(pageErrors,[],'WebKit reported an uncaught page error while opening inbox messages');
+ console.log('Contract decision + generic welcome WebKit regression passed.');
 }finally{
  try{await context?.close()}catch(_){}
  try{await browser?.close()}catch(_){}
