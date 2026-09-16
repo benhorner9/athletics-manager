@@ -1,0 +1,68 @@
+name: Apply Career Identity V2 History Hardening
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - '.github/workflows/apply-career-identity-hardening-v2.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  harden:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev
+      - name: Harden persistent history and navigation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/career-identity-v2.js')
+          s=p.read_text()
+
+          # Compacted records must keep their de-duplication tombstone. Otherwise an
+          # old source record is immediately re-imported on the next sync.
+          old="delete st.eventIds[e.id];st.compaction.backgroundArchived++;"
+          new="st.compaction.backgroundArchived++;"
+          if old not in s: raise SystemExit('event compaction marker target missing')
+          s=s.replace(old,new,1)
+          old="delete st.memoryIds[aid]?.[m.id];st.compaction.backgroundArchived++;"
+          new="st.compaction.backgroundArchived++;"
+          if old not in s: raise SystemExit('memory compaction marker target missing')
+          s=s.replace(old,new,1)
+
+          # V1 remains a live producer during this transition. Incrementally ingest
+          # newly-created V1 events rather than treating migration as a one-time copy.
+          old="if(v1&&!st.migration.v1){for(const e of v1.events||[])"
+          new="if(v1){for(const e of v1.events||[])"
+          if old not in s: raise SystemExit('V1 incremental migration target missing')
+          s=s.replace(old,new,1)
+
+          # Completed camps carry their original season/week in the camp-history row.
+          old="season:a.camp?.season||season(),week:a.camp?.week||week()"
+          new="season:num(c.season)||season(),week:num(c.week)||week()"
+          if old not in s: raise SystemExit('camp history date target missing')
+          s=s.replace(old,new,1)
+
+          # Preserve the custom manager tab and scroll position when drilling into an
+          # athlete from Athletes/Programme/Legacy and returning to My Profile.
+          anchor="function bindCustom(root){qsa('[data-civ2-athlete]',root).forEach(b=>b.addEventListener('click',()=>{const id=b.dataset.civ2Athlete,dlg=document.getElementById('managementProfile');if(dlg?.open)dlg.close();safe(()=>openAthleteProfile(id),null)}));qsa('[data-civ2-favourite]',root).forEach(b=>b.addEventListener('click',()=>{toggleFavourite(b.dataset.civ2Favourite);augmentAthlete(document.getElementById('athleteProfile'),true)}))}"
+          replacement="function openAthleteFromLegacy(id){const manager=document.getElementById('managementProfile'),scroll=qs('.am-manager-profile-scroll',manager)?.scrollTop||0,savedTab=customManagerTab||'athletes',athleteDialog=document.getElementById('athleteProfile');if(typeof openAthleteProfile!=='function')return;if(manager?.open)manager.close();let handled=false;const restore=()=>{if(handled)return;handled=true;customManagerTab=savedTab;safe(()=>window.openManagerProfile(),null);setTimeout(()=>{augmentManager(manager);const next=qs('.am-manager-profile-scroll',manager);if(next)next.scrollTop=scroll},0)};athleteDialog?.addEventListener('close',restore,{once:true});openAthleteProfile(id)}\nfunction bindCustom(root){qsa('[data-civ2-athlete]',root).forEach(b=>b.addEventListener('click',()=>openAthleteFromLegacy(b.dataset.civ2Athlete)));qsa('[data-civ2-favourite]',root).forEach(b=>b.addEventListener('click',()=>{toggleFavourite(b.dataset.civ2Favourite);augmentAthlete(document.getElementById('athleteProfile'),true)}))}"
+          if anchor not in s: raise SystemExit('custom athlete navigation target missing')
+          s=s.replace(anchor,replacement,1)
+
+          p.write_text(s)
+          PY
+          node --check scripts/career-identity-v2.js
+          node tools/career-identity-v2-regression.mjs
+      - name: Commit hardening
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/career-identity-v2.js
+          git commit -m "fix: harden career identity history persistence"
+          git push origin HEAD:dev
