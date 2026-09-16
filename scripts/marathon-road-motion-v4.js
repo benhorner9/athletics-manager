@@ -14,6 +14,8 @@ const ease=t=>1-Math.pow(1-clamp(t,0,1),2.05);
 let frameId=0;
 let generation=0;
 let baseDraw=null;
+let activeStage=null;
+let mutationFrame=0;
 
 function v3(){return window.AMMarathonRoadBroadcastV3}
 function road(){return window.AMMarathonRoadBroadcastV2}
@@ -40,7 +42,7 @@ function context(){
  const plan=api.direct(lv.event,d,lv.results),index=clamp(Number(lv.index)||0,0,Math.max(0,plan.highlights.length-1)),h=plan.highlights[index];
  if(!h)return null;return{api,event:lv.event,disc:d,results:lv.results,plan,index,h}
 }
-function stop(){generation++;if(frameId){cancelAnimationFrame(frameId);frameId=0}}
+function stop(){generation++;if(frameId){cancelAnimationFrame(frameId);frameId=0}activeStage=null}
 function ensureWrappers(stage){
  const rows=[];
  for(const node of [...stage.querySelectorAll('[data-road-v3-runner]')]){
@@ -73,17 +75,19 @@ function setTravel(row,offsetX){
 function animate(){
  stop();const ctx=context(),stage=document.querySelector('.road-v3-stage'),root=document.getElementById('roadLiveStage');
  if(!ctx||!stage||!root)return false;
+ activeStage=stage;stage.dataset.motionV4Bound='1';
  document.querySelector('.road-matchday')?.classList.add('road-motion-v4');stage.dataset.motionModel='athlete-first-v4';
- const rows=ensureWrappers(stage);if(!rows.length)return false;
+ const rows=ensureWrappers(stage);if(!rows.length){activeStage=null;return false}
  const [fromOffset,toOffset]=travelOffsets(ctx.h),token=++generation,start=performance.now(),duration=Math.max(1,Number(ctx.h.durationMs)||9000);
  // Set the entry position synchronously before the browser paints the newly rendered stage.
  for(const row of rows)setTravel(row,fromOffset);
  function frame(now){
   if(token!==generation)return;
-  const current=context();if(!current||current.event!==ctx.event||current.disc!==ctx.disc||current.index!==ctx.index){frameId=0;return}
+  if(activeStage!==stage||document.querySelector('.road-v3-stage')!==stage){frameId=0;activeStage=null;return}
+  const current=context();if(!current||current.event!==ctx.event||current.disc!==ctx.disc||current.index!==ctx.index){frameId=0;activeStage=null;return}
   const t=clamp((now-start)/duration,0,1),offsetX=lerp(fromOffset,toOffset,ease(t));
   for(const row of rows)setTravel(row,offsetX);
-  if(t<1)frameId=requestAnimationFrame(frame);else frameId=0
+  if(t<1)frameId=requestAnimationFrame(frame);else{frameId=0;activeStage=null}
  }
  frameId=requestAnimationFrame(frame);return true
 }
@@ -98,12 +102,29 @@ function installDraw(){
  try{drawCompetition=wrapped;window.drawCompetition=wrapped}catch(_){window.drawCompetition=wrapped}
  return true
 }
+function installStageObserver(){
+ if(window.__amMarathonRoadMotionV4Observer)return;window.__amMarathonRoadMotionV4Observer=1;
+ const observer=new MutationObserver(mutations=>{
+  let addedStage=false;
+  for(const mutation of mutations){
+   for(const node of mutation.addedNodes||[]){
+    if(node?.nodeType!==1)continue;
+    if(node.matches?.('.road-v3-stage')||node.querySelector?.('.road-v3-stage')){addedStage=true;break}
+   }
+   if(addedStage)break
+  }
+  if(!addedStage)return;
+  if(mutationFrame)cancelAnimationFrame(mutationFrame);
+  mutationFrame=requestAnimationFrame(()=>{mutationFrame=0;const stage=document.querySelector('.road-v3-stage');if(stage&&stage!==activeStage)animate()})
+ });
+ observer.observe(document.documentElement,{childList:true,subtree:true});
+}
 function install(){
  if(!v3()||!road()){setTimeout(install,80);return}
- installDraw();decorateNow();
+ installDraw();installStageObserver();decorateNow();
 }
 window.addEventListener('pageshow',schedule);
 window.addEventListener('orientationchange',()=>setTimeout(schedule,120));
-window.AMMarathonRoadMotionV4={version:VERSION,gapPixels,screenPosition,animate,stop,travelOffsets,debug:()=>({installed:!!window.__amMarathonRoadMotionV4,active:!!frameId,model:'athlete-first',ownership:'wrapper-transform',roadScroll:false})};
+window.AMMarathonRoadMotionV4={version:VERSION,gapPixels,screenPosition,animate,stop,travelOffsets,debug:()=>{const stage=document.querySelector('.road-v3-stage');return{installed:!!window.__amMarathonRoadMotionV4,active:!!frameId&&!!activeStage&&activeStage===stage,model:'athlete-first',ownership:'wrapper-transform',roadScroll:false}}};
 install();
 })();
