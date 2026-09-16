@@ -7,6 +7,7 @@ const game=fs.readFileSync(new URL('../game.html',import.meta.url),'utf8');
 const sidebar=fs.readFileSync(new URL('../scripts/manager-profile-sidebar-v1.js',import.meta.url),'utf8');
 assert(!/\bOVR\b|overall rating/i.test(source),'Career Identity V2 must not introduce visible OVR language');
 assert(source.includes('function programmeStats'),'Career Identity V2 source is incomplete after migration/repair');
+assert(source.includes('function openAthleteFromLegacy'),'Career Identity V2 must preserve manager drill-down navigation');
 assert(game.includes('styles/career-identity-v2.css'),'Career Identity V2 stylesheet is missing from the normal asset graph');
 assert(game.includes('scripts/career-identity-v2.js'),'Career Identity V2 script is missing from the normal asset graph');
 assert(game.indexOf('scripts/career-identity-v2.js')>game.indexOf('scripts/live-event-shell-v5.js'),'Career Identity V2 must load after the final authoritative gameplay layers');
@@ -45,6 +46,9 @@ api.compact();
 let st=api.ensure();
 assert.equal(st.events.filter(e=>e.tier===1).length,12,'Tier 1 history was lost during compaction');
 assert(st.events.filter(e=>e.tier>=3).length<=4000,'Background career history was not compacted');
+const archivedAfterEventCompact=st.compaction.backgroundArchived;
+for(let i=0;i<50;i++)api.record({id:`bg:${i}`,type:'routine_result',tier:3,season:2027,week:1,title:`Routine ${i}`});
+assert.equal(api.ensure().compaction.backgroundArchived,archivedAfterEventCompact,'Compacted event tombstones were lost and old history was re-imported');
 
 for(let i=0;i<105;i++)api.remember({id:`mem-bg:${i}`,athleteId:'a1',type:'history',tier:3,season:2027,week:(i%52)+1,title:`Memory ${i}`});
 for(let i=0;i<4;i++)api.remember({id:`mem-major:${i}`,athleteId:'a1',type:'medal',tier:1,season:2028+i,week:20,title:`Major memory ${i}`});
@@ -52,6 +56,17 @@ api.compact();
 st=api.ensure();
 assert.equal(st.athleteMemories.a1.filter(m=>m.tier===1).length,4,'Important athlete memories were lost');
 assert(st.athleteMemories.a1.filter(m=>m.tier>=3).length<=80,'Background athlete memories were not compacted');
+const archivedAfterMemoryCompact=st.compaction.backgroundArchived;
+api.remember({id:'mem-bg:0',athleteId:'a1',type:'history',tier:3,season:2027,week:1,title:'Memory 0'});
+assert.equal(api.ensure().compaction.backgroundArchived,archivedAfterMemoryCompact,'Compacted athlete-memory tombstones were lost and old history was re-imported');
+
+const v1={events:[{id:'v1-first',type:'programme',title:'Facility milestone',detail:'First V1 event',season:2029,week:4,nation:'GREAT BRITAIN',data:{}}],discoveries:{}};
+ctx.__athleticsManagerCareerV1={ensure:()=>v1};
+api.sync();
+assert(api.events({nation:'GREAT BRITAIN'}).some(e=>e.id==='v1:v1-first'),'Existing Manager Career V1 event was not ingested');
+v1.events.push({id:'v1-later',type:'milestone',title:'Later milestone',detail:'Created after initial migration',season:2031,week:12,nation:'GREAT BRITAIN',data:{}});
+api.sync();
+assert(api.events({nation:'GREAT BRITAIN'}).some(e=>e.id==='v1:v1-later'),'New Manager Career V1 events stopped migrating after initial V2 setup');
 
 ctx.s.athletes.push({id:'champ1',name:'Hannah Cole',nation:'GREAT BRITAIN',disc:'M100',age:36,pb:10.01,retired:true,retirement:{season:2030,week:40,age:34,reason:'Retirement'},medals:{g:1,s:0,b:1},story:{trust:82,memories:[{type:'Call-up',text:'Called into the national squad.',season:2027,week:8}]}});
 ctx.s.management.results['2030:olympics:M100']={season:2030,week:36,event:'Olympic Games',disc:'M100',olympic:true,national:false,rows:[{id:'champ1',name:'Hannah Cole',nation:'GREAT BRITAIN',place:1,perf:10.01,achievements:['PB','NR']}]};
