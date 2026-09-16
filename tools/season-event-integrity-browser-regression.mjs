@@ -25,7 +25,7 @@ try{
  page=await context.newPage();
  const pageErrors=[];page.on('pageerror',err=>pageErrors.push(String(err?.stack||err)));
  await page.goto(`http://127.0.0.1:${port}/game.html`,{waitUntil:'load',timeout:30000});
- await page.waitForFunction(()=>window.AMMarathonRoad&&window.AMSeasonEventIntegrity,{timeout:20000});
+ await page.waitForFunction(()=>window.AMMarathonRoad&&window.AMSeasonEventIntegrity?.build===4&&window.AMSeasonEventIntegrity?.debug?.().freshGuard&&window.AMSeasonEventIntegrity?.debug?.().stateGuard,{timeout:20000});
  const outcome=await page.evaluate(()=>{
   try{return window.eval(`
    s=fresh('GREAT BRITAIN');ensureState();
@@ -43,7 +43,7 @@ try{
     const currentIds=(s.events||[]).map(e=>String(e.id));
     const expectedIds=expected.map(e=>String(e.id));
     const missing=expectedIds.filter(id=>!currentIds.includes(id));
-    throw new Error('Fresh season did not contain baseline event graph | normal='+String(normal[0]?.id)+' road='+String(road?.id)+' missing='+missing.join(',')+' current='+currentIds.join(',')+' expected='+expectedIds.join(',')+' integrityBuild='+String(AMSeasonEventIntegrity?.build||'none')+' freshGuard='+String(!!fresh.__amSeasonEventIntegrityV1Build3));
+    throw new Error('Fresh season did not contain baseline event graph | normal='+String(normal[0]?.id)+' road='+String(road?.id)+' missing='+missing.join(',')+' current='+currentIds.join(',')+' expected='+expectedIds.join(',')+' debug='+JSON.stringify(AMSeasonEventIntegrity.debug()));
    }
    keep.completed=true;keep.decision=true;keep.qaSentinel='preserve-me';keep.results={QA:[{id:'qa',place:1}]};
    s.game.week=20;s.game.careerWeek=20;
@@ -59,7 +59,7 @@ try{
    const past=pastSource?s.events.find(e=>String(e.id)===String(pastSource.id)):null;
    const future=futureSource?s.events.find(e=>String(e.id)===String(futureSource.id)):null;
    if(futureSource){s.uiCalendarV2=s.uiCalendarV2||{};s.uiCalendarV2.selectedWeek=Number(futureSource.week);s.uiCalendarV2.showPast=true;view('calendar');drawCalendar()}
-   JSON.stringify({repair,beforeIds,missing,preservedSentinel:preserved?.qaSentinel,preservedResult:preserved?.results?.QA?.[0]?.place,pastRecovered:!!past?.recoveredMissingSchedule,pastCompleted:!!past?.completed,pastDecision:!!past?.decision,futureRecovered:!!future?.recoveredMissingSchedule,futureCompleted:!!future?.completed,normalCount:normal.length,roadCount:s.events.filter(e=>String(e.id||'').startsWith('road-')).length,calendarText:document.getElementById('calendar')?.textContent||'',futureName:futureSource?.name||''});
+   JSON.stringify({repair,beforeIds,missing,preservedSentinel:preserved?.qaSentinel,preservedResult:preserved?.results?.QA?.[0]?.place,pastRecovered:!!past?.recoveredMissingSchedule,pastCompleted:!!past?.completed,pastDecision:!!past?.decision,futureRecovered:!!future?.recoveredMissingSchedule,futureCompleted:!!future?.completed,normalCount:normal.length,roadCount:s.events.filter(e=>String(e.id||'').startsWith('road-')).length,calendarText:document.getElementById('calendar')?.textContent||'',futureName:futureSource?.name||'',debug:AMSeasonEventIntegrity.debug()});
   `)}catch(err){return 'ERROR: '+String(err?.message||err)+' | '+String(err?.stack||'')}
  });
  assert.ok(!String(outcome).startsWith('ERROR:'),outcome);
@@ -75,6 +75,8 @@ try{
  assert.equal(data.futureCompleted,false,'Future restored event was incorrectly auto-completed');
  assert.ok(data.normalCount>=3,'Normal athletics meetings disappeared from the authoritative schedule');
  assert.ok(data.roadCount>=1,'Marathon/Road meetings disappeared during recovery');
+ assert.equal(data.debug.freshGuard,true,'Final fresh() owner lost the season integrity wrapper');
+ assert.equal(data.debug.stateGuard,true,'Final ensureState() owner lost the season integrity wrapper');
  assert.ok(data.futureName&&data.calendarText.includes(data.futureName),'Restored normal event did not appear on Calendar');
  assert.deepEqual(pageErrors,[],'WebKit reported an uncaught page error during event recovery');
  console.log('Season event integrity WebKit regression passed.');
