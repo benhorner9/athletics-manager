@@ -142,9 +142,8 @@ try{
 }catch(err){
  if(!failures.length)fail(err?.stack||String(err));
 }finally{
- try{dom?.window?.close()}catch(_){}
  try{server.closeAllConnections?.()}catch(_){}
- await new Promise(resolve=>server.close(resolve));
+ try{server.close()}catch(_){}
 }
 
 if(failures.length){
@@ -159,3 +158,4 @@ console.log('✓ Broadcast V4 remained the authoritative simulation layer.');
 console.log('✓ V5 shell retained scoreboard, commentary, progression, playback and event-aware information.');
 console.log('✓ Reference screenshot demo names/values were not hard-coded.');
 console.log('✓ iPad landscape and desktop shell contracts are present.');
+process.exit(0);
