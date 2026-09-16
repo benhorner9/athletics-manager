@@ -6,17 +6,21 @@
 if(window.__amContractDecisionRoutingV1)return;window.__amContractDecisionRoutingV1=1;
 if(typeof document==='undefined')return;
 
-const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+const CONTRACT_SUBJECT=/^(?:URGENT\s*[—–-]\s*)?Contract decision:\s*/i;
 function currentMail(){return (s?.emails||[]).find(m=>String(m?.id||'')===String(typeof openMail!=='undefined'?openMail:''))||null}
 function isAthleteContractDecision(m){
  if(!m)return false;
  if(String(m.type||'').toLowerCase()!=='contract')return false;
  const subject=String(m.subject||'');
  const body=String(m.body||'');
- return /^Contract decision:\s*/i.test(subject)||/Finance\s*[→>-]+\s*Contracts/i.test(body)
+ const kind=String(m?.programmeAction?.kind||'').toLowerCase();
+ return m.contractExpiryDecision===true||kind==='athlete-contract-expiry'||CONTRACT_SUBJECT.test(subject)||/Finance\s*[→>-]+\s*Contracts/i.test(body)
 }
 function athleteFor(m){
- const name=String(m?.subject||'').replace(/^Contract decision:\s*/i,'').trim();
+ const taggedId=m?.programmeAction?.athleteId;
+ if(taggedId!=null){const tagged=(s?.athletes||[]).find(a=>String(a?.id)===String(taggedId));if(tagged)return tagged}
+ const name=String(m?.subject||'').replace(CONTRACT_SUBJECT,'').trim();
  if(name){const exact=(s?.athletes||[]).find(a=>String(a?.name||'').trim()===name);if(exact)return exact}
  const p=window.AMProgrammeEconomy?.state?.();
  const active=Object.values(p?.athleteContracts||{}).filter(c=>c&&c.state==='active');
@@ -49,7 +53,7 @@ function activateFinanceContracts(){
 }
 function renderContract(m){
  const reader=document.getElementById('reader');if(!reader)return false;
- const athlete=athleteFor(m),name=athlete?.name||String(m.subject||'').replace(/^Contract decision:\s*/i,'').trim()||'Athlete';
+ const athlete=athleteFor(m),name=athlete?.name||String(m.subject||'').replace(CONTRACT_SUBJECT,'').trim()||'Athlete';
  if(m.unread)m.unread=false;
  try{save()}catch(_){}
  try{syncMailBadge()}catch(_){}
