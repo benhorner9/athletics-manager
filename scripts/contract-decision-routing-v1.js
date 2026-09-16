@@ -24,15 +24,25 @@ function athleteFor(m){
  return null
 }
 function financeActive(){return !!document.getElementById('finance')?.classList.contains('on')}
+function withLegacyAppointmentRouteBypass(fn){
+ const original=window.appointmentPending;
+ const canRestore=typeof original==='function';
+ if(canRestore)window.appointmentPending=()=>false;
+ try{return fn()}finally{if(canRestore)window.appointmentPending=original}
+}
+function routeFinanceContractsOnce(){
+ return withLegacyAppointmentRouteBypass(()=>{
+  if(typeof view==='function')view('finance');
+  window.AMProgrammeEconomy?.openFinanceView?.('contracts');
+  return financeActive()
+ })
+}
 function activateFinanceContracts(){
  let routed=false;
- try{if(typeof view==='function'){view('finance');routed=financeActive()}}catch(err){console.warn('[Athletics Manager] Finance route activation failed',err)}
- try{window.AMProgrammeEconomy?.openFinanceView?.('contracts')}catch(err){console.error('[Athletics Manager] Contract handoff failed',err)}
- routed=financeActive()||routed;
+ try{routed=routeFinanceContractsOnce()}catch(err){console.error('[Athletics Manager] Contract handoff failed',err)}
  if(!routed){
   requestAnimationFrame(()=>{
-   try{if(typeof view==='function')view('finance')}catch(err){console.warn('[Athletics Manager] Finance route retry failed',err)}
-   try{window.AMProgrammeEconomy?.openFinanceView?.('contracts')}catch(err){console.error('[Athletics Manager] Contract handoff retry failed',err)}
+   try{routeFinanceContractsOnce()}catch(err){console.error('[Athletics Manager] Contract handoff retry failed',err)}
   })
  }
  return financeActive()
