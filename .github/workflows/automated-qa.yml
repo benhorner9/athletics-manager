@@ -28,7 +28,7 @@ jobs:
   gameplay:
     name: Gameplay + Runtime QA
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 20
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -38,8 +38,11 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install headless runtime dependency
-        run: npm install --no-save --no-package-lock jsdom@26
+      - name: Install critical QA dependencies
+        run: npm install --no-save --no-package-lock jsdom@26 playwright@1.55.0
+
+      - name: Install WebKit for critical browser regressions
+        run: npx playwright install --with-deps webkit
 
       - name: Run critical automated QA
         run: node tools/automated-qa.mjs critical
