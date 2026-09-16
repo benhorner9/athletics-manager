@@ -107,9 +107,10 @@ function syncScoreboard(d){
 }
 
 function sourceAction(){
- const primary=$('v3start');
- if(primary)return primary;
- return $('v3day')||null
+ const primary=$('v3start'),day=$('v3day'),dayText=String(day?.textContent||'').trim();
+ if(day&&/RETURN HOME|RETURN TO GAME|COMPLETE EVENT/i.test(dayText))return day;
+ if(primary&&!primary.disabled)return primary;
+ return day||primary||null
 }
 function clickSource(source){if(!source||source.disabled)return;source.click()}
 function playbackSource(value){return document.querySelector(`#liveEventVisual [data-speed="${value}"]`)}

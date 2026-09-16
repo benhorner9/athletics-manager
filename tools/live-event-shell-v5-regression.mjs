@@ -154,8 +154,20 @@ try{
    fail(`${d}: authoritative completion did not settle (rows=${Array.isArray(rows)?rows.length:'none'}, live=${!!w.AMLiveBroadcastV4.active}, shell=${!!diag?.active}).`);
    break
   }
+  const homeReady=await waitFor(()=>{
+   const action=w.document.querySelector('[data-lv5-action]');
+   return !!action&&!action.disabled&&/RETURN HOME/i.test(String(action.textContent||''));
+  });
+  if(!homeReady){
+   const action=w.document.querySelector('[data-lv5-action]'),day=w.document.getElementById('v3day'),start=w.document.getElementById('v3start');
+   fail(`${d}: confirmed result did not expose Return Home (visible=${String(action?.textContent||'none').trim()}, day=${String(day?.textContent||'none').trim()}, start=${String(start?.textContent||'none').trim()}, startDisabled=${!!start?.disabled}).`);
+   break
+  }
+  try{w.document.querySelector('[data-lv5-action]').click()}catch(err){fail(`${d}: Return Home action threw: ${err?.stack||err}`);break}
+  const homeReached=await waitFor(()=>{try{return w.eval(`typeof currentView==='undefined'||currentView==='home'`)}catch(_){return false}});
+  if(!homeReached){fail(`${d}: Return Home action did not leave the completed result for Home.`);break}
   const rows=w.__amV5QaEvent.results[d];
-  notes.push(`${d} · ${family} · ${rows.length} result rows`);
+  notes.push(`${d} · ${family} · ${rows.length} result rows · Return Home`);
  }
 
  if(notes.length!==disciplines.length&&!failures.length)fail(`Only ${notes.length}/${disciplines.length} current disciplines completed the universal live-event lifecycle.`);
@@ -183,6 +195,7 @@ notes.forEach(item=>console.log(`✓ ${item}`));
 console.log('✓ Broadcast V4 remained the authoritative simulation layer.');
 console.log('✓ V5 shell survived authoritative live/result redraws without replacing simulation state.');
 console.log('✓ V5 shell retained scoreboard, commentary, progression, playback and event-aware information.');
+console.log('✓ Every current discipline result exposed and completed a Return Home route.');
 console.log('✓ Reference screenshot demo names/values were not hard-coded.');
 console.log('✓ iPad landscape and desktop shell contracts are present.');
 process.exit(0);
