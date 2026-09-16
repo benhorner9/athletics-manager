@@ -44,7 +44,7 @@ function loadMarathonPlaybackIntegrityV2(next){
  const existing=document.querySelector('script[data-am-marathon-playback-integrity-v2]');
  if(existing){if(typeof next==='function')existing.addEventListener('load',next,{once:true});return}
  const script=document.createElement('script');
- script.src='scripts/marathon-playback-integrity-v2.js?v=20260916-marathon9';
+ script.src='scripts/marathon-playback-integrity-v2.js?v=20260916-marathon10';
  script.async=false;
  script.dataset.amMarathonPlaybackIntegrityV2='1';
  script.onerror=()=>{console.warn('Marathon playback integrity V2 guard failed to load');if(typeof next==='function')next()};
@@ -54,11 +54,11 @@ function loadMarathonPlaybackIntegrityV2(next){
 function loadMarathonRoadMotionV4(){
  if(typeof document==='undefined')return;
  if(!document.querySelector('link[data-am-marathon-road-motion-v4-style]')){
-  const style=document.createElement('link');style.rel='stylesheet';style.href='styles/marathon-road-motion-v4.css?v=20260916-marathon9';style.dataset.amMarathonRoadMotionV4Style='1';document.head.appendChild(style);
+  const style=document.createElement('link');style.rel='stylesheet';style.href='styles/marathon-road-motion-v4.css?v=20260916-marathon10';style.dataset.amMarathonRoadMotionV4Style='1';document.head.appendChild(style);
  }
  if(window.__amMarathonRoadMotionV4)return;
  if(document.querySelector('script[data-am-marathon-road-motion-v4]'))return;
- const script=document.createElement('script');script.src='scripts/marathon-road-motion-v4.js?v=20260916-marathon9';script.dataset.amMarathonRoadMotionV4='1';script.onerror=()=>console.warn('Marathon athlete-first motion V4 failed to load');document.body.appendChild(script);
+ const script=document.createElement('script');script.src='scripts/marathon-road-motion-v4.js?v=20260916-marathon10';script.dataset.amMarathonRoadMotionV4='1';script.onerror=()=>console.warn('Marathon athlete-first motion V4 failed to load');document.body.appendChild(script);
 }
 function loadMarathonRoadBroadcastV3(){
  if(typeof document==='undefined')return;
