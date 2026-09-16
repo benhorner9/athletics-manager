@@ -85,6 +85,8 @@ jobs:
           grep -Fq '.lv4-board-row:nth-child(3)>b' styles/live-event-shell-v5.css
           grep -Fq '.lv4-board-row:nth-child(2){background:' styles/live-event-shell-v5.css
           grep -Fq '.lv4-board-row:nth-child(3){background:' styles/live-event-shell-v5.css
+          grep -Fq '#liveScoreboard .v3board-list{width:100%!important;max-width:none!important' styles/live-event-shell-v5.css
+          grep -Fq '#liveScoreboard .lv4-board-row{width:100%!important;max-width:none!important' styles/live-event-shell-v5.css
       - name: Check JavaScript syntax
         shell: bash
         run: |
