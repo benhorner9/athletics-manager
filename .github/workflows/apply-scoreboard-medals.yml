@@ -1,0 +1,36 @@
+name: Apply Scoreboard Medals
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'tools/apply-scoreboard-medals.mjs'
+      - '.github/workflows/apply-scoreboard-medals.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout dev
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+          fetch-depth: 0
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Apply medal styling
+        run: node tools/apply-scoreboard-medals.mjs
+      - name: Commit scoreboard medals
+        run: |
+          git config user.name "athletics-manager-bot"
+          git config user.email "actions@users.noreply.github.com"
+          rm tools/apply-scoreboard-medals.mjs .github/workflows/apply-scoreboard-medals.yml
+          git add styles/live-event-shell-v5.css tools/apply-scoreboard-medals.mjs .github/workflows/apply-scoreboard-medals.yml
+          git commit -m "fix: add silver and bronze to live scoreboard" || exit 0
+          git push origin dev
