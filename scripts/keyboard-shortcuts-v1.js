@@ -65,8 +65,8 @@ function loadContractDecisionRouting(){
  const script=document.createElement('script');script.src='scripts/contract-decision-routing-v1.js?v=20260915-contractrouting1';script.dataset.amContractDecisionRouting='1';script.onerror=()=>console.warn('Contract decision routing guard failed to load');document.body.appendChild(script);
 }
 function loadSeasonEventIntegrity(){
- if(typeof document==='undefined'||window.__amSeasonEventIntegrityV1||document.querySelector('script[data-am-season-event-integrity]'))return;
- const script=document.createElement('script');script.src='scripts/season-event-integrity-v1.js?v=20260915-eventintegrity1';script.dataset.amSeasonEventIntegrity='1';script.onerror=()=>console.warn('Season event integrity guard failed to load');document.body.appendChild(script);
+ if(typeof document==='undefined'||window.__amSeasonEventIntegrityV1Build3||document.querySelector('script[data-am-season-event-integrity]'))return;
+ const script=document.createElement('script');script.src='scripts/season-event-integrity-v1.js?v=20260916-eventintegrity3';script.dataset.amSeasonEventIntegrity='1';script.onerror=()=>console.warn('Season event integrity guard failed to load');document.body.appendChild(script);
 }
 function loadLateRuntime(){loadMarathonRoad();loadContractDecisionRouting();loadSeasonEventIntegrity()}
 
