@@ -12,6 +12,7 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,Number(v)||0));
 const lerp=(a,b,t)=>Number(a||0)+(Number(b||0)-Number(a||0))*clamp(t,0,1);
 const ease=t=>1-Math.pow(1-clamp(t,0,1),2.05);
 let frameId=0;
+let heartbeatId=0;
 let generation=0;
 let baseDraw=null;
 let activeStage=null;
@@ -42,7 +43,12 @@ function context(){
  const plan=api.direct(lv.event,d,lv.results),index=clamp(Number(lv.index)||0,0,Math.max(0,plan.highlights.length-1)),h=plan.highlights[index];
  if(!h)return null;return{api,event:lv.event,disc:d,results:lv.results,plan,index,h}
 }
-function stop(){generation++;if(frameId){cancelAnimationFrame(frameId);frameId=0}activeStage=null}
+function stop(){
+ generation++;
+ if(frameId){cancelAnimationFrame(frameId);frameId=0}
+ if(heartbeatId){clearInterval(heartbeatId);heartbeatId=0}
+ activeStage=null
+}
 function ensureWrappers(stage){
  const rows=[];
  for(const node of [...stage.querySelectorAll('[data-road-v3-runner]')]){
@@ -79,17 +85,27 @@ function animate(){
  document.querySelector('.road-matchday')?.classList.add('road-motion-v4');stage.dataset.motionModel='athlete-first-v4';
  const rows=ensureWrappers(stage);if(!rows.length){activeStage=null;return false}
  const [fromOffset,toOffset]=travelOffsets(ctx.h),token=++generation,start=performance.now(),duration=Math.max(1,Number(ctx.h.durationMs)||9000);
- // Set the entry position synchronously before the browser paints the newly rendered stage.
  for(const row of rows)setTravel(row,fromOffset);
- function frame(now){
-  if(token!==generation)return;
-  if(activeStage!==stage||document.querySelector('.road-v3-stage')!==stage){frameId=0;activeStage=null;return}
-  const current=context();if(!current||current.event!==ctx.event||current.disc!==ctx.disc||current.index!==ctx.index){frameId=0;activeStage=null;return}
+ function apply(now){
+  if(token!==generation)return false;
+  if(activeStage!==stage||document.querySelector('.road-v3-stage')!==stage){activeStage=null;return false}
+  const current=context();if(!current||current.event!==ctx.event||current.disc!==ctx.disc||current.index!==ctx.index){activeStage=null;return false}
   const t=clamp((now-start)/duration,0,1),offsetX=lerp(fromOffset,toOffset,ease(t));
   for(const row of rows)setTravel(row,offsetX);
-  if(t<1)frameId=requestAnimationFrame(frame);else{frameId=0;activeStage=null}
+  if(t>=1){activeStage=null;return false}
+  return true
  }
- frameId=requestAnimationFrame(frame);return true
+ function frame(now){
+  if(!apply(now)){frameId=0;return}
+  frameId=requestAnimationFrame(frame)
+ }
+ frameId=requestAnimationFrame(frame);
+ // WebKit can briefly throttle RAF during a freshly replaced SVG tree. Keep a low-frequency
+ // time-based heartbeat so iPad/Safari still gets visible athlete travel during that window.
+ heartbeatId=setInterval(()=>{
+  if(!apply(performance.now())){if(heartbeatId){clearInterval(heartbeatId);heartbeatId=0}}
+ },120);
+ return true
 }
 function decorateNow(){return animate()}
 function schedule(){requestAnimationFrame(()=>decorateNow())}
@@ -125,6 +141,6 @@ function install(){
 }
 window.addEventListener('pageshow',schedule);
 window.addEventListener('orientationchange',()=>setTimeout(schedule,120));
-window.AMMarathonRoadMotionV4={version:VERSION,gapPixels,screenPosition,animate,stop,travelOffsets,debug:()=>{const stage=document.querySelector('.road-v3-stage');return{installed:!!window.__amMarathonRoadMotionV4,active:!!frameId&&!!activeStage&&activeStage===stage,model:'athlete-first',ownership:'wrapper-transform',roadScroll:false}}};
+window.AMMarathonRoadMotionV4={version:VERSION,gapPixels,screenPosition,animate,stop,travelOffsets,debug:()=>{const stage=document.querySelector('.road-v3-stage');return{installed:!!window.__amMarathonRoadMotionV4,active:!!activeStage&&activeStage===stage&&(!!frameId||!!heartbeatId),model:'athlete-first',ownership:'wrapper-transform',roadScroll:false,heartbeat:!!heartbeatId}}};
 install();
 })();
