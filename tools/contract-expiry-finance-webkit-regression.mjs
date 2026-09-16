@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import {webkit} from 'playwright';
 
 const root=process.cwd();
-const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.b64':'text/plain; charset=utf-8'};
+const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.b64':'text/plain; charset=utf-8'};
 const server=http.createServer((req,res)=>{
  try{
   const url=new URL(req.url,'http://127.0.0.1');
@@ -80,7 +80,7 @@ try{
  const routeButton=page.locator('#reader [data-open-programme],#reader [data-open-athlete-contracts],#reader [data-action-destination="finance"],#reader .reader-actions button').filter({hasText:/OPEN CONTRACTS|REVIEW CONTRACT|CONTRACT/i}).first();
  assert.ok(await routeButton.count(),'Urgent contract email did not expose a contract review action');
  await routeButton.click();
- await page.waitForFunction(()=>document.getElementById('finance')?.classList.contains('on'),{timeout:5000});
+ await page.waitForFunction(()=>document.getElementById('finance')?.classList.contains('on'),null,{timeout:5000});
  await page.waitForTimeout(800);
 
  const heartbeat=await Promise.race([
