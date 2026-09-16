@@ -1,10 +1,10 @@
 /* Athletics Manager — Season Event Integrity V1
    Repairs a damaged/missing season event graph from the authoritative makeEvents()
-   template without replacing live event progress or results. It also guards fresh()
-   and ensureState() so late-loaded career systems cannot leave a save without events. */
+   template without replacing live event progress or results. It guards fresh(),
+   ensureState() and week progression, but deliberately never wraps drawCalendar(). */
 (function(){
 'use strict';
-if(window.__amSeasonEventIntegrityV1Build4)return;window.__amSeasonEventIntegrityV1Build4=1;window.__amSeasonEventIntegrityV1=1;
+if(window.__amSeasonEventIntegrityV1Build5)return;window.__amSeasonEventIntegrityV1Build5=1;window.__amSeasonEventIntegrityV1=1;
 if(typeof document==='undefined')return;
 
 const safe=(fn,fallback)=>{try{const v=fn();return v==null?fallback:v}catch(_){return fallback}};
@@ -54,54 +54,45 @@ function repair(options={}){
  s.seasonEventIntegrity.version=1;s.seasonEventIntegrity.repairs=Number(s.seasonEventIntegrity.repairs||0)+1;
  s.seasonEventIntegrity.last={season:Number(s.game.season||1),cycleYear:Number(s.game.cycleYear||1),week:Number(s.game.week||1),careerWeek:Number(s.game.careerWeek||s.game.week||1),added:[...result.added]};
  try{save()}catch(_){}
- if(options.redraw&&typeof currentView!=='undefined'&&currentView==='calendar')requestAnimationFrame(()=>{try{baseCalendar?baseCalendar():drawCalendar()}catch(_){}});
+ if(options.redraw&&typeof currentView!=='undefined'&&currentView==='calendar')requestAnimationFrame(()=>{try{if(typeof drawCalendar==='function')drawCalendar()}catch(_){}});
  return result
 }
 
 function installFreshGuard(){
  const fn=safe(()=>typeof fresh==='function'?fresh:null,null);if(typeof fn!=='function')return false;
- if(fn.__amSeasonEventIntegrityV1Build4)return true;
+ if(fn.__amSeasonEventIntegrityV1Build5)return true;
  const wrapped=function(...args){
   const state=fn.apply(this,args);
   try{mergeState(state,{markRecovered:false})}catch(err){console.warn('[Athletics Manager] Fresh season event integrity recovered',err)}
   return state
  };
- Object.defineProperty(wrapped,'__amSeasonEventIntegrityV1Build4',{value:true});
+ Object.defineProperty(wrapped,'__amSeasonEventIntegrityV1Build5',{value:true});
  try{fresh=wrapped}catch(_){};window.fresh=wrapped;return true
 }
 function installEnsureStateGuard(){
  const fn=safe(()=>typeof ensureState==='function'?ensureState:null,null);if(typeof fn!=='function')return false;
- if(fn.__amSeasonEventIntegrityV1Build4)return true;
+ if(fn.__amSeasonEventIntegrityV1Build5)return true;
  const wrapped=function(...args){
   const out=fn.apply(this,args);
   try{if(typeof s!=='undefined'&&s)mergeState(s,{markRecovered:true})}catch(err){console.warn('[Athletics Manager] State event integrity recovered',err)}
   return out
  };
- Object.defineProperty(wrapped,'__amSeasonEventIntegrityV1Build4',{value:true});
+ Object.defineProperty(wrapped,'__amSeasonEventIntegrityV1Build5',{value:true});
  try{ensureState=wrapped}catch(_){};window.ensureState=wrapped;return true
-}
-
-let baseCalendar=null;
-function installCalendarGuard(){
- const draw=safe(()=>typeof drawCalendar==='function'?drawCalendar:null,null);if(typeof draw!=='function')return false;
- if(draw.__amSeasonEventIntegrityV1)return true;baseCalendar=draw;
- const wrapped=function(...args){repair();return baseCalendar.apply(this,args)};
- Object.defineProperty(wrapped,'__amSeasonEventIntegrityV1',{value:true});
- try{drawCalendar=wrapped}catch(_){};window.drawCalendar=wrapped;return true
 }
 function installWeekGuard(){
  const fn=window.onWeekStart||safe(()=>typeof onWeekStart==='function'?onWeekStart:null,null);if(typeof fn!=='function')return false;
- if(fn.__amSeasonEventIntegrityV1)return true;
+ if(fn.__amSeasonEventIntegrityV1Build5)return true;
  const wrapped=function(...args){const out=fn.apply(this,args);try{repair()}catch(err){console.warn('[Athletics Manager] Season event repair recovered',err)}return out};
- Object.defineProperty(wrapped,'__amSeasonEventIntegrityV1',{value:true});window.onWeekStart=wrapped;try{onWeekStart=wrapped}catch(_){};return true
+ Object.defineProperty(wrapped,'__amSeasonEventIntegrityV1Build5',{value:true});window.onWeekStart=wrapped;try{onWeekStart=wrapped}catch(_){};return true
 }
 function reinstall(){
- const freshInstalled=installFreshGuard(),stateInstalled=installEnsureStateGuard(),calendarInstalled=installCalendarGuard(),weekInstalled=installWeekGuard();
+ const freshInstalled=installFreshGuard(),stateInstalled=installEnsureStateGuard(),weekInstalled=installWeekGuard();
  try{repair()}catch(_){}
- return{freshInstalled,stateInstalled,calendarInstalled,weekInstalled}
+ return{freshInstalled,stateInstalled,calendarInstalled:false,weekInstalled}
 }
 
-window.AMSeasonEventIntegrity={version:1,build:4,repair,mergeState,reinstall,expectedEvents:()=>expectedFor(s),shouldRepair:()=>shouldRepairState(s),debug:()=>({expected:expectedFor(s).map(e=>({id:e.id,name:e.name,week:e.week})),current:(s?.events||[]).map(e=>({id:e.id,name:e.name,week:e.week,completed:!!e.completed,recovered:!!e.recoveredMissingSchedule})),freshGuard:!!safe(()=>fresh.__amSeasonEventIntegrityV1Build4,false),stateGuard:!!safe(()=>ensureState.__amSeasonEventIntegrityV1Build4,false),meta:s?.seasonEventIntegrity||null})};
+window.AMSeasonEventIntegrity={version:1,build:5,repair,mergeState,reinstall,expectedEvents:()=>expectedFor(s),shouldRepair:()=>shouldRepairState(s),debug:()=>({expected:expectedFor(s).map(e=>({id:e.id,name:e.name,week:e.week})),current:(s?.events||[]).map(e=>({id:e.id,name:e.name,week:e.week,completed:!!e.completed,recovered:!!e.recoveredMissingSchedule})),freshGuard:!!safe(()=>fresh.__amSeasonEventIntegrityV1Build5,false),stateGuard:!!safe(()=>ensureState.__amSeasonEventIntegrityV1Build5,false),calendarWrapped:false,meta:s?.seasonEventIntegrity||null})};
 reinstall();
 requestAnimationFrame(()=>{try{const result=repair({redraw:true});if(result.changed)console.info('[Athletics Manager] Restored missing season events',result.added)}catch(err){console.warn('[Athletics Manager] Season event integrity check failed',err)}});
 })();
