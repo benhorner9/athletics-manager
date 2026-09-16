@@ -76,6 +76,7 @@ await run('Scouting discovery runtime regression',['tools/scouting-discovery-run
 await run('Scouting V2 storage audit',['tools/scouting-v2-storage-audit.mjs']);
 await run('Contract expiry reentrancy regression',['tools/contract-expiry-reentrancy-regression.mjs']);
 await run('Contract decision WebKit regression',['tools/contract-decision-browser-regression.mjs'],{timeout:120000});
+await run('Urgent contract Finance WebKit stability regression',['tools/contract-expiry-finance-webkit-regression.mjs'],{timeout:120000});
 await run('Summit selection morale regression',['tools/summit-selection-morale-regression.mjs']);
 await run('Deterministic gameplay regressions',['tools/automated-gameplay-regression.mjs']);
 await run('Training attention authority regression',['tools/training-attention-regression.mjs']);
