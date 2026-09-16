@@ -56,6 +56,7 @@ async function syntaxCheck(){
 
 await run('Repository hygiene',['tools/repository-hygiene.mjs']);
 await run('Static UI / asset regression',['tools/static-regression.mjs']);
+await run('Retired feature regression',['tools/retired-feature-regression.mjs']);
 await syntaxCheck();
 await run('Persistence performance regression',['tools/persistence-performance-regression.mjs']);
 await run('Annual career refresh regression',['tools/annual-career-refresh-regression.mjs']);
