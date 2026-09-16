@@ -35,18 +35,18 @@ try{
    ensureState();
    s.induction=s.induction||{};s.induction.completed=true;s.managerName='Contract QA';
    const startup=document.getElementById('startup');if(startup)startup.classList.add('hidden');
-   const p=AMProgrammeEconomy.state();
-   const contract=Object.values(p.athleteContracts||{}).find(c=>c&&c.state==='active');
-   if(!contract)throw new Error('No active athlete programme contract available');
-   const athlete=s.athletes.find(a=>String(a.id)===String(contract.athleteId));
+   const economyState=AMProgrammeEconomy.state();
+   const programmeAgreement=Object.values(economyState.athleteContracts||{}).find(c=>c&&c.state==='active');
+   if(!programmeAgreement)throw new Error('No active athlete programme contract available');
+   const athlete=s.athletes.find(a=>String(a.id)===String(programmeAgreement.athleteId));
    if(!athlete)throw new Error('Contract athlete missing');
    window.appointmentPending=()=>true;
-   const id='qa-athlete-contract-'+String(athlete.id);
-   const mail={id,type:'contract',subject:'Contract decision: '+athlete.name,body:'There are eight weeks remaining on '+athlete.name+'’s programme agreement. Review the options in Finance → Contracts.',sender:'Performance Director',year:Number(s.game?.cycleYear||1),week:Number(s.game?.week||1),unread:true};
-   if(!AMContractDecisionRouting.isAthleteContractDecision(mail))throw new Error('Contract routing guard did not recognise programme contract email');
-   s.emails=(s.emails||[]).filter(m=>m.id!==id);s.emails.push(mail);
+   const mailId='qa-athlete-contract-'+String(athlete.id);
+   const testMail={id:mailId,type:'contract',subject:'Contract decision: '+athlete.name,body:'There are eight weeks remaining on '+athlete.name+'’s programme agreement. Review the options in Finance → Contracts.',sender:'Performance Director',year:Number(s.game?.cycleYear||1),week:Number(s.game?.week||1),unread:true};
+   if(!AMContractDecisionRouting.isAthleteContractDecision(testMail))throw new Error('Contract routing guard did not recognise programme contract email');
+   s.emails=(s.emails||[]).filter(m=>m.id!==mailId);s.emails.push(testMail);
    view('inbox');drawInbox();
-   JSON.stringify({id,subject:mail.subject,athleteId:athlete.id});
+   JSON.stringify({id:mailId,subject:testMail.subject,athleteId:athlete.id});
   `)}catch(err){return 'ERROR: '+String(err?.message||err)+' | '+String(err?.stack||'')}
  });
  assert.ok(!String(seeded).startsWith('ERROR:'),seeded);
