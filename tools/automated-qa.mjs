@@ -63,6 +63,7 @@ await run('Universal live event shell regression',['tools/live-event-shell-v5-re
 await run('Persistence performance regression',['tools/persistence-performance-regression.mjs']);
 await run('Annual career refresh regression',['tools/annual-career-refresh-regression.mjs']);
 await run('Athlete conversation regression',['tools/athlete-conversation-regression.mjs']);
+await run('Athlete results finishing-position regression',['tools/athlete-results-position-regression.mjs']);
 await run('Commercial partnership regression',['tools/commercial-partnership-regression.mjs']);
 await run('Commercial negotiation bridge regression',['tools/commercial-negotiation-bridge-regression.mjs']);
 await run('Commercial negotiation runtime regression',['tools/commercial-negotiation-runtime-regression.mjs']);
