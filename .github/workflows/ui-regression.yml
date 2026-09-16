@@ -1,6 +1,6 @@
 name: UI Regression Gate
 
-# Production UI, Live Event Broadcast V4.6, Manager Career / My Profile V1, Scouting V2 route-root detection, FTUE Scouting V2 assignment routing, FTUE V2.0.2 active-assignment reconciliation safeguards, and repository hygiene are validated by this gate.
+# Production UI, Live Event Broadcast V4.6, Universal Live Event Shell V5, Manager Career / My Profile V1, Scouting V2 route-root detection, FTUE Scouting V2 assignment routing, FTUE V2.0.2 active-assignment reconciliation safeguards, and repository hygiene are validated by this gate.
 on:
   push:
     branches: [main, dev]
@@ -10,6 +10,7 @@ on:
       - 'styles/**'
       - 'tools/static-regression.mjs'
       - 'tools/runtime-smoke.mjs'
+      - 'tools/live-event-shell-v5-regression.mjs'
       - 'tools/repository-hygiene.mjs'
       - '.github/workflows/ui-regression.yml'
   pull_request:
@@ -19,6 +20,7 @@ on:
       - 'styles/**'
       - 'tools/static-regression.mjs'
       - 'tools/runtime-smoke.mjs'
+      - 'tools/live-event-shell-v5-regression.mjs'
       - 'tools/repository-hygiene.mjs'
       - '.github/workflows/ui-regression.yml'
 
@@ -63,6 +65,16 @@ jobs:
           grep -q 'function paintDue(c,force=false)' scripts/live-event-broadcast-v4.js
           grep -q "renderer:'Broadcast V4.6 Optimised'" scripts/live-event-broadcast-v4.js
           grep -q "version:'4.6.0'" scripts/live-event-broadcast-v4.js
+      - name: Validate Universal Live Event Shell V5 source
+        run: |
+          node --check scripts/live-event-shell-v5.js
+          grep -q "version:'5.0.0'" scripts/live-event-shell-v5.js
+          grep -q "return'VERTICAL_JUMP'" scripts/live-event-shell-v5.js
+          grep -q "return'HORIZONTAL_JUMP'" scripts/live-event-shell-v5.js
+          grep -q "return'THROW'" scripts/live-event-shell-v5.js
+          grep -q "return distance>=800?'PACK_RACE':'LANE_RACE'" scripts/live-event-shell-v5.js
+          grep -q 'styles/live-event-shell-v5.css' game.html
+          grep -q 'scripts/live-event-shell-v5.js' game.html
       - name: Check JavaScript syntax
         shell: bash
         run: |
@@ -72,5 +84,7 @@ jobs:
           done < <(find scripts -type f -name '*.js' -print0)
       - name: Install runtime smoke dependency
         run: npm install --no-save --no-package-lock jsdom@26
+      - name: Exercise every current discipline through the universal live event shell
+        run: node tools/live-event-shell-v5-regression.mjs
       - name: Execute browserless runtime smoke
         run: node tools/runtime-smoke.mjs
