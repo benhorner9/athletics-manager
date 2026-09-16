@@ -8,10 +8,10 @@ if(window.__amLiveEventShellV5)return;
 window.__amLiveEventShellV5=1;
 
 const $=(id)=>document.getElementById(id);
-const esc=(v)=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const esc=(v)=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
 const num=(v)=>Number.isFinite(Number(v))?Number(v):null;
 let context={event:null,disc:null,disciplines:[],appliedAt:0};
-let syncTimer=0;
+let syncTimer=0,competitionObserver=null,shellApplyQueued=false;
 
 function disciplineDef(d){try{return typeof DISCIPLINES!=='undefined'?(DISCIPLINES?.[d]||{}):{}}catch(_){return{}}}
 function disciplineLabel(d){try{return typeof discLabel==='function'?discLabel(d):String(d||'Event')}catch(_){return String(d||'Event')}}
@@ -23,7 +23,7 @@ function liveState(){return window.AMLiveBroadcastV4?.active||window.AMLiveEvent
 function resultRows(e,d){return Array.isArray(e?.results?.[d])?e.results[d]:[]}
 
 function familyOf(d){
- const def=disciplineDef(d),type=disciplineType(d),distance=disciplineDistance(d),text=`${d||''} ${disciplineLabel(d)}`.toLowerCase();
+ const type=disciplineType(d),distance=disciplineDistance(d),text=`${d||''} ${disciplineLabel(d)}`.toLowerCase();
  if(/marathon|road\s*race|road\s*run/.test(text))return'ROAD_RACE';
  if(type==='height'||/high\s*jump|pole\s*vault|\bhj\b|\bpv\b/.test(text))return'VERTICAL_JUMP';
  if(/long\s*jump|triple\s*jump|\blj\b|\btj\b/.test(text))return'HORIZONTAL_JUMP';
@@ -78,8 +78,6 @@ function roundText(e,d,c){
  for(const v of candidates)if(typeof v==='string'&&v.trim())return v.trim();
  const p=phaseText(c);return /final/i.test(p)?'Final':/semi/i.test(p)?'Semi-final':/heat/i.test(p)?'Heat':p||'Event'
 }
-function venueText(e){return [e?.location,e?.venue].filter(Boolean).join(' · ')||e?.city||'Athletics venue'}
-function competitionText(e){return e?.name||e?.level||e?.kind||'Athletics Meeting'}
 
 function infoModel(e,d,c){
  const f=familyOf(d),phase=phaseText(c),wind=readWind(e,d),distance=disciplineDistance(d),q=currentAttempt(c);
@@ -147,7 +145,8 @@ function wireShell(root){
 }
 function applyShell(e,d,ds){
  const competition=$('competition'),root=competition?.querySelector('.lv4event');if(!competition||!root)return false;
- d=d||activeDisc()||liveState()?.d||context.disc;context={event:e||context.event,disc:d,disciplines:Array.isArray(ds)?ds:context.disciplines,appliedAt:Date.now()};
+ const c=liveState();e=e||c?.e||context.event;d=d||c?.d||activeDisc()||context.disc;
+ context={event:e||context.event,disc:d,disciplines:Array.isArray(ds)?ds:context.disciplines,appliedAt:Date.now()};
  if(!d)return false;
  document.body.classList.add('lv5-live-event-mode');root.classList.add('lv5event');root.dataset.lv5Family=familyOf(d);
  if(!root.dataset.lv5Shell){
@@ -160,8 +159,24 @@ function applyShell(e,d,ds){
  sync(context.event||{},d);
  return true
 }
-function sync(e=context.event||{},d=context.disc||activeDisc()){if(!d)return;const competition=$('competition'),root=competition?.querySelector('.lv5event');if(!root){document.body.classList.remove('lv5-live-event-mode');return}if(!competition.classList.contains('on')&&competition.offsetParent===null){document.body.classList.remove('lv5-live-event-mode');return}document.body.classList.add('lv5-live-event-mode');const c=liveState();root.dataset.lv5Family=familyOf(d);syncHeader(e,d,c);syncInfo(e,d,c);syncScoreboard(d);syncControls();syncHeaderAction()}
+function sync(e=context.event||{},d=context.disc||activeDisc()){
+ if(!d)return;
+ const competition=$('competition'),raw=competition?.querySelector('.lv4event'),root=competition?.querySelector('.lv5event');
+ if(raw&&!root){applyShell(liveState()?.e||e,liveState()?.d||d,context.disciplines);return}
+ if(!root){document.body.classList.remove('lv5-live-event-mode');return}
+ if(!competition.classList.contains('on')&&competition.offsetParent===null){document.body.classList.remove('lv5-live-event-mode');return}
+ document.body.classList.add('lv5-live-event-mode');const c=liveState(),event=c?.e||e,disc=c?.d||d;root.dataset.lv5Family=familyOf(disc);syncHeader(event,disc,c);syncInfo(event,disc,c);syncScoreboard(disc);syncControls();syncHeaderAction()
+}
 function scheduleShell(e,d,ds){context={event:e||context.event,disc:d||activeDisc()||context.disc,disciplines:Array.isArray(ds)?ds:context.disciplines,appliedAt:context.appliedAt};requestAnimationFrame(()=>applyShell(context.event,context.disc,context.disciplines));setTimeout(()=>applyShell(context.event,context.disc,context.disciplines),0)}
+function queueReapply(){
+ if(shellApplyQueued)return;shellApplyQueued=true;
+ const run=()=>{shellApplyQueued=false;const competition=$('competition'),raw=competition?.querySelector('.lv4event');if(!raw||raw.classList.contains('lv5event'))return;const c=liveState();applyShell(c?.e||context.event,c?.d||activeDisc()||context.disc,context.disciplines)};
+ requestAnimationFrame(run);setTimeout(run,0)
+}
+function watchCompetition(){
+ if(competitionObserver)return;const competition=$('competition');if(!competition||typeof MutationObserver==='undefined')return;
+ competitionObserver=new MutationObserver(()=>queueReapply());competitionObserver.observe(competition,{childList:true});queueReapply()
+}
 
 function wrapGlobal(name,afterArgs){
  const original=window[name];if(typeof original!=='function'||original.__lv5Wrapped)return;
@@ -171,16 +186,17 @@ function wrapGlobal(name,afterArgs){
 }
 wrapGlobal('drawDisciplineScreen',(e,_can,ds)=>scheduleShell(e,activeDisc()||ds?.[0],ds));
 wrapGlobal('drawSummitDisciplineLive',()=>scheduleShell(liveState()?.e||context.event,activeDisc()||liveState()?.d,context.disciplines));
+watchCompetition();
 
-syncTimer=window.setInterval(()=>{try{sync()}catch(_){ }},220);
-window.addEventListener('pagehide',()=>window.clearInterval(syncTimer),{once:true});
+syncTimer=window.setInterval(()=>{try{sync()}catch(_){ }},120);
+window.addEventListener('pagehide',()=>{window.clearInterval(syncTimer);try{competitionObserver?.disconnect()}catch(_){}},{once:true});
 
 window.AMLiveEventShellV5={
- version:'5.0.0',
+ version:'5.0.1',
  get context(){return context},
  family:familyOf,
  capabilities:capabilityOf,
  apply(){return applyShell(context.event,context.disc,context.disciplines)},
- diagnostics(){const root=$('competition')?.querySelector('.lv5event'),d=context.disc||activeDisc();return{loaded:true,version:'5.0.0',active:!!root,discipline:d,family:d?familyOf(d):null,live:!!liveState(),simulationLayer:window.AMLiveBroadcastV4?.version||null,scoreboard:!!$('liveScoreboard'),commentary:!!$('commentary'),headerAction:!!document.querySelector('[data-lv5-action]'),sidebar:!!document.querySelector('.lv5-sidebar')}}
+ diagnostics(){const root=$('competition')?.querySelector('.lv5event'),d=liveState()?.d||context.disc||activeDisc();return{loaded:true,version:'5.0.1',active:!!root,discipline:d,family:d?familyOf(d):null,live:!!liveState(),simulationLayer:window.AMLiveBroadcastV4?.version||null,scoreboard:!!$('liveScoreboard'),commentary:!!$('commentary'),headerAction:!!document.querySelector('[data-lv5-action]'),sidebar:!!document.querySelector('.lv5-sidebar'),redrawObserver:!!competitionObserver}}
 };
 })();
