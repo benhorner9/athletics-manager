@@ -21,58 +21,24 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
+          import base64
           p=Path('tools/browser-qa.mjs')
           s=p.read_text()
-          marker='''\nfor(const scenario of scenarios){\n'''
-          if marker not in s: raise SystemExit('browser QA loop marker missing')
-          fn=r'''
-async function inspectCareerIdentity(page,scenario){
- console.log(`[browser-qa] ${scenario.name} → career identity`);
- const seeded=await page.evaluate(()=>{
-  const athlete=(typeof managedTeam==='function'?managedTeam():[])[0]||s.athletes.find(a=>!a.retired&&a.nation===managedNation());
-  if(!athlete||!window.AMCareerIdentityV2)return null;
-  window.AMCareerIdentityV2.remember({id:`browser-qa:${athlete.id}`,athleteId:athlete.id,type:'call_up',tier:2,season:s.game.season,week:s.game.week,title:`${athlete.name} called into the senior programme`,detail:'Browser QA seed.'});
-  return athlete.id;
- });
- if(!seeded){fail(scenario.name,'Career Identity V2 API or a managed athlete was unavailable');return}
- await page.evaluate(()=>window.openManagerProfile());
- await page.waitForSelector('#managementProfile[open] [data-civ2-manager-tab="athletes"]',{timeout:5000});
- await page.click('#managementProfile [data-civ2-manager-tab="athletes"]');
- await page.waitForSelector('#managementProfile .civ2-page .civ2-athlete-card',{timeout:5000});
- for(const id of ['programme','legacy']){
-  await page.click(`#managementProfile [data-civ2-manager-tab="${id}"]`);
-  await page.waitForSelector('#managementProfile .civ2-page',{timeout:3000});
- }
- await page.click('#managementProfile [data-civ2-manager-tab="athletes"]');
- await page.click('#managementProfile .civ2-athlete-card');
- await page.waitForSelector('#athleteProfile[open] [data-civ2-athlete-tab="history"]',{timeout:5000});
- await page.click('#athleteProfile [data-civ2-athlete-tab="history"]');
- await page.waitForSelector('#athleteProfile .civ2-athlete-history',{timeout:3000});
- const historyState=await page.evaluate(()=>({
-  hasTimeline:!!document.querySelector('#athleteProfile .civ2-timeline'),
-  hasRawRelationshipNumber:/Relationship\s*:\s*\d+/i.test(document.querySelector('#athleteProfile')?.textContent||''),
-  docOverflow:Math.max(0,document.documentElement.scrollWidth-document.documentElement.clientWidth)
- }));
- if(!historyState.hasTimeline)fail(scenario.name,'Athlete Your History tab did not render a timeline');
- if(historyState.hasRawRelationshipNumber)fail(scenario.name,'Athlete history exposes a raw numeric relationship score');
- if(historyState.docOverflow>2)fail(scenario.name,`Career Identity UI creates ${historyState.docOverflow}px of page-level horizontal overflow`);
- await page.evaluate(()=>document.getElementById('athleteProfile')?.close());
- await page.waitForSelector('#managementProfile[open] [data-civ2-manager-tab="athletes"].on',{timeout:5000});
- const restored=await page.evaluate(()=>!!document.querySelector('#managementProfile [data-civ2-manager-tab="athletes"].on'));
- if(!restored)fail(scenario.name,'Returning from athlete history did not restore the manager Athletes tab');
- await page.evaluate(()=>document.getElementById('managementProfile')?.close());
- notes.push(`${scenario.name} · career identity · manager/athlete history navigation passed`);
-}
-'''
+          marker='\nfor(const scenario of scenarios){\n'
+          if marker not in s:
+              raise SystemExit('browser QA loop marker missing')
+          fn=base64.b64decode('CmFzeW5jIGZ1bmN0aW9uIGluc3BlY3RDYXJlZXJJZGVudGl0eShwYWdlLHNjZW5hcmlvKXsKIGNvbnNvbGUubG9nKGBbYnJvd3Nlci1xYV0gJHtzY2VuYXJpby5uYW1lfSDihpIgY2FyZWVyIGlkZW50aXR5YCk7CiBjb25zdCBzZWVkZWQ9YXdhaXQgcGFnZS5ldmFsdWF0ZSgoKT0+ewogIGNvbnN0IGF0aGxldGU9KHR5cGVvZiBtYW5hZ2VkVGVhbT09PSdmdW5jdGlvbic/bWFuYWdlZFRlYW0oKTpbXSlbMF18fHMuYXRobGV0ZXMuZmluZChhPT4hYS5yZXRpcmVkJiZhLm5hdGlvbj09PW1hbmFnZWROYXRpb24oKSk7CiAgaWYoIWF0aGxldGV8fCF3aW5kb3cuQU1DYXJlZXJJZGVudGl0eVYyKXJldHVybiBudWxsOwogIHdpbmRvdy5BTUNhcmVlcklkZW50aXR5VjIucmVtZW1iZXIoe2lkOmBicm93c2VyLXFhOiR7YXRobGV0ZS5pZH1gLGF0aGxldGVJZDphdGhsZXRlLmlkLHR5cGU6J2NhbGxfdXAnLHRpZXI6MixzZWFzb246cy5nYW1lLnNlYXNvbix3ZWVrOnMuZ2FtZS53ZWVrLHRpdGxlOmAke2F0aGxldGUubmFtZX0gY2FsbGVkIGludG8gdGhlIHNlbmlvciBwcm9ncmFtbWVgLGRldGFpbDonQnJvd3NlciBRQSBzZWVkLid9KTsKICByZXR1cm4gYXRobGV0ZS5pZDsKIH0pOwogaWYoIXNlZWRlZCl7ZmFpbChzY2VuYXJpby5uYW1lLCdDYXJlZXIgSWRlbnRpdHkgVjIgQVBJIG9yIGEgbWFuYWdlZCBhdGhsZXRlIHdhcyB1bmF2YWlsYWJsZScpO3JldHVybn0KIGF3YWl0IHBhZ2UuZXZhbHVhdGUoKCk9PndpbmRvdy5vcGVuTWFuYWdlclByb2ZpbGUoKSk7CiBhd2FpdCBwYWdlLndhaXRGb3JTZWxlY3RvcignI21hbmFnZW1lbnRQcm9maWxlW29wZW5dIFtkYXRhLWNpdjItbWFuYWdlci10YWI9ImF0aGxldGVzIl0nLHt0aW1lb3V0OjUwMDB9KTsKIGF3YWl0IHBhZ2UuY2xpY2soJyNtYW5hZ2VtZW50UHJvZmlsZSBbZGF0YS1jaXYyLW1hbmFnZXItdGFiPSJhdGhsZXRlcyJdJyk7CiBhd2FpdCBwYWdlLndhaXRGb3JTZWxlY3RvcignI21hbmFnZW1lbnRQcm9maWxlIC5jaXYyLXBhZ2UgLmNpdjItYXRobGV0ZS1jYXJkJyx7dGltZW91dDo1MDAwfSk7CiBmb3IoY29uc3QgaWQgb2YgWydwcm9ncmFtbWUnLCdsZWdhY3knXSl7CiAgYXdhaXQgcGFnZS5jbGljayhgI21hbmFnZW1lbnRQcm9maWxlIFtkYXRhLWNpdjItbWFuYWdlci10YWI9IiR7aWR9Il1gKTsKICBhd2FpdCBwYWdlLndhaXRGb3JTZWxlY3RvcignI21hbmFnZW1lbnRQcm9maWxlIC5jaXYyLXBhZ2UnLHt0aW1lb3V0OjMwMDB9KTsKIH0KIGF3YWl0IHBhZ2UuY2xpY2soJyNtYW5hZ2VtZW50UHJvZmlsZSBbZGF0YS1jaXYyLW1hbmFnZXItdGFiPSJhdGhsZXRlcyJdJyk7CiBhd2FpdCBwYWdlLmNsaWNrKCcjbWFuYWdlbWVudFByb2ZpbGUgLmNpdjItYXRobGV0ZS1jYXJkJyk7CiBhd2FpdCBwYWdlLndhaXRGb3JTZWxlY3RvcignI2F0aGxldGVQcm9maWxlW29wZW5dIFtkYXRhLWNpdjItYXRobGV0ZS10YWI9Imhpc3RvcnkiXScse3RpbWVvdXQ6NTAwMH0pOwogYXdhaXQgcGFnZS5jbGljaygnI2F0aGxldGVQcm9maWxlIFtkYXRhLWNpdjItYXRobGV0ZS10YWI9Imhpc3RvcnkiXScpOwogYXdhaXQgcGFnZS53YWl0Rm9yU2VsZWN0b3IoJyNhdGhsZXRlUHJvZmlsZSAuY2l2Mi1hdGhsZXRlLWhpc3RvcnknLHt0aW1lb3V0OjMwMDB9KTsKIGNvbnN0IGhpc3RvcnlTdGF0ZT1hd2FpdCBwYWdlLmV2YWx1YXRlKCgpPT4oewogIGhhc1RpbWVsaW5lOiEhZG9jdW1lbnQucXVlcnlTZWxlY3RvcignI2F0aGxldGVQcm9maWxlIC5jaXYyLXRpbWVsaW5lJyksCiAgaGFzUmF3UmVsYXRpb25zaGlwTnVtYmVyOi9SZWxhdGlvbnNoaXBccyo6XHMqXGQrL2kudGVzdChkb2N1bWVudC5xdWVyeVNlbGVjdG9yKCcjYXRobGV0ZVByb2ZpbGUnKT8udGV4dENvbnRlbnR8fCcnKSwKICBkb2NPdmVyZmxvdzpNYXRoLm1heCgwLGRvY3VtZW50LmRvY3VtZW50RWxlbWVudC5zY3JvbGxXaWR0aC1kb2N1bWVudC5kb2N1bWVudEVsZW1lbnQuY2xpZW50V2lkdGgpCiB9KSk7CiBpZighaGlzdG9yeVN0YXRlLmhhc1RpbWVsaW5lKWZhaWwoc2NlbmFyaW8ubmFtZSwnQXRobGV0ZSBZb3VyIEhpc3RvcnkgdGFiIGRpZCBub3QgcmVuZGVyIGEgdGltZWxpbmUnKTsKIGlmKGhpc3RvcnlTdGF0ZS5oYXNSYXdSZWxhdGlvbnNoaXBOdW1iZXIpZmFpbChzY2VuYXJpby5uYW1lLCdBdGhsZXRlIGhpc3RvcnkgZXhwb3NlcyBhIHJhdyBudW1lcmljIHJlbGF0aW9uc2hpcCBzY29yZScpOwogaWYoaGlzdG9yeVN0YXRlLmRvY092ZXJmbG93PjIpZmFpbChzY2VuYXJpby5uYW1lLGBDYXJlZXIgSWRlbnRpdHkgVUkgY3JlYXRlcyAke2hpc3RvcnlTdGF0ZS5kb2NPdmVybG93fXB4IG9mIHBhZ2UtbGV2ZWwgaG9yaXpvbnRhbCBvdmVyZmxvd2ApOwogYXdhaXQgcGFnZS5ldmFsdWF0ZSgoKT0+ZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ2F0aGxldGVQcm9maWxlJyk/LmNsb3NlKCkpOwogYXdhaXQgcGFnZS53YWl0Rm9yU2VsZWN0b3IoJyNtYW5hZ2VtZW50UHJvZmlsZVtvcGVuXSBbZGF0YS1jaXYyLW1hbmFnZXItdGFiPSJhdGhsZXRlcyJdLm9uJyx7dGltZW91dDo1MDAwfSk7CiBjb25zdCByZXN0b3JlZD1hd2FpdCBwYWdlLmV2YWx1YXRlKCgpPT4hIWRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoJyNtYW5hZ2VtZW50UHJvZmlsZSBbZGF0YS1jaXYyLW1hbmFnZXItdGFiPSJhdGhsZXRlcyJdLm9uJykpOwogaWYoIXJlc3RvcmVkKWZhaWwoc2NlbmFyaW8ubmFtZSwnUmV0dXJuaW5nIGZyb20gYXRobGV0ZSBoaXN0b3J5IGRpZCBub3QgcmVzdG9yZSB0aGUgbWFuYWdlciBBdGhsZXRlcyB0YWInKTsKIGF3YWl0IHBhZ2UuZXZhbHVhdGUoKCk9PmRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdtYW5hZ2VtZW50UHJvZmlsZScpPy5jbG9zZSgpKTsKIG5vdGVzLnB1c2goYCR7c2NlbmFyaW8ubmFtZX0gwrcgY2FyZWVyIGlkZW50aXR5IMK3IG1hbmFnZXIvYXRobGV0ZSBoaXN0b3J5IG5hdmlnYXRpb24gcGFzc2VkYCk7Cn0K').decode()
           if 'async function inspectCareerIdentity' not in s:
               s=s.replace(marker,'\n'+fn+marker,1)
-          old='''  for(const [route,selector] of scenario.routes){\n   console.log(`[browser-qa] ${scenario.name} → ${route}`);\n   await inspectRoute(page,scenario,route,selector);\n  }\n  if(pageErrors.length)'''
-          new='''  for(const [route,selector] of scenario.routes){\n   console.log(`[browser-qa] ${scenario.name} → ${route}`);\n   await inspectRoute(page,scenario,route,selector);\n  }\n  await inspectCareerIdentity(page,scenario);\n  if(pageErrors.length)'''
-          if old not in s: raise SystemExit('browser QA scenario insertion target missing')
+          old="  for(const [route,selector] of scenario.routes){\n   console.log(`[browser-qa] ${scenario.name} → ${route}`);\n   await inspectRoute(page,scenario,route,selector);\n  }\n  if(pageErrors.length)"
+          new="  for(const [route,selector] of scenario.routes){\n   console.log(`[browser-qa] ${scenario.name} → ${route}`);\n   await inspectRoute(page,scenario,route,selector);\n  }\n  await inspectCareerIdentity(page,scenario);\n  if(pageErrors.length)"
+          if old not in s:
+              raise SystemExit('browser QA scenario insertion target missing')
           s=s.replace(old,new,1)
           old="console.log('✓ National Pool rating elements remained inside their cells');"
           new=old+"\nconsole.log('✓ Career Identity manager tabs, athlete history and return navigation passed across browser scenarios');"
-          if new not in s:s=s.replace(old,new,1)
+          if new not in s:
+              s=s.replace(old,new,1)
           p.write_text(s)
           PY
           node --check tools/browser-qa.mjs
