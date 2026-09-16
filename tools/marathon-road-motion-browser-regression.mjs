@@ -42,42 +42,47 @@ try{
   `)}catch(err){return {error:String(err?.stack||err)}}
  });
  assert.ok(!seeded.error,seeded.error);
- await page.waitForFunction(()=>document.querySelector('.road-v3-stage')?.dataset.motionModel==='athlete-first-v4'&&document.querySelectorAll('[data-road-v3-runner][data-motion-v4="1"]').length>=8,{timeout:8000});
+ await page.waitForFunction(()=>document.querySelector('.road-v3-stage')?.dataset.motionModel==='athlete-first-v4'&&document.querySelectorAll('[data-road-v4-travel] [data-road-v3-runner][data-motion-v4="1"]').length>=8,{timeout:8000});
 
  const before=await page.evaluate(()=>({
-  runners:[...document.querySelectorAll('[data-road-v3-runner]')].map(n=>({id:n.dataset.runnerId,x:Number(n.dataset.x),lane:Number(n.dataset.lane)})),
+  runners:[...document.querySelectorAll('[data-road-v3-runner]')].map(n=>({id:n.dataset.runnerId,renderX:Number(n.dataset.renderX),left:n.getBoundingClientRect().left})),
   roadMark:getComputedStyle(document.querySelector('.road-v3-road-mark')).animationName,
   far:getComputedStyle(document.querySelector('.road-v3-scroll-far')).animationName,
   near:getComputedStyle(document.querySelector('.road-v3-scroll-near')).animationName,
   model:document.querySelector('.road-v3-stage')?.dataset.motionModel||'',
+  wrappers:document.querySelectorAll('[data-road-v4-travel]').length,
   cssLoaded:[...document.styleSheets].some(x=>String(x.href||'').includes('marathon-road-motion-v4.css'))
  }));
  await page.waitForTimeout(900);
  const after=await page.evaluate(()=>({
-  runners:[...document.querySelectorAll('[data-road-v3-runner]')].map(n=>({id:n.dataset.runnerId,x:Number(n.dataset.x),lane:Number(n.dataset.lane),motion:n.dataset.motionV4,gap:Number(n.dataset.gapSeconds||0)})),
-  geometry:[...document.querySelectorAll('[data-road-v3-runner]')].map(n=>{const x=Number(n.dataset.x),lane=Number(n.dataset.lane),b=AMMarathonRoadBroadcastV2.roadBoundsAt(x);return{x,lane,halfWidth:b.halfWidth}})
+  runners:[...document.querySelectorAll('[data-road-v3-runner]')].map(n=>({id:n.dataset.runnerId,renderX:Number(n.dataset.renderX),renderLane:Number(n.dataset.renderLane),left:n.getBoundingClientRect().left,motion:n.dataset.motionV4})),
+  geometry:[...document.querySelectorAll('[data-road-v3-runner]')].map(n=>{const x=Number(n.dataset.renderX),lane=Number(n.dataset.renderLane),b=AMMarathonRoadBroadcastV2.roadBoundsAt(x);return{x,lane,halfWidth:b.halfWidth}})
  }));
- const initial=new Map(before.runners.map(x=>[x.id,x.x]));
- const deltas=after.runners.filter(x=>initial.has(x.id)).map(x=>x.x-initial.get(x.id));
- assert.ok(deltas.length>=8,'not enough marathon markers survived motion sample');
- assert.ok(deltas.filter(x=>x>10).length>=Math.ceil(deltas.length*.7),`athletes did not visibly travel forward: ${JSON.stringify(deltas)}`);
- assert.ok(Math.max(...deltas)>18,'lead motion was too small to read visually');
+ const initial=new Map(before.runners.map(x=>[x.id,x]));
+ const svgDeltas=after.runners.filter(x=>initial.has(x.id)).map(x=>x.renderX-initial.get(x.id).renderX);
+ const pixelDeltas=after.runners.filter(x=>initial.has(x.id)).map(x=>x.left-initial.get(x.id).left);
+ assert.ok(svgDeltas.length>=8,'not enough marathon markers survived motion sample');
+ assert.ok(svgDeltas.filter(x=>x>10).length>=Math.ceil(svgDeltas.length*.7),`athletes did not travel forward through the road section: ${JSON.stringify(svgDeltas)}`);
+ assert.ok(pixelDeltas.filter(x=>x>5).length>=Math.ceil(pixelDeltas.length*.7),`rendered athlete markers did not move forward on screen: ${JSON.stringify(pixelDeltas)}`);
+ assert.ok(Math.max(...svgDeltas)>18,'lead motion was too small to read visually');
  assert.equal(before.roadMark,'none','road centre markings are still scrolling instead of staying fixed');
  assert.equal(before.far,'none','far scenery is still scrolling instead of staying fixed');
  assert.equal(before.near,'none','near scenery is still scrolling instead of staying fixed');
  assert.equal(before.model,'athlete-first-v4','marathon stage is not using athlete-first motion model');
+ assert.ok(before.wrappers>=8,'athlete travel wrappers were not installed');
  assert.equal(before.cssLoaded,true,'athlete-first marathon motion stylesheet did not load');
  assert.ok(after.geometry.every(g=>Math.abs(g.lane)<=g.halfWidth*.60+.05),'athlete-first motion pushed a marker outside the road corridor');
 
  const model=await page.evaluate(()=>{
   const h={phase:'race',camera:'pack'};
-  const leader={id:'leader',rank:1,gap:0},chaser={id:'chaser',rank:2,gap:8};
+  const leader={id:'leader',rank:1,gap:0,lane:0},chaser={id:'chaser',rank:2,gap:8,lane:0};
   const early=AMMarathonRoadMotionV4.screenPosition(leader,.12,h),late=AMMarathonRoadMotionV4.screenPosition(leader,.72,h),behind=AMMarathonRoadMotionV4.screenPosition(chaser,.72,h);
   return {early,late,behind,debug:AMMarathonRoadMotionV4.debug()};
  });
  assert.ok(model.late.x-model.early.x>250,'athlete world progress is not producing strong forward screen travel');
  assert.ok(model.late.x-model.behind.x>55,'simulated eight-second gap is not visually readable');
  assert.equal(model.debug.model,'athlete-first','motion API is not reporting athlete-first ownership');
+ assert.equal(model.debug.ownership,'wrapper-transform','V3 and V4 do not have separated transform ownership');
  assert.equal(model.debug.roadScroll,false,'motion API still reports scrolling-road ownership');
  assert.deepEqual(pageErrors,[],'WebKit reported an uncaught page error in athlete-first marathon motion');
  console.log('Marathon athlete-first motion WebKit regression passed.');
