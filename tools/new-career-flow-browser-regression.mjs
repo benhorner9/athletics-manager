@@ -43,56 +43,63 @@ try{
  console.log('[new-career] choose nation and create career');
  await page.click('#newBtn');
  await page.waitForSelector('#nationModal:not(.hidden)',{timeout:5000});
- await page.click('[data-nation="GREAT BRITAIN"]');
+ await page.click('#nationGrid [data-nation="GREAT BRITAIN"]');
  if(await page.locator('#beginCareerBtn').isDisabled())fail('Review Job Offer stayed disabled after choosing Great Britain.');
  await page.click('#beginCareerBtn');
- await page.waitForSelector('#firstDay[open] .firstday-shell[data-step="arrival"]',{timeout:10000});
+ await page.waitForFunction(()=>document.getElementById('firstDay')?.open&&s?.induction?.step==='arrival',{timeout:10000});
+ await page.waitForSelector('#firstDay[open] .ftx-firstday [data-ftx-review-offer]',{timeout:5000});
  const initial=await page.evaluate(()=>({
   nation:s.managedNation,
   contractSigned:s.appointment?.contractSigned,
+  inductionStep:s.induction?.step,
   week:s.game?.week,
   active:[...document.querySelectorAll('.view.on')].map(el=>el.id)
  }));
  if(initial.nation!=='GREAT BRITAIN')fail(`New career created the wrong nation: ${initial.nation}`);
  if(initial.contractSigned!==false)fail('Fresh career unexpectedly started with appointment already signed.');
+ if(initial.inductionStep!=='arrival')fail(`Fresh career opened the wrong onboarding step: ${initial.inductionStep}`);
  if(initial.week!==1)fail(`Fresh career started in Week ${initial.week} instead of Week 1.`);
  if(!initial.active.includes('inbox'))fail(`Unsigned appointment did not route to Inbox; active views: ${initial.active.join(', ')}`);
 
- console.log('[new-career] complete appointment');
- await page.click('#firstDayContinue');
- await page.waitForSelector('#firstDay[open] .firstday-shell[data-step="contract"]',{timeout:5000});
- await page.fill('#firstDayName','Phase One QA');
- await page.click('#firstDaySign');
- await page.waitForSelector('#firstDay[open] .firstday-shell[data-step="people"]',{timeout:8000});
- const signed=await page.evaluate(()=>({signed:s.appointment?.contractSigned,name:s.managerName,welcome:s.emails.some(m=>m.type==='welcome')}));
- if(!signed.signed)fail('Signing the appointment did not persist contractSigned.');
+ console.log('[new-career] review and accept appointment');
+ await page.click('[data-ftx-review-offer]');
+ await page.waitForFunction(()=>s?.induction?.step==='contract',{timeout:5000});
+ await page.waitForSelector('#firstDay[open] #ftxFirstDayName',{timeout:5000});
+ await page.fill('#ftxFirstDayName','Phase One QA');
+ await page.click('[data-ftx-sign]');
+ await page.waitForFunction(()=>s?.appointment?.contractSigned===true&&document.getElementById('firstDay')?.open,{timeout:10000});
+ await page.waitForSelector('#firstDay[open] [data-ftx-enter]',{timeout:5000});
+ const signed=await page.evaluate(()=>({
+  signed:s.appointment?.contractSigned,
+  name:s.managerName,
+  welcome:s.emails.some(m=>m.type==='welcome'),
+  ftx:window.AMFirstTimeExperienceV2?true:false,
+  opening:(s.events||[]).find(e=>e.id==='opening-meet-v2')||null
+ }));
+ if(!signed.signed)fail('Accepting the appointment did not persist contractSigned.');
  if(signed.name!=='Phase One QA')fail(`Manager name did not persist from onboarding: ${signed.name}`);
- if(!signed.welcome)fail('Signing the appointment did not seed the welcome message.');
+ if(!signed.welcome)fail('Accepting the appointment did not seed the welcome message.');
+ if(!signed.ftx)fail('First-Time Experience V2 was not loaded for a fresh career.');
+ if(!signed.opening||Number(signed.opening.week)!==5)fail(`Fresh career did not schedule the Week 5 opening competition: ${JSON.stringify(signed.opening)}`);
 
- console.log('[new-career] complete first-day decisions');
- await page.click('#firstDayContinue');
- await page.waitForSelector('#firstDay[open] .firstday-shell[data-step="decision"]',{timeout:5000});
- await page.click('[data-firstday-plan="Balanced"]');
- await page.waitForFunction(()=>!document.getElementById('firstDayConfirm')?.disabled,{timeout:5000});
- await page.click('#firstDayConfirm');
- await page.waitForSelector('#firstDay[open] .firstday-shell[data-step="ready"]',{timeout:5000});
- await page.click('#firstDayExplore');
+ console.log('[new-career] enter performance centre');
+ await page.click('[data-ftx-enter]');
  await page.waitForFunction(()=>!document.getElementById('firstDay')?.open,{timeout:5000});
  await page.waitForSelector('#home.view.on',{timeout:5000});
  const complete=await page.evaluate(()=>({
   induction:s.induction?.completed,
-  plan:s.trainingFocus,
   week:s.game?.week,
   careerYear:careerState().careerYear,
   save:!!readCareerSave(),
-  startupHidden:document.getElementById('startup')?.classList.contains('hidden')
+  startupHidden:document.getElementById('startup')?.classList.contains('hidden'),
+  ftxState:s.firstTimeExperienceV2||null
  }));
  if(!complete.induction)fail('First-day onboarding did not enter completed state.');
- if(complete.plan!=='Balanced')fail(`Opening training decision did not persist: ${complete.plan}`);
- if(complete.week!==1)fail('Explore Dashboard incorrectly advanced the opening week.');
+ if(complete.week!==1)fail('Entering the Performance Centre incorrectly advanced the opening week.');
  if(complete.careerYear!==1)fail(`New career reports Career Year ${complete.careerYear} instead of 1.`);
  if(!complete.save)fail('Completed onboarding did not leave a recoverable career save.');
  if(!complete.startupHidden)fail('Main menu remained visible after onboarding completed.');
+ if(!complete.ftxState||complete.ftxState.completed)fail(`Guided First-Time Experience was not active after onboarding: ${JSON.stringify(complete.ftxState)}`);
 
  console.log('[new-career] reload and continue saved career');
  await page.reload({waitUntil:'load',timeout:30000});
@@ -107,17 +114,20 @@ try{
   signed:s.appointment?.contractSigned,
   induction:s.induction?.completed,
   week:s.game?.week,
-  firstDayOpen:!!document.getElementById('firstDay')?.open
+  firstDayOpen:!!document.getElementById('firstDay')?.open,
+  ftxActive:!!s.firstTimeExperienceV2&&!s.firstTimeExperienceV2.completed
  }));
  if(resumed.nation!=='GREAT BRITAIN'||resumed.name!=='Phase One QA'||!resumed.signed||!resumed.induction||resumed.week!==1)fail(`Saved career resumed with incorrect state: ${JSON.stringify(resumed)}`);
- if(resumed.firstDayOpen)fail('Completed first-day onboarding reopened after reload/continue.');
+ if(resumed.firstDayOpen)fail('Completed appointment onboarding reopened after reload/continue.');
+ if(!resumed.ftxActive)fail('Guided First-Time Experience did not survive reload/continue.');
  if(pageErrors.length)fail(`Uncaught page errors during new-career flow:\n${pageErrors.join('\n---\n')}`);
 
  console.log('\nNEW CAREER FLOW REGRESSION: PASSED');
  console.log('✓ locked main menu → alpha access');
  console.log('✓ Start New Career → nation selection → appointment');
- console.log('✓ first-day onboarding → dashboard without accidental week advance');
- console.log('✓ reload → Continue Career restored the same save');
+ console.log('✓ authoritative First-Time Experience → Home without accidental week advance');
+ console.log('✓ Week 5 opening competition scheduled');
+ console.log('✓ reload → Continue Career restored the same save and guided state');
 }finally{
  try{await context?.close()}catch(_){}
  try{await browser?.close()}catch(_){}
