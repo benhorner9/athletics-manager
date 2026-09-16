@@ -19,6 +19,7 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,Number(v)||0));
 let remembered={event:null,disc:null,results:null,lines:null};
 let pendingStart=null;
 let authorizedCommitKey=null;
+let authorizedCommitDepth=0;
 let motionKey=null;
 let blockedCommits=0;
 let authorizedCommits=0;
@@ -121,7 +122,7 @@ function authorizeCommit(e,d){authorizedCommitKey=eventKey(e,d)}
 function runSkip(){
  const c=session();if(!c||typeof c.a?.skip!=='function')return false;
  authorizeCommit(c.event,c.disc);
- try{c.a.skip();return true}finally{setTimeout(()=>{authorizedCommitKey=null},0)}
+ try{c.a.skip();return true}finally{setTimeout(()=>{if(authorizedCommitDepth===0)authorizedCommitKey=null},0)}
 }
 function roadStartTarget(target){return target instanceof Element?target.closest('#startDiscipline,#startDisciplineTop'):null}
 document.addEventListener('click',event=>{
@@ -140,7 +141,7 @@ function ensureStartGuard(){
 }
 function ensureApiSkipGuard(){
  const a=api();if(!a||typeof a.skip!=='function'||a.skip.__amMarathonPlaybackIntegrityV2Skip)return false;
- const base=a.skip,wrapped=function(...args){const c=session();if(c)authorizeCommit(c.event,c.disc);try{return base.apply(this,args)}finally{setTimeout(()=>{authorizedCommitKey=null},0)}};
+ const base=a.skip,wrapped=function(...args){const c=session();if(c)authorizeCommit(c.event,c.disc);try{return base.apply(this,args)}finally{setTimeout(()=>{if(authorizedCommitDepth===0)authorizedCommitKey=null},0)}};
  Object.defineProperty(wrapped,'__amMarathonPlaybackIntegrityV2Skip',{value:true});a.skip=wrapped;return true
 }
 function ensureCommitGuard(){
@@ -149,7 +150,10 @@ function ensureCommitGuard(){
  const base=current,wrapped=function(e,d,r){
   if(isRoad(d)){
    const key=eventKey(e,d);
-   if(authorizedCommitKey===key){authorizedCommitKey=null;authorizedCommits++;return base.apply(this,arguments)}
+   if(authorizedCommitKey===key){
+    authorizedCommitDepth++;authorizedCommits++;
+    try{return base.apply(this,arguments)}finally{authorizedCommitDepth=Math.max(0,authorizedCommitDepth-1);if(authorizedCommitDepth===0)authorizedCommitKey=null}
+   }
    const dbg=debug();
    if(dbg&&String(dbg.disc)===String(d)&&Number(dbg.index)<Number(dbg.total)){
     blockedCommits++;console.warn('[Marathon Integrity V2] blocked premature marathon result commit',{disc:d,index:dbg.index,total:dbg.total});return;
@@ -164,6 +168,6 @@ function ensureCommitGuard(){
 const observer=new MutationObserver(schedule);observer.observe(document.documentElement,{subtree:true,childList:true});
 window.addEventListener('pageshow',schedule);window.addEventListener('orientationchange',()=>setTimeout(schedule,80));
 setInterval(schedule,200);setInterval(()=>{ensureCommitGuard();ensureStartGuard();ensureApiSkipGuard()},750);
-window.AMMarathonPlaybackIntegrityV2={version:VERSION,sync,session,skip:runSkip,debug:()=>{const c=session();return{installed:true,active:!!c,index:c?.index??null,total:c?.total??null,phase:c?.h?.phase??null,blockedCommits,authorizedCommits,repairedContexts,forcedStages,forcedResults,forcedMotions,pendingStart,authorizedCommit:authorizedCommitKey,motionKey}}};
+window.AMMarathonPlaybackIntegrityV2={version:VERSION,sync,session,skip:runSkip,debug:()=>{const c=session();return{installed:true,active:!!c,index:c?.index??null,total:c?.total??null,phase:c?.h?.phase??null,blockedCommits,authorizedCommits,repairedContexts,forcedStages,forcedResults,forcedMotions,pendingStart,authorizedCommit:authorizedCommitKey,authorizedCommitDepth,motionKey}}};
 schedule();
 })();
