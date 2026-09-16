@@ -101,12 +101,14 @@ try{
  assert.ok(seeded.themes.length>=2,'road highlight package no longer varies its environment');
  assert.ok(seeded.themes.includes('finish'),'finish environment is missing');
 
- await page.waitForTimeout(700);
+ await page.waitForFunction(()=>window.AMMarathonRoadMotionV4?.debug?.().active===true,{timeout:5000});
+ const motionStart=await page.evaluate(()=>[...document.querySelectorAll('[data-road-v3-runner]')].map(node=>({renderX:node.dataset.renderX||'',wrapper:node.parentElement?.matches?.('[data-road-v4-travel]')?node.parentElement.getAttribute('transform')||'':'',transform:node.getAttribute('transform')||''})));
+ await page.waitForTimeout(450);
  const moved=await page.evaluate(()=>{
   const nodes=[...document.querySelectorAll('[data-road-v3-runner]')];
-  return nodes.map((node,i)=>{const x=Number(node.dataset.x||0),lane=Number(node.dataset.lane||0),bounds=AMMarathonRoadBroadcastV2.roadBoundsAt(x);return{index:i,x,lane,halfWidth:bounds.halfWidth,transform:node.getAttribute('transform')}});
+  return nodes.map((node,i)=>{const x=Number(node.dataset.x||0),lane=Number(node.dataset.lane||0),bounds=AMMarathonRoadBroadcastV2.roadBoundsAt(x);return{index:i,x,lane,halfWidth:bounds.halfWidth,renderX:node.dataset.renderX||'',wrapper:node.parentElement?.matches?.('[data-road-v4-travel]')?node.parentElement.getAttribute('transform')||'':'',transform:node.getAttribute('transform')||''}});
  });
- assert.ok(moved.some((g,i)=>g.transform!==seeded.geometry[i]?.transform),'marathon markers did not move during the opening road section');
+ assert.ok(moved.some((g,i)=>g.renderX!==motionStart[i]?.renderX||g.wrapper!==motionStart[i]?.wrapper||g.transform!==motionStart[i]?.transform),'marathon athlete dots did not move during the opening road section');
  assert.ok(moved.every(g=>Math.abs(g.lane)<=g.halfWidth*.62+.01),'animated marker escaped the road corridor');
 
  const skipped=await page.evaluate(()=>{
