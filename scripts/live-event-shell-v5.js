@@ -112,7 +112,17 @@ function sourceAction(){
  if(primary&&!primary.disabled)return primary;
  return day||primary||null
 }
+function resultExitContext(){
+ const c=liveState(),e=c?.e||context.event,d=c?.d||context.disc||activeDisc();
+ return !c&&e&&d&&Array.isArray(e?.results?.[d])?{e,d}:null
+}
 function clickSource(source){if(!source||source.disabled)return;source.click()}
+function returnHomeFromResult(){
+ const hit=resultExitContext();if(!hit)return false;
+ try{const api=window.__athleticsCompetitionJourneyV2;if(api?.returnHomeFromEvent)return api.returnHomeFromEvent(hit.e)}catch(_){}
+ try{if(typeof returnHomeFromCompletedEvent==='function')return returnHomeFromCompletedEvent(hit.e)}catch(_){}
+ try{view('home');return true}catch(_){return false}
+}
 function playbackSource(value){return document.querySelector(`#liveEventVisual [data-speed="${value}"]`)}
 function syncControls(){
  const c=liveState(),pauseProxy=document.querySelector('[data-lv5-pause]'),pauseSource=document.querySelector('#liveEventVisual [data-pause]');
@@ -121,7 +131,12 @@ function syncControls(){
  const skip=$('v4skip'),skipProxy=document.querySelector('[data-lv5-skip]');if(skipProxy){skipProxy.hidden=!skip;skipProxy.disabled=!skip||skip.disabled;skipProxy.textContent=skip?.textContent||'SKIP TO RESULT'}
 }
 function syncHeaderAction(){
- const proxy=document.querySelector('[data-lv5-action]'),src=sourceAction();if(!proxy)return;
+ const proxy=document.querySelector('[data-lv5-action]'),src=sourceAction(),resultExit=resultExitContext();if(!proxy)return;
+ if(resultExit&&(!src||src.disabled)){
+  proxy.hidden=false;proxy.disabled=false;proxy.dataset.lv5ResultExit='1';
+  proxy.innerHTML=`<span>RETURN HOME</span><b aria-hidden="true">→</b>`;return
+ }
+ delete proxy.dataset.lv5ResultExit;
  if(!src){proxy.hidden=true;return}
  proxy.hidden=false;proxy.disabled=!!src.disabled;
  const text=String(src.textContent||'CONTINUE').trim();
@@ -139,7 +154,7 @@ function proxyControlsHTML(){return`<div class="lv5-side-controls" aria-label="P
 function headerExtrasHTML(e,d){return`<div class="lv5-event-identity"><small>LIVE EVENT</small><strong data-lv5-event-name>${esc(disciplineLabel(d))}</strong><span data-lv5-round>${esc(roundText(e,d,liveState()))}</span></div><div class="lv5-primary-metric"><small data-lv5-metric-label>EVENT STATUS</small><strong data-lv5-metric-value>READY</strong></div><div class="lv5-condition" data-lv5-condition hidden></div><button class="lv5-primary-action" type="button" data-lv5-action><span>CONTINUE</span><b aria-hidden="true">→</b></button>`}
 
 function wireShell(root){
- root.querySelector('[data-lv5-action]')?.addEventListener('click',()=>clickSource(sourceAction()));
+ root.querySelector('[data-lv5-action]')?.addEventListener('click',event=>{const button=event.currentTarget;if(button?.dataset?.lv5ResultExit==='1')returnHomeFromResult();else clickSource(sourceAction())});
  root.querySelector('[data-lv5-pause]')?.addEventListener('click',()=>document.querySelector('#liveEventVisual [data-pause]')?.click());
  root.querySelectorAll('[data-lv5-speed]').forEach(btn=>btn.addEventListener('click',()=>playbackSource(btn.dataset.lv5Speed)?.click()));
  root.querySelector('[data-lv5-skip]')?.addEventListener('click',()=>{const b=$('v4skip');if(b&&!b.disabled)b.click()})
