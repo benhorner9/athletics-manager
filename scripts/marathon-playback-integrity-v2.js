@@ -19,11 +19,13 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,Number(v)||0));
 let remembered={event:null,disc:null,results:null,lines:null};
 let pendingStart=null;
 let authorizedCommitKey=null;
+let motionKey=null;
 let blockedCommits=0;
 let authorizedCommits=0;
 let repairedContexts=0;
 let forcedStages=0;
 let forcedResults=0;
+let forcedMotions=0;
 let queued=false;
 
 function eventKey(e,d){return `${String(e?.id||e?.name||'road')}|${String(d||'')}`}
@@ -74,14 +76,23 @@ function stageMatches(c){
 function forceCurrentStage(c){
  if(stageMatches(c))return false;
  if(c.a.renderStage(c.event,c.disc,c.results,c.h)){
-  forcedStages++;
-  requestAnimationFrame(()=>{try{window.AMMarathonRoadMotionV4?.animate?.()}catch(_){}});
+  forcedStages++;motionKey=null;
   return true;
  }
  return false
 }
+function ensureAthleteMotion(c){
+ const motion=window.AMMarathonRoadMotionV4;if(!motion||typeof motion.animate!=='function')return false;
+ const key=`${eventKey(c.event,c.disc)}|${c.index}`;
+ if(motionKey===key)return false;
+ try{
+  if(motion.debug?.().active){motionKey=key;return true}
+  if(motion.animate()){motionKey=key;forcedMotions++;return true}
+ }catch(err){console.warn('[Marathon Integrity V2] athlete motion recovery failed',err)}
+ return false
+}
 function syncLiveShell(c){
- restoreLive(c);forceCurrentStage(c);
+ restoreLive(c);forceCurrentStage(c);ensureAthleteMotion(c);
  const root=document.querySelector('.road-matchday');if(!root)return false;root.classList.add('road-playback-integrity-v2');
  const commentary=document.getElementById('commentary');if(commentary&&c.h.commentary){if(typeof matchdayCommentaryHTML==='function')commentary.innerHTML=matchdayCommentaryHTML(c.h.commentary);else setText(commentary,c.h.commentary)}
  const liveRow=root.querySelector('.matchday-live-row');if(liveRow){if(!liveRow.querySelector('.matchday-live-dot')){const dot=document.createElement('i');dot.className='matchday-live-dot';liveRow.prepend(dot)}const label=liveRow.querySelector('small'),phase=c.h.phase==='finish'?'FINISH':`HIGHLIGHT ${c.index+1}/${c.total}`;setText(label,`${phase} • 42.195 KM`)}
@@ -90,6 +101,7 @@ function syncLiveShell(c){
  return true
 }
 function syncFinishedScreen(){
+ motionKey=null;
  const d=activeDisc();if(!isRoad(d))return false;const e=resolveEvent(d),results=e?.results?.[d],a=api();if(!e||!a||!Array.isArray(results))return false;
  document.getElementById('roadV3Skip')?.remove();
  const root=document.getElementById('roadLiveStage');if(root&&!root.querySelector('.road-v3-results')){if(a.renderResults(e,d,results)){forcedResults++;return true}}
@@ -103,7 +115,7 @@ function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>{queu
 function queueStart(e,d){
  if(!e||!isRoad(d)||Array.isArray(e.results?.[d]))return;
  const key=eventKey(e,d);if(pendingStart===key)return;pendingStart=key;let attempts=0;
- const go=()=>{attempts++;const a=api();if(typeof a?.start==='function'){pendingStart=null;a.start(e,d);schedule();return}if(attempts<80){setTimeout(go,50);return}pendingStart=null;console.warn('[Marathon Integrity V2] V3 start authority did not become available')};go()
+ const go=()=>{attempts++;const a=api();if(typeof a?.start==='function'){pendingStart=null;motionKey=null;a.start(e,d);schedule();return}if(attempts<80){setTimeout(go,50);return}pendingStart=null;console.warn('[Marathon Integrity V2] V3 start authority did not become available')};go()
 }
 function authorizeCommit(e,d){authorizedCommitKey=eventKey(e,d)}
 function runSkip(){
@@ -152,6 +164,6 @@ function ensureCommitGuard(){
 const observer=new MutationObserver(schedule);observer.observe(document.documentElement,{subtree:true,childList:true});
 window.addEventListener('pageshow',schedule);window.addEventListener('orientationchange',()=>setTimeout(schedule,80));
 setInterval(schedule,200);setInterval(()=>{ensureCommitGuard();ensureStartGuard();ensureApiSkipGuard()},750);
-window.AMMarathonPlaybackIntegrityV2={version:VERSION,sync,session,skip:runSkip,debug:()=>{const c=session();return{installed:true,active:!!c,index:c?.index??null,total:c?.total??null,phase:c?.h?.phase??null,blockedCommits,authorizedCommits,repairedContexts,forcedStages,forcedResults,pendingStart,authorizedCommit:authorizedCommitKey}}};
+window.AMMarathonPlaybackIntegrityV2={version:VERSION,sync,session,skip:runSkip,debug:()=>{const c=session();return{installed:true,active:!!c,index:c?.index??null,total:c?.total??null,phase:c?.h?.phase??null,blockedCommits,authorizedCommits,repairedContexts,forcedStages,forcedResults,forcedMotions,pendingStart,authorizedCommit:authorizedCommitKey,motionKey}}};
 schedule();
 })();
