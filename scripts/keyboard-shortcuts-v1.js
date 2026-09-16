@@ -38,14 +38,23 @@ function onKeyDown(event){
 }
 
 function reassertSeasonIntegrity(){try{window.AMSeasonEventIntegrity?.reinstall?.()}catch(err){console.warn('Season event integrity reinstall failed',err)}}
+function loadMarathonRoadMotionV4(){
+ if(typeof document==='undefined')return;
+ if(!document.querySelector('link[data-am-marathon-road-motion-v4-style]')){
+  const style=document.createElement('link');style.rel='stylesheet';style.href='styles/marathon-road-motion-v4.css?v=20260916-marathon6';style.dataset.amMarathonRoadMotionV4Style='1';document.head.appendChild(style);
+ }
+ if(window.__amMarathonRoadMotionV4)return;
+ if(document.querySelector('script[data-am-marathon-road-motion-v4]'))return;
+ const script=document.createElement('script');script.src='scripts/marathon-road-motion-v4.js?v=20260916-marathon6';script.dataset.amMarathonRoadMotionV4='1';script.onerror=()=>console.warn('Marathon athlete-first motion V4 failed to load');document.body.appendChild(script);
+}
 function loadMarathonRoadBroadcastV3(){
  if(typeof document==='undefined')return;
  if(!document.querySelector('link[data-am-marathon-road-broadcast-v3-style]')){
   const style=document.createElement('link');style.rel='stylesheet';style.href='styles/marathon-road-broadcast-v3.css?v=20260916-marathon5';style.dataset.amMarathonRoadBroadcastV3Style='1';document.head.appendChild(style);
  }
- if(window.__amMarathonRoadBroadcastV3){reassertSeasonIntegrity();return}
+ if(window.__amMarathonRoadBroadcastV3){reassertSeasonIntegrity();loadMarathonRoadMotionV4();return}
  if(document.querySelector('script[data-am-marathon-road-broadcast-v3]'))return;
- const script=document.createElement('script');script.src='scripts/marathon-road-broadcast-v3.js?v=20260916-marathon5';script.dataset.amMarathonRoadBroadcastV3='1';script.onerror=()=>console.warn('Marathon road broadcast V3 failed to load');script.onload=()=>reassertSeasonIntegrity();document.body.appendChild(script);
+ const script=document.createElement('script');script.src='scripts/marathon-road-broadcast-v3.js?v=20260916-marathon5';script.dataset.amMarathonRoadBroadcastV3='1';script.onerror=()=>console.warn('Marathon road broadcast V3 failed to load');script.onload=()=>{reassertSeasonIntegrity();loadMarathonRoadMotionV4()};document.body.appendChild(script);
 }
 function loadMarathonRoadBroadcastV2(){
  if(typeof document==='undefined')return;
@@ -84,7 +93,7 @@ function loadSeasonEventIntegrity(){
 function loadLateRuntime(){loadMarathonRoad();loadContractDecisionRouting();loadSeasonEventIntegrity()}
 
 document.addEventListener('keydown',onKeyDown);
-window.AMKeyboardShortcutsV1={version:'1.1',advanceKey:'Space',marathonBroadcast:3};
+window.AMKeyboardShortcutsV1={version:'1.2',advanceKey:'Space',marathonBroadcast:3,marathonMotion:4};
 /* Install late so optional event systems and safety guards sit above the completed
    presentation stack without changing normal track/field event ownership. */
 if(document.readyState==='complete')setTimeout(loadLateRuntime,0);
