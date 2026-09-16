@@ -7,6 +7,15 @@ const root=process.cwd();
 const failures=[];
 const notes=[];
 const fail=message=>failures.push(message);
+const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+async function waitFor(predicate,{timeout=2500,interval=20}={}){
+ const started=Date.now();
+ while(Date.now()-started<timeout){
+  try{if(predicate())return true}catch(_){ }
+  await sleep(interval)
+ }
+ try{return !!predicate()}catch(_){return false}
+}
 const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp'};
 
 const server=http.createServer((req,res)=>{
@@ -96,43 +105,40 @@ try{
      return true;
     })()
    `)
-  }catch(err){fail(`${d}: pre-event draw threw: ${err?.stack||err}`);continue}
-  if(!prepared){fail(`${d}: pre-event draw did not complete`);continue}
-  await new Promise(r=>setTimeout(r,35));
+  }catch(err){fail(`${d}: pre-event draw threw: ${err?.stack||err}`);break}
+  if(!prepared){fail(`${d}: pre-event draw did not complete`);break}
 
-  const pre=w.AMLiveEventShellV5.diagnostics();
-  if(!pre?.active)fail(`${d}: V5 shell was not active on the event-ready screen.`);
-  if(!w.document.querySelector('#competition .lv5-sidebar'))fail(`${d}: adaptive sidebar was missing.`);
-  if(!w.document.getElementById('liveScoreboard'))fail(`${d}: live scoreboard was missing.`);
-  if(!w.document.getElementById('commentary'))fail(`${d}: commentary panel was missing.`);
-  if(!w.document.querySelector('[data-lv5-action]'))fail(`${d}: header progression action was missing.`);
-  if(!w.document.querySelector('[data-lv5-event-info]'))fail(`${d}: event information panel was missing.`);
+  const ready=await waitFor(()=>w.AMLiveEventShellV5.diagnostics()?.active&&!!w.document.querySelector('#competition .lv5-sidebar')&&!!w.document.querySelector('[data-lv5-event-info]'));
+  if(!ready){fail(`${d}: V5 shell did not settle on the event-ready screen.`);break}
+  if(!w.document.getElementById('liveScoreboard')){fail(`${d}: live scoreboard was missing.`);break}
+  if(!w.document.getElementById('commentary')){fail(`${d}: commentary panel was missing.`);break}
+  if(!w.document.querySelector('[data-lv5-action]')){fail(`${d}: header progression action was missing.`);break}
 
-  try{w.eval(`startDiscipline(window.__amV5QaEvent,window.__amV5QaDisc)`)}catch(err){fail(`${d}: startDiscipline threw: ${err?.stack||err}`);continue}
-  await new Promise(r=>setTimeout(r,70));
-  const live=w.AMLiveBroadcastV4.active,diag=w.AMLiveEventShellV5.diagnostics();
-  if(!live)fail(`${d}: authoritative live simulation did not start.`);
-  if(!diag?.active||!diag?.live)fail(`${d}: V5 shell did not remain connected to the live simulation.`);
+  try{w.eval(`startDiscipline(window.__amV5QaEvent,window.__amV5QaDisc)`)}catch(err){fail(`${d}: startDiscipline threw: ${err?.stack||err}`);break}
+  const liveReady=await waitFor(()=>{
+   const diag=w.AMLiveEventShellV5.diagnostics(),pause=w.document.querySelector('[data-lv5-pause]'),speed4=w.document.querySelector('[data-lv5-speed="4"]'),skip=w.document.querySelector('[data-lv5-skip]');
+   return !!w.AMLiveBroadcastV4.active&&diag?.active&&diag?.live&&diag?.redrawObserver&&pause&&!pause.disabled&&speed4&&!speed4.disabled&&skip&&!skip.hidden&&!skip.disabled
+  });
+  if(!liveReady){
+   const diag=w.AMLiveEventShellV5.diagnostics(),sourceSkip=w.document.getElementById('v4skip');
+   fail(`${d}: live shell did not reconnect after Broadcast V4 redrew the event (live=${!!w.AMLiveBroadcastV4.active}, shell=${!!diag?.active}, observer=${!!diag?.redrawObserver}, sourceSkip=${!!sourceSkip}).`);
+   break
+  }
   const family=w.AMLiveEventShellV5.family(d);
-  if(!family)fail(`${d}: event family was not resolved.`);
-  const pause=w.document.querySelector('[data-lv5-pause]'),speed4=w.document.querySelector('[data-lv5-speed="4"]'),skip=w.document.querySelector('[data-lv5-skip]');
-  if(!pause||pause.disabled)fail(`${d}: pause control was unavailable during live play.`);
-  if(!speed4||speed4.disabled)fail(`${d}: 4× control was unavailable during live play.`);
-  if(!skip||skip.hidden||skip.disabled)fail(`${d}: safe skip-to-result control was unavailable during live play.`);
+  if(!family){fail(`${d}: event family was not resolved.`);break}
 
-  try{
-   if(skip&&!skip.hidden&&!skip.disabled)skip.click();
-   else w.document.getElementById('v4skip')?.click();
-  }catch(err){fail(`${d}: skip-to-result threw: ${err?.stack||err}`)}
-  await new Promise(r=>setTimeout(r,55));
-  const rows=w.__amV5QaEvent?.results?.[d];
-  if(!Array.isArray(rows)||rows.length<1)fail(`${d}: no authoritative result was committed after completion.`);
-  if(w.AMLiveBroadcastV4.active)fail(`${d}: live simulation remained active after result completion.`);
-  const resultShell=w.AMLiveEventShellV5.diagnostics();
-  if(!resultShell?.active)fail(`${d}: V5 shell disappeared on the confirmed result screen.`);
-  notes.push(`${d} · ${family} · ${Array.isArray(rows)?rows.length:0} result rows`);
+  try{w.document.querySelector('[data-lv5-skip]').click()}catch(err){fail(`${d}: skip-to-result threw: ${err?.stack||err}`);break}
+  const finished=await waitFor(()=>Array.isArray(w.__amV5QaEvent?.results?.[d])&&w.__amV5QaEvent.results[d].length>0&&!w.AMLiveBroadcastV4.active&&w.AMLiveEventShellV5.diagnostics()?.active,{timeout:3500});
+  if(!finished){
+   const rows=w.__amV5QaEvent?.results?.[d],diag=w.AMLiveEventShellV5.diagnostics();
+   fail(`${d}: authoritative completion did not settle (rows=${Array.isArray(rows)?rows.length:'none'}, live=${!!w.AMLiveBroadcastV4.active}, shell=${!!diag?.active}).`);
+   break
+  }
+  const rows=w.__amV5QaEvent.results[d];
+  notes.push(`${d} · ${family} · ${rows.length} result rows`);
  }
 
+ if(notes.length!==disciplines.length&&!failures.length)fail(`Only ${notes.length}/${disciplines.length} current disciplines completed the universal live-event lifecycle.`);
  const source=fs.readFileSync(path.join(root,'scripts/live-event-shell-v5.js'),'utf8');
  for(const fake of ['K. Thompson','L. Richards','T. Okafor','7.6s','+0.8 m/s'])if(source.includes(fake))fail(`Reference screenshot placeholder leaked into implementation: ${fake}`);
  const css=fs.readFileSync(path.join(root,'styles/live-event-shell-v5.css'),'utf8');
@@ -155,6 +161,7 @@ console.log('\nUNIVERSAL LIVE EVENT SHELL V5 REGRESSION: PASSED\n');
 console.log(`✓ ${notes.length} current disciplines exercised from event-ready → live → confirmed result.`);
 notes.forEach(item=>console.log(`✓ ${item}`));
 console.log('✓ Broadcast V4 remained the authoritative simulation layer.');
+console.log('✓ V5 shell survived authoritative live/result redraws without replacing simulation state.');
 console.log('✓ V5 shell retained scoreboard, commentary, progression, playback and event-aware information.');
 console.log('✓ Reference screenshot demo names/values were not hard-coded.');
 console.log('✓ iPad landscape and desktop shell contracts are present.');
