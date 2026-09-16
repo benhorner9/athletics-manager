@@ -123,9 +123,19 @@ function loadCommercialContractLifecycle(){
  script.onerror=()=>console.warn('Commercial contract lifecycle failed to load');
  document.body.appendChild(script);
 }
+function loadCareerIdentityPerformanceGuard(){
+ if(typeof document==='undefined')return;
+ if(window.__amCareerIdentityPerformanceV1||document.querySelector('script[data-am-career-identity-performance]'))return;
+ const script=document.createElement('script');
+ script.src='scripts/career-identity-performance-v1.js?v=20260916-phase1-performance1';
+ script.dataset.amCareerIdentityPerformance='1';
+ script.onerror=()=>console.warn('Career Identity performance guard failed to load');
+ document.body.appendChild(script);
+}
 
 window.AMAnnualCareerRefresh={version:VERSION,run,state,cleanupDecisionSystem};
 install();
 loadCommercialNegotiationBridge();
 loadCommercialMediaPlanning();
+loadCareerIdentityPerformanceGuard();
 })();
