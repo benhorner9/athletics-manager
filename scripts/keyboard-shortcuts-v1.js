@@ -37,13 +37,15 @@ function onKeyDown(event){
  button.click();
 }
 
+function reassertSeasonIntegrity(){try{window.AMSeasonEventIntegrity?.reinstall?.()}catch(err){console.warn('Season event integrity reinstall failed',err)}}
 function loadMarathonRoadBroadcastV2(){
  if(typeof document==='undefined')return;
  if(!document.querySelector('link[data-am-marathon-road-broadcast-v2-style]')){
   const style=document.createElement('link');style.rel='stylesheet';style.href='styles/marathon-road-broadcast-v2.css?v=20260916-marathon4';style.dataset.amMarathonRoadBroadcastV2Style='1';document.head.appendChild(style);
  }
- if(window.__amMarathonRoadBroadcastV2||document.querySelector('script[data-am-marathon-road-broadcast-v2]'))return;
- const script=document.createElement('script');script.src='scripts/marathon-road-broadcast-v2.js?v=20260916-marathon4';script.dataset.amMarathonRoadBroadcastV2='1';script.onerror=()=>console.warn('Marathon road broadcast V2 failed to load');document.body.appendChild(script);
+ if(window.__amMarathonRoadBroadcastV2){reassertSeasonIntegrity();return}
+ if(document.querySelector('script[data-am-marathon-road-broadcast-v2]'))return;
+ const script=document.createElement('script');script.src='scripts/marathon-road-broadcast-v2.js?v=20260916-marathon4';script.dataset.amMarathonRoadBroadcastV2='1';script.onerror=()=>console.warn('Marathon road broadcast V2 failed to load');script.onload=()=>reassertSeasonIntegrity();document.body.appendChild(script);
 }
 function loadMarathonRoadRouter(){
  if(typeof document==='undefined')return;
@@ -65,8 +67,10 @@ function loadContractDecisionRouting(){
  const script=document.createElement('script');script.src='scripts/contract-decision-routing-v1.js?v=20260915-contractrouting1';script.dataset.amContractDecisionRouting='1';script.onerror=()=>console.warn('Contract decision routing guard failed to load');document.body.appendChild(script);
 }
 function loadSeasonEventIntegrity(){
- if(typeof document==='undefined'||window.__amSeasonEventIntegrityV1Build3||document.querySelector('script[data-am-season-event-integrity]'))return;
- const script=document.createElement('script');script.src='scripts/season-event-integrity-v1.js?v=20260916-eventintegrity3';script.dataset.amSeasonEventIntegrity='1';script.onerror=()=>console.warn('Season event integrity guard failed to load');document.body.appendChild(script);
+ if(typeof document==='undefined')return;
+ if(window.__amSeasonEventIntegrityV1Build4){reassertSeasonIntegrity();return}
+ if(document.querySelector('script[data-am-season-event-integrity]'))return;
+ const script=document.createElement('script');script.src='scripts/season-event-integrity-v1.js?v=20260916-eventintegrity4';script.dataset.amSeasonEventIntegrity='1';script.onerror=()=>console.warn('Season event integrity guard failed to load');script.onload=()=>reassertSeasonIntegrity();document.body.appendChild(script);
 }
 function loadLateRuntime(){loadMarathonRoad();loadContractDecisionRouting();loadSeasonEventIntegrity()}
 
