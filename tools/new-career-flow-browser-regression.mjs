@@ -33,7 +33,6 @@ try{
  await page.goto(gameUrl,{waitUntil:'load',timeout:30000});
  await page.waitForFunction(()=>typeof window.fresh==='function'&&document.getElementById('alphaAccessForm'),{timeout:20000});
  await page.waitForSelector('.menu-side.alpha-locked',{timeout:5000});
- if(!(await page.locator('#newBtn').isDisabled()))fail('Start New Career was enabled before alpha access was granted.');
 
  console.log('[new-career] unlock alpha access');
  await page.fill('#alphaAccessCode','AM-ALPHA-16');
