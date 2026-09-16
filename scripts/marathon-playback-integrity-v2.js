@@ -18,12 +18,15 @@ const debug=()=>{try{return api()?.debug?.()||null}catch(_){return null}};
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,Number(v)||0));
 let remembered={event:null,disc:null,results:null,lines:null};
 let pendingStart=null;
+let authorizedCommitKey=null;
 let blockedCommits=0;
+let authorizedCommits=0;
 let repairedContexts=0;
 let forcedStages=0;
 let forcedResults=0;
 let queued=false;
 
+function eventKey(e,d){return `${String(e?.id||e?.name||'road')}|${String(d||'')}`}
 function injectStaticRoadStyle(){
  if(document.getElementById('amMarathonPlaybackIntegrityV2Style'))return;
  const style=document.createElement('style');style.id='amMarathonPlaybackIntegrityV2Style';style.textContent=`
@@ -93,17 +96,25 @@ function syncFinishedScreen(){
  return false
 }
 function sync(){
- injectStaticRoadStyle();ensureCommitGuard();ensureStartGuard();rememberLive();const c=session();if(c)return syncLiveShell(c);return syncFinishedScreen()
+ injectStaticRoadStyle();ensureCommitGuard();ensureStartGuard();ensureApiSkipGuard();rememberLive();const c=session();if(c)return syncLiveShell(c);return syncFinishedScreen()
 }
 function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;try{sync()}catch(err){console.warn('[Marathon Integrity V2] sync failed',err)}})}
 
 function queueStart(e,d){
  if(!e||!isRoad(d)||Array.isArray(e.results?.[d]))return;
- const key=`${e.id||e.name}|${d}`;if(pendingStart===key)return;pendingStart=key;let attempts=0;
+ const key=eventKey(e,d);if(pendingStart===key)return;pendingStart=key;let attempts=0;
  const go=()=>{attempts++;const a=api();if(typeof a?.start==='function'){pendingStart=null;a.start(e,d);schedule();return}if(attempts<80){setTimeout(go,50);return}pendingStart=null;console.warn('[Marathon Integrity V2] V3 start authority did not become available')};go()
+}
+function authorizeCommit(e,d){authorizedCommitKey=eventKey(e,d)}
+function runSkip(){
+ const c=session();if(!c||typeof c.a?.skip!=='function')return false;
+ authorizeCommit(c.event,c.disc);
+ try{c.a.skip();return true}finally{setTimeout(()=>{authorizedCommitKey=null},0)}
 }
 function roadStartTarget(target){return target instanceof Element?target.closest('#startDiscipline,#startDisciplineTop'):null}
 document.addEventListener('click',event=>{
+ const skip=event.target instanceof Element?event.target.closest('#roadV3Skip'):null;
+ if(skip){const c=session();if(c){event.preventDefault();event.stopImmediatePropagation();runSkip();schedule();return}}
  const target=roadStartTarget(event.target);if(!target||target.disabled)return;const d=activeDisc();if(!isRoad(d))return;const e=resolveEvent(d);if(!e||Array.isArray(e.results?.[d]))return;
  event.preventDefault();event.stopImmediatePropagation();queueStart(e,d)
 },true);
@@ -115,11 +126,18 @@ function ensureStartGuard(){
  Object.defineProperty(wrapped,'__amMarathonPlaybackIntegrityV2Start',{value:true});
  try{startDiscipline=wrapped}catch(_){};window.startDiscipline=wrapped;return true
 }
+function ensureApiSkipGuard(){
+ const a=api();if(!a||typeof a.skip!=='function'||a.skip.__amMarathonPlaybackIntegrityV2Skip)return false;
+ const base=a.skip,wrapped=function(...args){const c=session();if(c)authorizeCommit(c.event,c.disc);try{return base.apply(this,args)}finally{setTimeout(()=>{authorizedCommitKey=null},0)}};
+ Object.defineProperty(wrapped,'__amMarathonPlaybackIntegrityV2Skip',{value:true});a.skip=wrapped;return true
+}
 function ensureCommitGuard(){
  let current=null;try{current=typeof commitDisciplineResults==='function'?commitDisciplineResults:window.commitDisciplineResults}catch(_){current=window.commitDisciplineResults}
  if(typeof current!=='function'||current.__amMarathonPlaybackIntegrityV2Commit)return false;
  const base=current,wrapped=function(e,d,r){
   if(isRoad(d)){
+   const key=eventKey(e,d);
+   if(authorizedCommitKey===key){authorizedCommitKey=null;authorizedCommits++;return base.apply(this,arguments)}
    const dbg=debug();
    if(dbg&&String(dbg.disc)===String(d)&&Number(dbg.index)<Number(dbg.total)){
     blockedCommits++;console.warn('[Marathon Integrity V2] blocked premature marathon result commit',{disc:d,index:dbg.index,total:dbg.total});return;
@@ -133,7 +151,7 @@ function ensureCommitGuard(){
 
 const observer=new MutationObserver(schedule);observer.observe(document.documentElement,{subtree:true,childList:true});
 window.addEventListener('pageshow',schedule);window.addEventListener('orientationchange',()=>setTimeout(schedule,80));
-setInterval(schedule,200);setInterval(()=>{ensureCommitGuard();ensureStartGuard()},750);
-window.AMMarathonPlaybackIntegrityV2={version:VERSION,sync,session,debug:()=>{const c=session();return{installed:true,active:!!c,index:c?.index??null,total:c?.total??null,phase:c?.h?.phase??null,blockedCommits,repairedContexts,forcedStages,forcedResults,pendingStart}}};
+setInterval(schedule,200);setInterval(()=>{ensureCommitGuard();ensureStartGuard();ensureApiSkipGuard()},750);
+window.AMMarathonPlaybackIntegrityV2={version:VERSION,sync,session,skip:runSkip,debug:()=>{const c=session();return{installed:true,active:!!c,index:c?.index??null,total:c?.total??null,phase:c?.h?.phase??null,blockedCommits,authorizedCommits,repairedContexts,forcedStages,forcedResults,pendingStart,authorizedCommit:authorizedCommitKey}}};
 schedule();
 })();
