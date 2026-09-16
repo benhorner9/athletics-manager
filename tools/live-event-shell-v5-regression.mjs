@@ -92,6 +92,22 @@ try{
  for(const d of expected)if(!disciplines.includes(d))fail(`Current discipline ${d} is missing from the runtime event registry.`);
  if(failures.length)throw new Error(failures.join('\n'));
 
+ const geometryOffsets={M100:0,W100:0,M200:200,W200:200,M400:0,W400:0,M800:0,W800:0,M1500:100,W1500:100,M5000:200,W5000:200,M10000:0,W10000:0,M4X100:0,W4X100:0};
+ for(const [d,offset] of Object.entries(geometryOffsets)){
+  const g=w.AMLiveBroadcastV4.geometry?.(d,1);
+  if(!g){fail(`${d}: track geometry diagnostics are unavailable.`);continue}
+  if(Math.abs(g.startOffset-offset)>.01)fail(`${d}: visual start offset is ${g.startOffset}m, expected ${offset}m.`);
+  if(Math.abs(g.finish.x-g.finishLineX)>.75)fail(`${d}: athlete path does not finish on the common finish line (x=${g.finish.x.toFixed(2)}, line=${g.finishLineX}).`);
+  if(!g.straight&&g.preFinish.x>=g.finish.x)fail(`${d}: final approach is not travelling left-to-right along the home straight.`);
+  if(!g.straight&&g.afterFinish?.x<=g.finish.x)fail(`${d}: post-finish path does not continue into the first bend.`);
+ }
+ const g400=w.AMLiveBroadcastV4.geometry('M400',8),g200=w.AMLiveBroadcastV4.geometry('M200',8),g1500=w.AMLiveBroadcastV4.geometry('M1500',1),g5000=w.AMLiveBroadcastV4.geometry('M5000',1);
+ if(g400.stagger<53||g400.stagger>54.5)fail(`M400: lane-eight stagger is not a full-lap stagger (${g400.stagger.toFixed(2)}m).`);
+ if(g200.stagger<26||g200.stagger>27.5)fail(`M200: lane-eight stagger is not a half-lap stagger (${g200.stagger.toFixed(2)}m).`);
+ if(Math.hypot(g1500.start.x-g1500.finish.x,g1500.start.y-g1500.finish.y)<40)fail('M1500: start line is still effectively on the finish line.');
+ if(Math.hypot(g5000.start.x-g5000.finish.x,g5000.start.y-g5000.finish.y)<80)fail('M5000: start line is still effectively on the finish line.');
+ if(failures.length)throw new Error(failures.join('\n'));
+
  for(const d of disciplines){
   w.__amV5QaDisc=d;
   let prepared;
