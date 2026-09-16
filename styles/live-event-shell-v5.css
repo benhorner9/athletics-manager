@@ -167,3 +167,8 @@ body.lv5-live-event-mode #competition.view{height:100%!important;min-height:0!im
 @media (prefers-reduced-motion:reduce){
  #competition .lv5event *,#competition .lv5event *:before,#competition .lv5event *:after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}
 }
+
+/* V5.2 scoreboard width fill */
+#competition .lv5event #liveScoreboard .v3board-list{width:100%!important;max-width:none!important;align-self:stretch!important;justify-self:stretch!important;box-sizing:border-box!important}
+#competition .lv5event #liveScoreboard .lv4-board-row{width:100%!important;max-width:none!important;box-sizing:border-box!important;align-self:stretch!important}
+#competition .lv5event #liveScoreboard .lv4-board-row>span{justify-self:end!important;text-align:right!important}
