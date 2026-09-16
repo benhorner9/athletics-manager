@@ -68,9 +68,9 @@ function loadContractDecisionRouting(){
 }
 function loadSeasonEventIntegrity(){
  if(typeof document==='undefined')return;
- if(window.__amSeasonEventIntegrityV1Build4){reassertSeasonIntegrity();return}
+ if(window.__amSeasonEventIntegrityV1Build5){reassertSeasonIntegrity();return}
  if(document.querySelector('script[data-am-season-event-integrity]'))return;
- const script=document.createElement('script');script.src='scripts/season-event-integrity-v1.js?v=20260916-eventintegrity4';script.dataset.amSeasonEventIntegrity='1';script.onerror=()=>console.warn('Season event integrity guard failed to load');script.onload=()=>reassertSeasonIntegrity();document.body.appendChild(script);
+ const script=document.createElement('script');script.src='scripts/season-event-integrity-v1.js?v=20260916-eventintegrity5';script.dataset.amSeasonEventIntegrity='1';script.onerror=()=>console.warn('Season event integrity guard failed to load');script.onload=()=>reassertSeasonIntegrity();document.body.appendChild(script);
 }
 function loadLateRuntime(){loadMarathonRoad();loadContractDecisionRouting();loadSeasonEventIntegrity()}
 
