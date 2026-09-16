@@ -1,0 +1,93 @@
+name: Apply Athlete Results Finishing Positions
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/apply-athlete-results-position.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev
+      - name: Add finishing positions to athlete Results and Form
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          profile=Path('scripts/squad-athlete-v2.js')
+          s=profile.read_text(encoding='utf-8')
+
+          old="function history(a){return safe(()=>profileHistory(a),[])}"
+          new="""function ordinal(n){const v=Math.max(1,Math.floor(Number(n)||0)),mod=v%100;if(mod>=11&&mod<=13)return `${v}th`;return `${v}${v%10===1?'st':v%10===2?'nd':v%10===3?'rd':'th'}`}
+function resultEventArchive(){const base=Number(s?.game?.season||1)-Number(s?.game?.cycleYear||1);return [...(s?.history||[]).map(h=>({name:h.event||h.name,week:Number(h.week)||0,season:Number(h.season)||base+(Number(h.year)||1),results:h.results||{}})),...(s?.events||[]).map(e=>({name:e.name,week:Number(e.week)||0,season:Number(e.season)||Number(s?.game?.season||1),results:e.results||{}}))]}
+function resultPlace(a,p){
+ const direct=Number(p?.place);if(Number.isFinite(direct)&&direct>0)return Math.floor(direct);
+ const eventName=String(p?.event||''),season=Number(p?.season),eventWeek=Number(p?.week);
+ for(const e of resultEventArchive()){
+  if(String(e.name||'')!==eventName||Number(e.week)!==eventWeek||Number(e.season)!==season)continue;
+  const rows=Array.isArray(e.results?.[a.disc])?e.results[a.disc]:[],idx=rows.findIndex(r=>String(r?.id)===String(a.id));if(idx>=0)return idx+1;
+ }
+ if(!eventName.includes(' — ')){
+  const rows=(s?.performances||[]).filter(x=>Number(x?.season)===season&&Number(x?.week)===eventWeek&&String(x?.disc)===String(a.disc)&&String(x?.event||'')===eventName&&Number.isFinite(Number(x?.perf))).slice();
+  if(rows.length){rows.sort((x,y)=>safe(()=>better(a.disc,x.perf,y.perf),Number(x.perf)>Number(y.perf))?-1:safe(()=>better(a.disc,y.perf,x.perf),Number(y.perf)>Number(x.perf))?1:0);const idx=rows.findIndex(r=>String(r?.athleteId)===String(a.id));if(idx>=0)return idx+1}
+ }
+ return null
+}
+function history(a){return safe(()=>profileHistory(a),[]).map(p=>({...p,place:resultPlace(a,p)}))}"""
+          if old not in s:
+              raise SystemExit('profile history anchor not found')
+          s=s.replace(old,new,1)
+
+          old_head='<th>Season</th><th>Week</th><th>Meeting</th><th>Performance</th><th>Milestones</th>'
+          new_head='<th>Season</th><th>Week</th><th>Meeting</th><th>Finish</th><th>Performance</th><th>Milestones</th>'
+          if old_head not in s:
+              raise SystemExit('results table header anchor not found')
+          s=s.replace(old_head,new_head,1)
+
+          old_cells='</td><td class="score">${esc(perf(a,p.perf))}</td><td><div class="apv2-achievements">'
+          new_cells='</td><td class="score">${p.place?esc(ordinal(p.place)):\'—\'}</td><td class="score">${esc(perf(a,p.perf))}</td><td><div class="apv2-achievements">'
+          if old_cells not in s:
+              raise SystemExit('results table cell anchor not found')
+          s=s.replace(old_cells,new_cells,1)
+          profile.write_text(s,encoding='utf-8')
+
+          test=Path('tools/athlete-results-position-regression.mjs')
+          test.write_text("""import fs from 'node:fs';
+import assert from 'node:assert/strict';
+
+const source=fs.readFileSync('scripts/squad-athlete-v2.js','utf8');
+assert.match(source,/function ordinal\(n\)/,'ordinal finishing-position formatter missing');
+assert.match(source,/function resultEventArchive\(\)/,'saved event result archive lookup missing');
+assert.match(source,/function resultPlace\(a,p\)/,'athlete finishing-position resolver missing');
+assert.match(source,/<th>Meeting<\/th><th>Finish<\/th><th>Performance<\/th>/,'Results & Form does not expose Finish column');
+assert.match(source,/p\.place\?esc\(ordinal\(p\.place\)\)/,'Results & Form does not render the resolved finishing position');
+assert.match(source,/eventName\.includes\(' — '\)/,'round or stage marks are not protected from being treated as event finishes');
+console.log('Athlete Results & Form finishing-position regression: PASS');
+""",encoding='utf-8')
+
+          qa=Path('tools/automated-qa.mjs')
+          q=qa.read_text(encoding='utf-8')
+          anchor="await run('Athlete conversation regression',['tools/athlete-conversation-regression.mjs']);"
+          insert=anchor+"\nawait run('Athlete results finishing-position regression',['tools/athlete-results-position-regression.mjs']);"
+          if "athlete-results-position-regression.mjs" not in q:
+              if anchor not in q: raise SystemExit('automated QA anchor not found')
+              q=q.replace(anchor,insert,1)
+              qa.write_text(q,encoding='utf-8')
+          PY
+          node --check scripts/squad-athlete-v2.js
+          node tools/athlete-results-position-regression.mjs
+          git diff --check
+      - name: Commit athlete result positions
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/squad-athlete-v2.js tools/athlete-results-position-regression.mjs tools/automated-qa.mjs
+          git commit -m "feat: show athlete event finishing positions"
+          git push origin HEAD:dev
