@@ -10,6 +10,7 @@ on:
       - 'styles/career-identity-v2.css'
       - 'scripts/manager-profile-sidebar-v1.js'
       - 'tools/career-identity-v2-regression.mjs'
+      - 'tools/career-identity-v2-40year-soak.mjs'
       - 'tools/browser-qa.mjs'
       - '.github/workflows/career-identity-v2.yml'
   workflow_dispatch:
@@ -30,8 +31,11 @@ jobs:
           node --check scripts/career-identity-v2.js
           node --check scripts/manager-profile-sidebar-v1.js
           node --check tools/browser-qa.mjs
+          node --check tools/career-identity-v2-40year-soak.mjs
       - name: Run Career Identity long-save regression
         run: node tools/career-identity-v2-regression.mjs
+      - name: Run Career Identity 40-year soak
+        run: node tools/career-identity-v2-40year-soak.mjs
       - name: Verify real-browser Career Identity coverage remains wired
         run: |
           grep -q 'async function inspectCareerIdentity' tools/browser-qa.mjs
