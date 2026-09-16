@@ -1,0 +1,85 @@
+name: Apply Career Identity Browser QA
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - '.github/workflows/apply-career-identity-browser-qa.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev
+      - name: Add My Profile and athlete-history browser coverage
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('tools/browser-qa.mjs')
+          s=p.read_text()
+          marker='''\nfor(const scenario of scenarios){\n'''
+          if marker not in s: raise SystemExit('browser QA loop marker missing')
+          fn=r'''
+async function inspectCareerIdentity(page,scenario){
+ console.log(`[browser-qa] ${scenario.name} → career identity`);
+ const seeded=await page.evaluate(()=>{
+  const athlete=(typeof managedTeam==='function'?managedTeam():[])[0]||s.athletes.find(a=>!a.retired&&a.nation===managedNation());
+  if(!athlete||!window.AMCareerIdentityV2)return null;
+  window.AMCareerIdentityV2.remember({id:`browser-qa:${athlete.id}`,athleteId:athlete.id,type:'call_up',tier:2,season:s.game.season,week:s.game.week,title:`${athlete.name} called into the senior programme`,detail:'Browser QA seed.'});
+  return athlete.id;
+ });
+ if(!seeded){fail(scenario.name,'Career Identity V2 API or a managed athlete was unavailable');return}
+ await page.evaluate(()=>window.openManagerProfile());
+ await page.waitForSelector('#managementProfile[open] [data-civ2-manager-tab="athletes"]',{timeout:5000});
+ await page.click('#managementProfile [data-civ2-manager-tab="athletes"]');
+ await page.waitForSelector('#managementProfile .civ2-page .civ2-athlete-card',{timeout:5000});
+ for(const id of ['programme','legacy']){
+  await page.click(`#managementProfile [data-civ2-manager-tab="${id}"]`);
+  await page.waitForSelector('#managementProfile .civ2-page',{timeout:3000});
+ }
+ await page.click('#managementProfile [data-civ2-manager-tab="athletes"]');
+ await page.click('#managementProfile .civ2-athlete-card');
+ await page.waitForSelector('#athleteProfile[open] [data-civ2-athlete-tab="history"]',{timeout:5000});
+ await page.click('#athleteProfile [data-civ2-athlete-tab="history"]');
+ await page.waitForSelector('#athleteProfile .civ2-athlete-history',{timeout:3000});
+ const historyState=await page.evaluate(()=>({
+  hasTimeline:!!document.querySelector('#athleteProfile .civ2-timeline'),
+  hasRawRelationshipNumber:/Relationship\s*:\s*\d+/i.test(document.querySelector('#athleteProfile')?.textContent||''),
+  docOverflow:Math.max(0,document.documentElement.scrollWidth-document.documentElement.clientWidth)
+ }));
+ if(!historyState.hasTimeline)fail(scenario.name,'Athlete Your History tab did not render a timeline');
+ if(historyState.hasRawRelationshipNumber)fail(scenario.name,'Athlete history exposes a raw numeric relationship score');
+ if(historyState.docOverflow>2)fail(scenario.name,`Career Identity UI creates ${historyState.docOverflow}px of page-level horizontal overflow`);
+ await page.evaluate(()=>document.getElementById('athleteProfile')?.close());
+ await page.waitForSelector('#managementProfile[open] [data-civ2-manager-tab="athletes"].on',{timeout:5000});
+ const restored=await page.evaluate(()=>!!document.querySelector('#managementProfile [data-civ2-manager-tab="athletes"].on'));
+ if(!restored)fail(scenario.name,'Returning from athlete history did not restore the manager Athletes tab');
+ await page.evaluate(()=>document.getElementById('managementProfile')?.close());
+ notes.push(`${scenario.name} · career identity · manager/athlete history navigation passed`);
+}
+'''
+          if 'async function inspectCareerIdentity' not in s:
+              s=s.replace(marker,'\n'+fn+marker,1)
+          old='''  for(const [route,selector] of scenario.routes){\n   console.log(`[browser-qa] ${scenario.name} → ${route}`);\n   await inspectRoute(page,scenario,route,selector);\n  }\n  if(pageErrors.length)'''
+          new='''  for(const [route,selector] of scenario.routes){\n   console.log(`[browser-qa] ${scenario.name} → ${route}`);\n   await inspectRoute(page,scenario,route,selector);\n  }\n  await inspectCareerIdentity(page,scenario);\n  if(pageErrors.length)'''
+          if old not in s: raise SystemExit('browser QA scenario insertion target missing')
+          s=s.replace(old,new,1)
+          old="console.log('✓ National Pool rating elements remained inside their cells');"
+          new=old+"\nconsole.log('✓ Career Identity manager tabs, athlete history and return navigation passed across browser scenarios');"
+          if new not in s:s=s.replace(old,new,1)
+          p.write_text(s)
+          PY
+          node --check tools/browser-qa.mjs
+      - name: Commit browser QA coverage
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tools/browser-qa.mjs
+          git commit -m "test: cover career identity in real browsers"
+          git push origin HEAD:dev
