@@ -1,0 +1,87 @@
+name: Apply Career Identity V2 Integration
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - '.github/workflows/apply-career-identity-integration-v2.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev
+      - name: Integrate Career Identity V2
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          # Load the feature explicitly at the end of the game graph so it wraps the
+          # final authoritative gameplay functions rather than racing later scripts.
+          game=Path('game.html')
+          g=game.read_text()
+          css='<link rel="stylesheet" href="styles/career-identity-v2.css?v=20260916-careeridentity2">'
+          if css not in g:
+              anchor='<link rel="stylesheet" href="styles/manager-profile-sidebar-v1.css?v=20260911-manager-sidebar1">'
+              if anchor not in g: raise SystemExit('manager profile CSS anchor missing')
+              g=g.replace(anchor,anchor+'\n'+css,1)
+          js='<script src="scripts/career-identity-v2.js?v=20260916-careeridentity2"></script>'
+          if js not in g:
+              anchor='<script src="scripts/live-event-shell-v5.js?v=20260916-liveevent5"></script>'
+              if anchor not in g: raise SystemExit('live event shell script anchor missing')
+              g=g.replace(anchor,anchor+'\n'+js,1)
+          game.write_text(g)
+
+          # Remove the temporary dynamic loader now that the feature is in the normal
+          # asset graph. Keep the sidebar interaction whitelist for the new tabs.
+          side=Path('scripts/manager-profile-sidebar-v1.js')
+          s=side.read_text()
+          start=s.find('function loadCareerIdentityV2(){')
+          if start>=0:
+              end=s.find('loadCareerIdentityV2();',start)
+              if end<0: raise SystemExit('Career Identity dynamic loader terminator missing')
+              end+=len('loadCareerIdentityV2();')
+              s=s[:start]+s[end:]
+          side.write_text(s)
+
+          p=Path('scripts/career-identity-v2.js')
+          s=p.read_text()
+
+          # Relationship length must stop at retirement or a completed programme
+          # tenure rather than silently extending to the current game year.
+          old="function athleteCareerStats(id){const a=athleteRef(id),rows=athleteResults(id),mem=athleteMemories(id),seasons=new Set(rows.map(r=>r.season));for(const m of mem)seasons.add(m.season);const major=rows.filter(majorResult),majorMedals=major.filter(r=>r.place<=3),olympic=rows.filter(r=>r.record?.olympic),records=rows.flatMap(r=>(r.achievements||[]).filter(x=>['WR','NR','CR'].includes(x)));const first=Math.min(...[...seasons].filter(Boolean).concat([season()])),last=Math.max(...[...seasons].filter(Boolean).concat([first]));return{id:String(id),name:a?.name||'Archived athlete',nation:a?.nation,disc:a?.disc,retired:!!a?.retired,seasons:[...seasons].sort(),firstSeason:first,lastSeason:last,years:Math.max(1,last-first+1),appearances:rows.length,wins:rows.filter(r=>r.place===1).length,podiums:rows.filter(r=>r.place<=3).length,majorAppearances:major.length,majorMedals:majorMedals.length,olympicAppearances:new Set(olympic.map(r=>r.season)).size,olympicMedals:olympic.filter(r=>r.place<=3).length,olympicGolds:olympic.filter(r=>r.place===1).length,worldGolds:major.filter(r=>isWorld(r.event)&&r.place===1).length,nationalTitles:rows.filter(r=>r.record?.national&&r.place===1).length,records:records.length,nationalRecords:records.filter(x=>x==='NR').length,worldRecords:records.filter(x=>x==='WR').length,memories:mem.length}}"
+          new="function relationshipEndSeason(a,observed){let last=observed.length?Math.max(...observed):season();if(a?.retired&&a.retirement?.season)return Math.max(last,num(a.retirement.season));const tenures=(career().tenures||[]).filter(t=>t.nation===a?.nation),active=tenures.find(t=>num(t.startSeason)<=season()&&(!t.endSeason||num(t.endSeason)>=season()));if(a?.nation===nation()&&active)return Math.max(last,season());const ended=tenures.map(t=>num(t.endSeason)).filter(Boolean);if(ended.length)return Math.max(last,Math.max(...ended));return last}\nfunction athleteCareerStats(id){const a=athleteRef(id),rows=athleteResults(id),mem=athleteMemories(id),seasons=new Set(rows.map(r=>r.season));for(const m of mem)seasons.add(m.season);const major=rows.filter(majorResult),majorMedals=major.filter(r=>r.place<=3),olympic=rows.filter(r=>r.record?.olympic),records=rows.flatMap(r=>(r.achievements||[]).filter(x=>['WR','NR','CR'].includes(x))),observed=[...seasons].filter(Boolean),first=observed.length?Math.min(...observed):num(a?.retirement?.season)||season(),last=relationshipEndSeason(a,observed);return{id:String(id),name:a?.name||'Archived athlete',nation:a?.nation,disc:a?.disc,retired:!!a?.retired,seasons:[...seasons].sort(),firstSeason:first,lastSeason:last,years:Math.max(1,last-first+1),appearances:rows.length,wins:rows.filter(r=>r.place===1).length,podiums:rows.filter(r=>r.place<=3).length,majorAppearances:major.length,majorMedals:majorMedals.length,olympicAppearances:new Set(olympic.map(r=>r.season)).size,olympicMedals:olympic.filter(r=>r.place<=3).length,olympicGolds:olympic.filter(r=>r.place===1).length,worldGolds:major.filter(r=>isWorld(r.event)&&r.place===1).length,nationalTitles:rows.filter(r=>r.record?.national&&r.place===1).length,records:records.length,nationalRecords:records.filter(x=>x==='NR').length,worldRecords:records.filter(x=>x==='WR').length,memories:mem.length}}"
+          if old not in s: raise SystemExit('athleteCareerStats target missing')
+          s=s.replace(old,new,1)
+
+          # Weekly reconciliation captures injury/comeback/history memories before
+          # the older 40-entry athlete story buffer rotates them out.
+          old="function syncAll(){if(!state())return null;syncArchives();migrateV1();syncDiscoveries();syncStoryMemories();syncResults();syncRetirements();syncInjuriesAndCamps();syncTenures();syncPostCareer();compact();const m=store().migration;m.completed=true;m.season=season();m.week=week();return store()}"
+          new="function syncWeekly(){if(!state())return null;syncArchives();syncStoryMemories();syncRetirements();syncInjuriesAndCamps();syncPostCareer();compact();return store()}\nfunction syncAll(){if(!state())return null;syncArchives();migrateV1();syncDiscoveries();syncStoryMemories();syncResults();syncRetirements();syncInjuriesAndCamps();syncTenures();syncPostCareer();compact();const m=store().migration;m.completed=true;m.season=season();m.week=week();return store()}"
+          if old not in s: raise SystemExit('syncAll target missing')
+          s=s.replace(old,new,1)
+
+          # Sync once per completed discipline, once per weekly lifecycle, and add a
+          # restrained factual historical callback to major-event commentary.
+          old="wrap('registerPerformance',()=>{syncAll()});wrap('recordSelectionDecisions',()=>syncAll());"
+          new="wrap('commitDisciplineResults',()=>syncAll());wrap('weeklyLifecycle',()=>syncWeekly());wrap('commentaryLines',ctx=>{const [d,rows,e]=ctx.args;if(!Array.isArray(ctx.out)||!e||!(e.kind==='olympics'||e.kind==='championship'||e.level==='World'||/world|championship/i.test(String(e.name||''))))return;const selected=new Set(e.entries?.[d]||[]),own=(rows||[]).find(x=>x.nation===nation()&&selected.has(x.id));if(!own)return;const text=historicalReference(own.id,{olympics:e.kind==='olympics'});if(text&&!ctx.out.some(line=>String(line).includes(text)))ctx.out.splice(Math.min(3,Math.max(1,ctx.out.length-1)),0,`CAREER CONTEXT\\n${text}`)});wrap('recordSelectionDecisions',()=>syncAll());"
+          if old not in s: raise SystemExit('installHooks target missing')
+          s=s.replace(old,new,1)
+          p.write_text(s)
+          PY
+          node --check scripts/career-identity-v2.js
+          node --check scripts/manager-profile-sidebar-v1.js
+          node tools/career-identity-v2-regression.mjs
+      - name: Commit integration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add game.html scripts/career-identity-v2.js scripts/manager-profile-sidebar-v1.js
+          git commit -m "feat: integrate career identity v2 into dev runtime"
+          git push origin HEAD:dev
