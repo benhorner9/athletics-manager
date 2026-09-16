@@ -3,8 +3,14 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 
 const source=fs.readFileSync(new URL('../scripts/career-identity-v2.js',import.meta.url),'utf8');
+const game=fs.readFileSync(new URL('../game.html',import.meta.url),'utf8');
+const sidebar=fs.readFileSync(new URL('../scripts/manager-profile-sidebar-v1.js',import.meta.url),'utf8');
 assert(!/\bOVR\b|overall rating/i.test(source),'Career Identity V2 must not introduce visible OVR language');
 assert(source.includes('function programmeStats'),'Career Identity V2 source is incomplete after migration/repair');
+assert(game.includes('styles/career-identity-v2.css'),'Career Identity V2 stylesheet is missing from the normal asset graph');
+assert(game.includes('scripts/career-identity-v2.js'),'Career Identity V2 script is missing from the normal asset graph');
+assert(game.indexOf('scripts/career-identity-v2.js')>game.indexOf('scripts/live-event-shell-v5.js'),'Career Identity V2 must load after the final authoritative gameplay layers');
+assert(!sidebar.includes("script.src='scripts/career-identity-v2.js"),'Temporary dynamic Career Identity loader is still active');
 
 const listeners={};
 const documentStub={
@@ -53,14 +59,17 @@ api.sync();
 const stats=api.athleteStats('champ1');
 assert.equal(stats.olympicGolds,1,'Olympic gold was not retained in athlete history');
 assert.equal(stats.majorMedals,1,'Major medal count is incorrect');
+assert.equal(stats.years,4,'Retired athlete relationship incorrectly extends beyond retirement season');
 assert(api.ensure().programmes['GREAT BRITAIN'].legendIds.includes('champ1'),'Qualifying retired athlete was not recognised as a programme legend');
 assert(api.ensure().programmes['GREAT BRITAIN'].hallOfFameIds.includes('champ1'),'Exceptional retired athlete was not inducted after retirement');
 assert.equal(api.relationship('champ1').label,'Former programme athlete','Retired relationship label is incorrect');
 const summary=api.retirementSummary('champ1');
 assert.equal(summary.olympicGames,1,'Retirement summary lost Olympic history');
+assert.equal(summary.withProgramme,4,'Retirement summary uses an inflated relationship length');
 assert(summary.definingMoment.includes('Olympic Games'),'Retirement summary did not use factual defining moment');
 
 const beforeNationEvents=api.events({nation:'GREAT BRITAIN'}).length;
+ctx.s.career.tenures[0].endSeason=2032;
 ctx.s.career.tenures.push({nation:'CANADA',startSeason:2033,startCareerYear:7});ctx.s.career.nationsManaged.push('CANADA');ctx.s.managedNation='CANADA';ctx.s.game.season=2033;ctx.s.game.week=1;api.sync();
 assert(api.events({nation:'GREAT BRITAIN'}).length>=beforeNationEvents,'Changing nation destroyed previous programme history');
 assert(api.ensure().programmes['GREAT BRITAIN'],'Previous programme archive disappeared after nation change');
