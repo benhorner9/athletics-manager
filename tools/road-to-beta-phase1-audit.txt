@@ -1,0 +1,5 @@
+Athletics Manager — Road to Beta Phase 1 baseline audit marker.
+
+Purpose: trigger the existing dev-only automated QA gate against the current development code while Phase 1 stability and regression work is carried out on this isolated branch.
+
+This file contains no runtime code and is not loaded by the game.

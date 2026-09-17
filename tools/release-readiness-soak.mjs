@@ -73,21 +73,31 @@ export async function run(w){
 
   console.log('[release] Forty-year career rollover');
   reset();
-  const savedFns={render:w.render,view:w.view,save:w.save,toast:w.toast};
-  w.render=()=>{};w.view=()=>{};w.save=()=>{};w.toast=()=>{};
+  const savedFns={render:w.render,view:w.view,save:w.save,toast:w.toast,openCycleReview:w.openCycleReview,openCareerLegacy:w.openCareerLegacy};
+  w.render=()=>{};w.view=()=>{};w.save=()=>{};w.toast=()=>{};w.openCycleReview=()=>{};w.openCareerLegacy=()=>{};
   let seasons=0;
+  const rolloverStarted=Date.now();
   while(!read(`careerState().finished`)&&seasons<42){
+   const before=read(`({careerYear:careerState().careerYear,cycleYear:s.game.cycleYear,cycleNumber:careerState().cycleNumber,season:s.game.season,athletes:s.athletes.length,active:s.athletes.filter(a=>!a.retired).length})`);
+   const seasonStarted=Date.now();
+   console.log(`[release] 40-year season ${seasons+1} begin ${JSON.stringify(before)}`);
    read(`s.events.forEach(e=>e.completed=true);s.nationPoints[managedNation()]=1000;endSeason()`);
    seasons++;
    if(read(`!!careerState().pendingReview`))read(`acceptCareerJob(managedNation())`);
+   const after=read(`({careerYear:careerState().careerYear,cycleYear:s.game.cycleYear,cycleNumber:careerState().cycleNumber,season:s.game.season,athletes:s.athletes.length,active:s.athletes.filter(a=>!a.retired).length,finished:careerState().finished})`);
+   console.log(`[release] 40-year season ${seasons} end ${Date.now()-seasonStarted}ms ${JSON.stringify(after)}`);
    assert.ok(Number.isFinite(read(`Number(s.funding)`)),`non-finite funding after career season ${seasons}`);
    assert.ok(read(`s.athletes.length`)<5000,`athlete population runaway after career season ${seasons}`);
   }
-  w.render=savedFns.render;w.view=savedFns.view;w.save=savedFns.save;w.toast=savedFns.toast;
+  console.log(`[release] 40-year rollover completed ${seasons} seasons in ${Date.now()-rolloverStarted}ms`);
+  w.render=savedFns.render;w.view=savedFns.view;w.save=savedFns.save;w.toast=savedFns.toast;w.openCycleReview=savedFns.openCycleReview;w.openCareerLegacy=savedFns.openCareerLegacy;
   assert.equal(seasons,40,'career did not finish after 40 seasons');
   assert.equal(read(`careerState().careerYear`),40,'career year did not finish at 40');
   assert.equal(read(`careerState().completedCycles.length`),10,'career did not record ten Olympic cycles');
   assert.equal(read(`careerState().finished`),true,'40-year career did not enter finished state');
+  w.openCareerLegacy();await sleep(10);
+  assert.ok(w.document.getElementById('managementProfile')?.open,'career legacy dialog did not render after a completed 40-year career');
+  w.document.getElementById('managementProfile')?.close();
 
   console.log('[release] Live event family coverage');
   const disciplines=read(`Object.entries(DISCIPLINES).map(([code,q])=>({code,type:q.type,distance:Number(q.distance||0),label:discLabel(code)}))`);

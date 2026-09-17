@@ -57,4 +57,15 @@ const release=Object.freeze({
 });
 window.AMRelease=release;
 document.documentElement.dataset.amVersion=PRODUCT_VERSION;
+
+// Phase 1 stability: load persistence guards without changing gameplay authority.
+// The career-identity guard waits for Persistence Performance and Career Identity V2.
+const persistenceGuard=document.createElement('script');
+persistenceGuard.src='scripts/career-identity-persistence-guard-v1.js?v=20260917-phase1';
+persistenceGuard.async=true;
+document.head.appendChild(persistenceGuard);
+const seasonArchive=document.createElement('script');
+seasonArchive.src='scripts/season-archive-v1.js?v=20260917-phase1';
+seasonArchive.async=true;
+document.head.appendChild(seasonArchive);
 })();
