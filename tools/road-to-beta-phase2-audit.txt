@@ -1,0 +1,21 @@
+ATHLETICS MANAGER — ROAD TO BETA
+PHASE 2: CORE CAREER FLOW AUDIT
+
+Purpose
+Audit the actual week-to-week career journey on top of the signed-off Phase 1 stability baseline.
+
+Primary flow
+New career -> onboarding -> Home -> week advance -> inbox/actions -> selection/registration -> competition -> live event -> results -> return -> next week.
+
+Audit focus
+- no invisible blockers
+- no duplicate required actions
+- no dead-end screens
+- no incorrect or stale attention states
+- no broken navigation handoffs
+- no competition flow that skips, loops or strands the player
+- no save/reload breakage at critical handoff points
+- no feature expansion unless required to repair a proven flow defect
+
+Exit
+Core career flow is understandable and technically reliable, with Phase 1 critical QA still green.

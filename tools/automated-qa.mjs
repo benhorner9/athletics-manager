@@ -81,6 +81,7 @@ await run('Urgent contract Finance WebKit stability regression',['tools/contract
 await run('Summit selection morale regression',['tools/summit-selection-morale-regression.mjs']);
 await run('Deterministic gameplay regressions',['tools/automated-gameplay-regression.mjs']);
 await run('Training attention authority regression',['tools/training-attention-regression.mjs']);
+await run('Core career flow regression',['tools/core-career-flow-regression.mjs']);
 await run('Stability regressions',['tools/dev-stability-regression.mjs'],{timeout:480000});
 
 if(profile==='soak'){

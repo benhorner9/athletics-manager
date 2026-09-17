@@ -6,7 +6,9 @@ on:
     paths:
       - '.github/workflows/automated-qa.yml'
   pull_request:
-    branches: [dev]
+    branches:
+      - dev
+      - 'road-to-beta/**'
     paths:
       - 'game.html'
       - 'scripts/**'
@@ -97,7 +99,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: athletics-manager-browser-qa-${{ github.run_id }}
-          path: .qa-artifacts/
+          name: browser-qa-screenshots
+          path: artifacts/browser-qa
           if-no-files-found: ignore
-          retention-days: 14
