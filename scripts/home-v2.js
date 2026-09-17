@@ -24,6 +24,11 @@ function seasonStage(){const w=week();if(cycleYear()===4&&w>=32)return'Olympic p
 function trainingQueue(){return safe(()=>window.__athleticsTrainingAttentionDecisions?.queue?.()||[],[])}
 function financeSummary(){return safe(()=>window.AMProgrammeEconomy?.homeSummary?.(),null)}
 function openFinance(tab='overview'){const pe=window.AMProgrammeEconomy;if(typeof pe?.openFinanceView==='function'){pe.openFinanceView(tab);return}try{view('finance')}catch(_){}}
+function openTrainingAttention(){
+ try{view('training')}catch(_){}
+ const open=()=>{try{window.__athleticsTrainingAttentionDecisions?.open?.()}catch(_){}};
+ if(typeof requestAnimationFrame==='function')requestAnimationFrame(open);else setTimeout(open,0);
+}
 function unreadBy(type){return (s?.emails||[]).filter(m=>m.unread&&safe(()=>mailCategory(m),String(m.type||''))===type)}
 function recentScoutMail(){return [...(s?.emails||[])].reverse().find(m=>m.unread&&['scouting','scout'].includes(safe(()=>mailCategory(m),String(m.type||''))))||null}
 function eventDiscs(e){return (e?.disc||[]).filter(d=>d&&d!=='ALL')}
@@ -98,7 +103,7 @@ function bind(root,a,e,agenda){
  root.querySelector('[data-home-v2-finance]')?.addEventListener('click',()=>openFinance('overview'));
  root.querySelector('[data-home-v2-world-open]')?.addEventListener('click',()=>view('news'));
  root.querySelectorAll('[data-home-v2-action]').forEach(b=>b.addEventListener('click',()=>{const x=a.find(v=>String(v.actionId)===String(b.dataset.homeV2Action));if(x)actionDestination(x)}));
- root.querySelectorAll('[data-agenda-kind]').forEach(b=>b.addEventListener('click',()=>{const x=agenda[Number(b.dataset.agendaIndex)];if(!x)return;if(x.kind==='action'){const z=a.find(v=>String(v.actionId)===String(x.id));if(z)actionDestination(z)}else if(x.kind==='event')view(e&&validEventAction(e)?'competition':'calendar');else if(x.kind==='training')view('training');else if(x.kind==='finance')openFinance(x.id||'overview');else if(x.kind==='mail'){try{openMail=x.id}catch(_){}view('inbox')}}));
+ root.querySelectorAll('[data-agenda-kind]').forEach(b=>b.addEventListener('click',()=>{const x=agenda[Number(b.dataset.agendaIndex)];if(!x)return;if(x.kind==='action'){const z=a.find(v=>String(v.actionId)===String(x.id));if(z)actionDestination(z)}else if(x.kind==='event')view(e&&validEventAction(e)?'competition':'calendar');else if(x.kind==='training')openTrainingAttention();else if(x.kind==='finance')openFinance(x.id||'overview');else if(x.kind==='mail'){try{openMail=x.id}catch(_){}view('inbox')}}));
  root.querySelectorAll('[data-home-v2-world]').forEach(b=>b.addEventListener('click',()=>{root.querySelectorAll('[data-home-v2-world]').forEach(x=>x.classList.toggle('on',x===b));const body=$('homeV2World');if(body)body.innerHTML=worldRows(b.dataset.homeV2World)}));
  root.addEventListener('click',ev=>{if(ev.target.closest('[data-home-v2-news]'))view('news')});
 }
