@@ -57,4 +57,11 @@ const release=Object.freeze({
 });
 window.AMRelease=release;
 document.documentElement.dataset.amVersion=PRODUCT_VERSION;
+
+// Phase 1 stability: load the save-growth guard without changing gameplay authority.
+// It waits for Persistence Performance and Career Identity V2 before installing.
+const persistenceGuard=document.createElement('script');
+persistenceGuard.src='scripts/career-identity-persistence-guard-v1.js?v=20260917-phase1';
+persistenceGuard.async=true;
+document.head.appendChild(persistenceGuard);
 })();
