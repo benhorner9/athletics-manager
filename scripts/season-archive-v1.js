@@ -162,7 +162,7 @@ function stats(){
 }
 function installEndSeasonHook(){
  const original=window.endSeason;if(typeof original!=='function'||original.__amSeasonArchiveV1)return false;
- const wrapped=function(...args){snapshotCurrentSeason();return original.apply(this,args)};
+ const wrapped=function(...args){snapshotCurrentSeason();const out=original.apply(this,args);compact();return out};
  Object.defineProperty(wrapped,'__amSeasonArchiveV1',{value:true});wrapped.__amSeasonArchiveOriginal=original;
  window.endSeason=wrapped;try{endSeason=wrapped}catch(_){ }
  return true;
